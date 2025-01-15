@@ -2,9 +2,9 @@ import Mathlib
 -- #min_imports
 
 -- LeanSearch
-import LeanSearchClient
+-- import LeanSearchClient
 
-#leansearch "Union of two compact sets is also compact?"
+-- #leansearch "Union of two compact sets is also compact?"
 --
 
 -- InnerRegularity
@@ -19,6 +19,18 @@ import LeanSearchClient
 
 variable (A B : Set ℝ) (hA : MeasurableSet A) (hB : MeasurableSet B)
 #check MeasurableSet.exists_isCompact_diff_lt hA
+
+-- μ(A \ Aε) = μ(A) - μ(Aε)
+
+#check MeasureTheory.measure_diff
+
+-- When α = ℝ,
+-- (∀ (ε : α), 0 < ε → a < b + ε) → a ≤ b
+
+#check le_of_forall_pos_lt_add
+
+variable (a b : ℝ) (he : ∀ (ε : ℝ), 0 < ε → a < b + ε)
+#check le_of_forall_pos_lt_add he
 
 --
 
