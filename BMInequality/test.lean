@@ -36,7 +36,7 @@ variable (a b : ℝ) (he : ∀ (ε : ℝ), 0 < ε → a < b + ε)
 
 -- translation invariance of measure --
 
-open Set Filter MeasureTheory MeasureTheory.Measure TopologicalSpace
+open Set Pointwise Filter MeasureTheory MeasureTheory.Measure TopologicalSpace
 
 theorem measure_translation_of_set (s : Set ℝ) (c : ℝ) : volume (image (fun x ↦ x + c) s) = volume s := by
   simp only [image_add_right, measure_preimage_add_right]
@@ -82,7 +82,7 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     -- [TopologicalSpace ℝ] [OpensMeasurableSpace ℝ] [T2Space ℝ]
     (hA : A.Nonempty) (hB : B.Nonempty) (hC : C.Nonempty)
     (mA : MeasurableSet A) (mB : MeasurableSet B) (mC : MeasurableSet C)
-    -- (h : A + B ⊆ C) : TO DO !!!
+    (h : A + B ⊆ C)
     : volume A + volume B ≤ volume C := by
   by_cases finA : volume A = ⊤
   · -- A is infinite
@@ -95,7 +95,7 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
 
   have yy : (1 / 10 : ENNReal) ≠ 0 := by sorry
   have tt := mA.exists_isCompact_diff_lt finA yy
-
+  sorry
   /-
   ∀ {α : Type u_1} [inst : MeasurableSpace α] {μ : MeasureTheory.Measure α}
   [inst_1 : TopologicalSpace α] [inst_2 : OpensMeasurableSpace α] [inst_3 : T2Space α]
