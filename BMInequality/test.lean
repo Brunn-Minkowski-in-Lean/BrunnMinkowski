@@ -97,18 +97,32 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
   · -- B is infinite
     sorry
   -- Now assume B is finite
-
-  have yy : (1 / 10 : ENNReal) ≠ 0 := by sorry
-  have tt := mA.exists_isCompact_diff_lt finA yy
+  wlog cAB : IsCompact A ∧ IsCompact B with goal_cpt
+  · -- Prove non-cpt A, B case assuming cpt A, B case
+    have yy : (1 / 10 : ENNReal) ≠ 0 := by sorry
+    have tt := mA.exists_isCompact_diff_lt finA yy
+    sorry
+  -- Prove the theorem assuming cpt A, B
+  obtain ⟨cA, cB⟩ := cAB
+  set At := sInf B +ᵥ A with eq_At
+  set Bt := sSup A +ᵥ B with eq_Bt
+  have eq_At_vol : volume At = volume A := by
+    rw [eq_At]
+    simp?
+  have eq_Bt_vol : volume Bt = volume B := by
+    sorry
+  have sub_At : At ⊆ C := by
+    rw [eq_At]
+    apply Subset.trans _ h
+    rw [add_comm]
+    rw [← Set.singleton_vadd]
+    apply Set.add_subset_add_right
+    simp?
+    exact cB.sInf_mem hB
+  have sub_Bt : Bt ⊆ C := by
+    sorry
+  have cup_At_Bt : At ∪ Bt ⊆ C := by
+    sorry
+  have cap_At_Bt : At ∩ Bt = {sSup A + sInf B} := by
+    sorry
   sorry
-  /-
-  ∀ {α : Type u_1} [inst : MeasurableSpace α] {μ : MeasureTheory.Measure α}
-  [inst_1 : TopologicalSpace α] [inst_2 : OpensMeasurableSpace α] [inst_3 : T2Space α]
-  [inst_4 : μ.InnerRegularCompactLTTop]
-  ⦃A : Set α⦄,
-  MeasurableSet A
-  → μ A ≠ ⊤
-  → ∀ {ε : ENNReal},
-  ε ≠ 0 →
-  ∃ K ⊆ A, IsCompact K ∧ μ (A \ K) < ε
-  -/
