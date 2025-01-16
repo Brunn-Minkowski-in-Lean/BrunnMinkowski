@@ -78,7 +78,8 @@ instance realMeasurableInst : MeasurableSpace ℝ := by
 -- That's why above works.
 
 lemma one_dim_BMInequality (A B C : Set ℝ)
-    [TopologicalSpace ℝ] [OpensMeasurableSpace ℝ] [T2Space ℝ]
+    -- TODO: remove the line below
+    -- [TopologicalSpace ℝ] [OpensMeasurableSpace ℝ] [T2Space ℝ]
     (hA : A.Nonempty) (hB : B.Nonempty) (hC : C.Nonempty)
     (mA : MeasurableSet A) (mB : MeasurableSet B) (mC : MeasurableSet C)
     -- (h : A + B ⊆ C) : TO DO !!!
