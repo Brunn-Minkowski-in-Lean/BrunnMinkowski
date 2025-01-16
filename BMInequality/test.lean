@@ -1,4 +1,9 @@
-import Mathlib
+import Mathlib.Dynamics.Ergodic.Action.Regular
+import Mathlib.MeasureTheory.Measure.Haar.OfBasis
+import Mathlib.MeasureTheory.Measure.RegularityCompacts
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.Topology.EMetricSpace.Paracompact
+import Mathlib.Topology.Separation.CompletelyRegular
 -- #min_imports
 
 -- LeanSearch
