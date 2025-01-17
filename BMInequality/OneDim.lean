@@ -82,7 +82,14 @@ instance realMeasurableInst : MeasurableSpace ℝ := by
 -- `realMeasurableInst`.
 #check some_lemma ℝ
 
+example (a : ENNReal) : ⊤ + a = ⊤ := by
+  simp only [_root_.top_add]
+
 -- That's why above works.
+-- variable [Nonempty B]
+-- #check Classical.arbitrary B
+
+-- #check Set.Nonempty
 
 lemma one_dim_BMInequality (A B C : Set ℝ)
     -- TODO: remove the line below
@@ -91,9 +98,32 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     (mA : MeasurableSet A) (mB : MeasurableSet B) (mC : MeasurableSet C)
     (h : A + B ⊆ C)
     : volume A + volume B ≤ volume C := by
+  have hh : volume A ≤ volume (A + B) := by
+    obtain ⟨b, hb⟩ := hB -- hB is a pair of b and proof of b in B
+    have trans_inv : volume A = volume (A + {b}) := by simp
+    have singleton_inclusion : A + {b} ⊆ A + B := by sorry
+    have TaaDa : volume (A + {b}) ≤ volume (A + B) := by
+      apply measure_mono
+      exact singleton_inclusion
+    -- rw [trans_inv]
+    -- apply measure_mono
+    -- exact singleton_inclusion
+    calc
+      volume A = volume (A + {b}) := by apply trans_inv
+      _ ≤ volume (A + B) := by exact TaaDa
+  have hhh : volume A ≤ volume C := by
+    calc
+      volume A ≤ volume (A + B) := by exact hh
+      _ ≤ volume C := by
+        apply measure_mono
+        exact h
   by_cases finA : volume A = ⊤
   · -- A is infinite
-    sorry
+    rw [finA]
+    simp
+    rw [finA] at hhh
+    simp at hhh
+    exact hhh
   -- Now assume A is finite
   by_cases finB : volume B = ⊤
   · -- B is infinite
@@ -101,8 +131,8 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
   -- Now assume B is finite
   wlog cAB : IsCompact A ∧ IsCompact B with goal_cpt
   · -- Prove non-cpt A, B case assuming cpt A, B case
-    have yy : (1 / 10 : ENNReal) ≠ 0 := by sorry
-    have tt := mA.exists_isCompact_diff_lt finA yy
+    -- have yy : (1 / 10 : ENNReal) ≠ 0 := by sorry
+    -- have tt := mA.exists_isCompact_diff_lt finA yy
     sorry
   -- Prove the theorem assuming cpt A, B
   obtain ⟨cA, cB⟩ := cAB
