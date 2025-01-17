@@ -82,14 +82,23 @@ instance realMeasurableInst : MeasurableSpace ℝ := by
 -- `realMeasurableInst`.
 #check some_lemma ℝ
 
+-- That's why above works.
+
 example (a : ENNReal) : ⊤ + a = ⊤ := by
   simp only [_root_.top_add]
 
--- That's why above works.
 -- variable [Nonempty B]
 -- #check Classical.arbitrary B
 
 -- #check Set.Nonempty
+#check singleton_subset_iff
+#check add_subset_add_right
+#check rw [addCommMonoid.proof_1]
+
+-- ?????????????????????????????
+example (A B : Set ℝ) : A + B = B + A := by
+  rw [addCommMonoid.proof_1 A]
+-- ?????????????????????????????
 
 lemma one_dim_BMInequality (A B C : Set ℝ)
     -- TODO: remove the line below
@@ -98,11 +107,16 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     (mA : MeasurableSet A) (mB : MeasurableSet B) (mC : MeasurableSet C)
     (h : A + B ⊆ C)
     : volume A + volume B ≤ volume C := by
+    --
   have hh : volume A ≤ volume (A + B) := by
     obtain ⟨b, hb⟩ := hB -- hB is a pair of b and proof of b in B
     have trans_inv : volume A = volume (A + {b}) := by simp
-    have singleton_inclusion : A + {b} ⊆ A + B := by sorry
     have TaaDa : volume (A + {b}) ≤ volume (A + B) := by
+      have singleton_inclusion : A + {b} ⊆ A + B := by
+        have hhhh : {b} ⊆ B := by
+          apply singleton_subset_iff.mpr
+          exact hb
+        exact add_subset_add_left hhhh
       apply measure_mono
       exact singleton_inclusion
     -- rw [trans_inv]
@@ -111,9 +125,33 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     calc
       volume A = volume (A + {b}) := by apply trans_inv
       _ ≤ volume (A + B) := by exact TaaDa
+  --
+  have hh' : volume B ≤ volume (B + A) := by
+    obtain ⟨a, ha⟩ := hA -- hB is a pair of b and proof of b in B
+    have trans_inv : volume B = volume (B + {a}) := by simp
+    have TaaDa : volume (B + {a}) ≤ volume (B + A) := by
+      have singleton_inclusion : B + {a} ⊆ B + A := by
+        have hhhh : {a} ⊆ A := by
+          apply singleton_subset_iff.mpr
+          exact ha
+        exact add_subset_add_left hhhh
+      apply measure_mono
+      exact singleton_inclusion
+    calc
+      volume B = volume (B + {a}) := by apply trans_inv
+      _ ≤ volume (B + A) := by exact TaaDa
+  --
   have hhh : volume A ≤ volume C := by
     calc
       volume A ≤ volume (A + B) := by exact hh
+      _ ≤ volume C := by
+        apply measure_mono
+        exact h
+  --
+  have hhh' : volume B ≤ volume C := by
+    calc
+      volume B ≤ volume (B + A) := by exact hh'
+      _ = volume (A + B) := by rw [addCommMonoid.proof_1 A]
       _ ≤ volume C := by
         apply measure_mono
         exact h
@@ -127,7 +165,11 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
   -- Now assume A is finite
   by_cases finB : volume B = ⊤
   · -- B is infinite
-    sorry
+    rw [finB]
+    simp
+    rw [finB] at hhh'
+    simp at hhh'
+    exact hhh'
   -- Now assume B is finite
   wlog cAB : IsCompact A ∧ IsCompact B with goal_cpt
   · -- Prove non-cpt A, B case assuming cpt A, B case
