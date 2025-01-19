@@ -183,7 +183,15 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     obtain ⟨Aε, inclusion_cptA, h_cptA, diff_cptA⟩ := cpt_A
     obtain ⟨Bε, inclusion_cptB, h_cptB, diff_cptB⟩ := cpt_B
     have inclusion_cpt : Aε + Bε ⊆ C := by
-      have feather : Aε + Bε ⊆ A + B := by sorry
+      have feather : Aε + Bε ⊆ A + B := by
+        intros x hx
+        have hx' : ∃ a ∈ Aε, ∃ b ∈ Bε, x = a + b := by sorry
+        obtain ⟨a, ha, b, hb, hx'⟩ := hx'
+        have ha : a ∈ A := by aesop
+        have hb : b ∈ B := by aesop
+        have h : a + b ∈ A + B := by apply add_mem_add ha hb
+        rw [hx']
+        exact h
       calc Aε + Bε ⊆ A + B := by apply feather
       _ ⊆ C := by apply h
     sorry
