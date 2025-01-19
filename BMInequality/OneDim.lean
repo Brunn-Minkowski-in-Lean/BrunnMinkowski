@@ -177,7 +177,11 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     -- have tt := mA.exists_isCompact_diff_lt finA yy
     apply le_of_forall_pos_le_add
     intros ε hε
-    have hε' : ε ≠ 0 := by sorry
+    have hε' : ε ≠ 0 := by
+      by_contra h
+      rw [h] at hε
+      rw [lt_self_iff_false] at hε
+      exact hε
     have cpt_A := by apply mA.exists_isCompact_diff_lt finA hε'
     have cpt_B := by apply mB.exists_isCompact_diff_lt finB hε'
     obtain ⟨Aε, inclusion_cptA, h_cptA, diff_cptA⟩ := cpt_A
