@@ -37,7 +37,7 @@ variable (A B : Set ℝ) (hA : MeasurableSet A) (hB : MeasurableSet B)
 #check le_of_forall_pos_lt_add
 
 variable (a b : ℝ) (he : ∀ (ε : ℝ), 0 < ε → a < b + ε)
-#check le_of_forall_pos_lt_add he
+#check le_of_forall_pos_lt_add
 
 --
 
@@ -93,7 +93,7 @@ example (a : ENNReal) : ⊤ + a = ⊤ := by
 -- #check Set.Nonempty
 #check singleton_subset_iff
 #check add_subset_add_right
-#check rw [addCommMonoid.proof_1]
+-- #check rw [addCommMonoid.proof_1]
 
 -- ?????????????????????????????
 example (A B : Set ℝ) : A + B = B + A := by
@@ -175,7 +175,19 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
   · -- Prove non-cpt A, B case assuming cpt A, B case
     -- have yy : (1 / 10 : ENNReal) ≠ 0 := by sorry
     -- have tt := mA.exists_isCompact_diff_lt finA yy
+    apply le_of_forall_pos_le_add
+    intros ε hε
+    have hε' : ε ≠ 0 := by sorry
+    have cpt_A := by apply mA.exists_isCompact_diff_lt finA hε'
+    have cpt_B := by apply mB.exists_isCompact_diff_lt finB hε'
+    obtain ⟨Aε, inclusion_cptA, h_cptA, diff_cptA⟩ := cpt_A
+    obtain ⟨Bε, inclusion_cptB, h_cptB, diff_cptB⟩ := cpt_B
+    have inclusion_cpt : Aε + Bε ⊆ C := by
+      have feather : Aε + Bε ⊆ A + B := by sorry
+      calc Aε + Bε ⊆ A + B := by apply feather
+      _ ⊆ C := by apply h
     sorry
+
   -- Prove the theorem assuming cpt A, B
   obtain ⟨cA, cB⟩ := cAB
   set At := sInf B +ᵥ A with eq_At
