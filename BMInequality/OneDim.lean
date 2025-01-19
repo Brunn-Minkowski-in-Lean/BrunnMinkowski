@@ -185,12 +185,13 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     have inclusion_cpt : Aε + Bε ⊆ C := by
       have feather : Aε + Bε ⊆ A + B := by
         intros x hx
-        have hx' : ∃ a ∈ Aε, ∃ b ∈ Bε, x = a + b := by sorry
+        have hx' : ∃ a ∈ Aε, ∃ b ∈ Bε, a + b = x := by
+          exact mem_add.mpr hx
         obtain ⟨a, ha, b, hb, hx'⟩ := hx'
         have ha : a ∈ A := by aesop
         have hb : b ∈ B := by aesop
         have h : a + b ∈ A + B := by apply add_mem_add ha hb
-        rw [hx']
+        rw [← hx']
         exact h
       calc Aε + Bε ⊆ A + B := by apply feather
       _ ⊆ C := by apply h
