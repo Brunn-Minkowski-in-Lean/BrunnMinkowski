@@ -180,8 +180,3 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
   have cap_At_Bt : At ∩ Bt = {sSup A + sInf B} := by
     sorry
   sorry
-
-
-
-theorem ineqPrekopaLeindler
-  {t : ℝ} (h0t : 0 < t) (ht1 : t < 1) : 1 = 1 := by sorry
