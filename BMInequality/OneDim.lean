@@ -100,6 +100,42 @@ example (A B : Set ℝ) : A + B = B + A := by
   rw [addCommMonoid.proof_1 A]
 -- ?????????????????????????????
 
+lemma volume_le_volume_add_right
+    {A B : Set ℝ} (hB : B.Nonempty)
+    : volume A ≤ volume (A + B) := by
+  obtain ⟨b, hb⟩ := hB -- hB is a pair of b and proof of b in B
+  calc
+    volume A = volume (A + {b}) := by
+      rw [add_singleton, image_add_right,
+      measure_preimage_add_right]
+    _ ≤ volume (A + B) := by
+      apply measure_mono
+      apply add_subset_add_left
+      rw [singleton_subset_iff]
+      exact hb
+
+lemma volume_le_volume_add_left
+    {A B : Set ℝ} (hB : B.Nonempty)
+    : volume A ≤ volume (B + A) := by
+  rw [addCommMonoid.proof_1 B]
+  exact volume_le_volume_add_right hB
+
+-- Maybe (or maybe not) factor out the lemmas below
+/-
+have hhh : volume A ≤ volume C := by
+  calc
+    volume A ≤ volume (A + B) := volume_le_volume_add_right hB
+    _ ≤ volume C := by
+      apply measure_mono
+      exact h
+have hhh' : volume B ≤ volume C := by
+  calc
+    volume B ≤ volume (A + B) := volume_le_volume_add_left hA
+    _ ≤ volume C := by
+      apply measure_mono
+      exact h
+-/
+
 lemma one_dim_BMInequality (A B C : Set ℝ)
     -- TODO: remove the line below
     -- [TopologicalSpace ℝ] [OpensMeasurableSpace ℝ] [T2Space ℝ]
@@ -108,73 +144,23 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     (h : A + B ⊆ C)
     : volume A + volume B ≤ volume C := by
     --
-  have hh : volume A ≤ volume (A + B) := by
-    obtain ⟨b, hb⟩ := hB -- hB is a pair of b and proof of b in B
-    have trans_inv : volume A = volume (A + {b}) := by simp
-    have TaaDa : volume (A + {b}) ≤ volume (A + B) := by
-      have singleton_inclusion : A + {b} ⊆ A + B := by
-        have hhhh : {b} ⊆ B := by
-          apply singleton_subset_iff.mpr
-          exact hb
-        exact add_subset_add_left hhhh
-      apply measure_mono
-      exact singleton_inclusion
-    -- rw [trans_inv]
-    -- apply measure_mono
-    -- exact singleton_inclusion
-    calc
-      volume A = volume (A + {b}) := by apply trans_inv
-      _ ≤ volume (A + B) := by exact TaaDa
-  --
-  have hh' : volume B ≤ volume (B + A) := by
-    obtain ⟨a, ha⟩ := hA -- hB is a pair of b and proof of b in B
-    have trans_inv : volume B = volume (B + {a}) := by simp
-    have TaaDa : volume (B + {a}) ≤ volume (B + A) := by
-      have singleton_inclusion : B + {a} ⊆ B + A := by
-        have hhhh : {a} ⊆ A := by
-          apply singleton_subset_iff.mpr
-          exact ha
-        exact add_subset_add_left hhhh
-      apply measure_mono
-      exact singleton_inclusion
-    calc
-      volume B = volume (B + {a}) := by apply trans_inv
-      _ ≤ volume (B + A) := by exact TaaDa
-  --
-  have hhh : volume A ≤ volume C := by
-    calc
-      volume A ≤ volume (A + B) := by exact hh
-      _ ≤ volume C := by
-        apply measure_mono
-        exact h
-  --
-  have hhh' : volume B ≤ volume C := by
-    calc
-      volume B ≤ volume (B + A) := by exact hh'
-      _ = volume (A + B) := by rw [addCommMonoid.proof_1 A]
-      _ ≤ volume C := by
-        apply measure_mono
-        exact h
   by_cases finA : volume A = ⊤
   · -- A is infinite
-    rw [finA]
-    simp
-    rw [finA] at hhh
-    simp at hhh
-    exact hhh
+    rw [finA, _root_.top_add, ← finA]
+    apply le_trans
+      (volume_le_volume_add_right hB)
+      (measure_mono h)
   -- Now assume A is finite
   by_cases finB : volume B = ⊤
   · -- B is infinite
-    rw [finB]
-    simp
-    rw [finB] at hhh'
-    simp at hhh'
-    exact hhh'
+    rw [finB, _root_.add_top, ← finB]
+    apply le_trans
+      (volume_le_volume_add_left hA)
+      (measure_mono h)
   -- Now assume B is finite
   wlog cAB : IsCompact A ∧ IsCompact B with goal_cpt
   · -- Prove non-cpt A, B case assuming cpt A, B case
-    -- have yy : (1 / 10 : ENNReal) ≠ 0 := by sorry
-    -- have tt := mA.exists_isCompact_diff_lt finA yy
+    -- TODO: need to take ε small enough so that Aε and Bε are nonempty
     apply le_of_forall_pos_le_add
     intros ε hε
     have hε' : ε ≠ 0 := by
@@ -207,7 +193,7 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
   set Bt := sSup A +ᵥ B with eq_Bt
   have eq_At_vol : volume At = volume A := by
     rw [eq_At]
-    simp?
+    simp only [measure_vadd]
   have eq_Bt_vol : volume Bt = volume B := by
     sorry
   have sub_At : At ⊆ C := by
@@ -216,7 +202,7 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     rw [add_comm]
     rw [← Set.singleton_vadd]
     apply Set.add_subset_add_right
-    simp?
+    simp only [singleton_subset_iff]
     exact cB.sInf_mem hB
   have sub_Bt : Bt ⊆ C := by
     sorry
