@@ -87,6 +87,16 @@ have hhh' : volume B ≤ volume C := by
       exact h
 -/
 
+#check MeasurableSet.exists_isCompact_diff_lt
+
+-- important TODO: complete this
+lemma MeasurableSet.exists_isCompact_Nonempty_diff_lt
+    {α : Type} [MeasurableSpace α] {μ : Measure α} [TopologicalSpace α]
+    [OpensMeasurableSpace α] [T2Space α] [μ.InnerRegularCompactLTTop]
+    {A : Set α} (hA : A.Nonempty) (mA : MeasurableSet A) (h'A : μ A ≠ ⊤)
+    {ε : ENNReal} (hε : ε ≠ 0) : ∃ K ⊆ A, K.Nonempty ∧ IsCompact K ∧ μ (A \ K) < ε := by
+  sorry
+
 lemma one_dim_BMInequality (A B C : Set ℝ)
     -- TODO: remove the line below
     -- [TopologicalSpace ℝ] [OpensMeasurableSpace ℝ] [T2Space ℝ]
@@ -111,7 +121,6 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
   -- Now assume B is finite
   wlog cAB : IsCompact A ∧ IsCompact B with goal_cpt
   · -- Prove non-cpt A, B case assuming cpt A, B case
-    -- TODO: need to take ε small enough so that Aε and Bε are nonempty
     apply le_of_forall_pos_le_add
     intros ε hε
     have hε' : ε ≠ 0 := by
@@ -119,18 +128,27 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
       rw [h] at hε
       rw [lt_self_iff_false] at hε
       exact hε
-    have cpt_A := by apply mA.exists_isCompact_diff_lt finA hε'
-    have cpt_B := by apply mB.exists_isCompact_diff_lt finB hε'
-    obtain ⟨Aε, inclusion_cptA, h_cptA, diff_cptA⟩ := cpt_A
-    obtain ⟨Bε, inclusion_cptB, h_cptB, diff_cptB⟩ := cpt_B
+    -- TODO: replace the followings with MeasurableSet.exists_isCompact_Nonempty_diff_lt
+    obtain ⟨Aε, inclusion_cptA, h_cptA, diff_cptA⟩ :=
+      mA.exists_isCompact_diff_lt finA hε'
+    obtain ⟨Bε, inclusion_cptB, h_cptB, diff_cptB⟩ :=
+      mB.exists_isCompact_diff_lt finB hε'
     have inclusion_cpt : Aε + Bε ⊆ C := by
       have feather : Aε + Bε ⊆ A + B := by
         intros x hx
         have hx' : ∃ a ∈ Aε, ∃ b ∈ Bε, a + b = x := by
           exact mem_add.mpr hx
         obtain ⟨a, ha, b, hb, hx'⟩ := hx'
-        have ha : a ∈ A := by aesop
-        have hb : b ∈ B := by aesop
+        have ha : a ∈ A := by
+          -- found by `aesop?`
+          subst hx'
+          simp_all only [and_imp, not_and, ne_eq]
+          exact inclusion_cptA ha
+        have hb : b ∈ B := by
+          -- found by `aesop?`
+          subst hx'
+          simp_all only [and_imp, not_and, ne_eq]
+          exact inclusion_cptB hb
         have h : a + b ∈ A + B := by apply add_mem_add ha hb
         rw [← hx']
         exact h
