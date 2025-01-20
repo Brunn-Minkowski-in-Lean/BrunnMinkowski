@@ -9,15 +9,8 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 -- #min_imports
 
 -- LeanSearch
--- import LeanSearchClient
-
+import LeanSearchClient
 -- #leansearch "Union of two compact sets is also compact?"
---
-
--- InnerRegularity
-
--- InnerRegular mu : Prop
--- Need: InnerRegular volume
 
 #check MeasurableSet.exists_isCompact_diff_lt
 -- Want to apply the lemma above to [0, 1] in R
@@ -39,8 +32,6 @@ variable (A B : Set ℝ) (hA : MeasurableSet A) (hB : MeasurableSet B)
 variable (a b : ℝ) (he : ∀ (ε : ℝ), 0 < ε → a < b + ε)
 #check le_of_forall_pos_lt_add
 
---
-
 -- translation invariance of measure --
 
 open Set Pointwise Filter MeasureTheory MeasureTheory.Measure TopologicalSpace
@@ -49,56 +40,16 @@ theorem measure_translation_of_set (s : Set ℝ) (c : ℝ) : volume (image (fun 
   simp only [image_add_right, measure_preimage_add_right]
 
 #check measure_translation_of_set
-
---
-
 #check measure_union_add_inter
-
 #check MeasureTheory.measure_mono
-
-
 #check IsCompact.sSup_mem
 #check IsCompact.sInf_mem
-
-def even (n : ℕ) : Prop := by sorry
--- even 3 : Prop  (`even 3` is a proposition)
-lemma four_is_even : even 4 := by sorry
--- four_is_even : even 4 (`four_is_even` is a proof of `even 4`)
-
--- Requrires an instance of type `MeasurableSpace α`
-lemma some_lemma (α : Type) [inst_mea : MeasurableSpace α] [inst_TopSp : TopologicalSpace α] : ∀ x : α, 1 = 1 := by
-  -- assumes Lean has an instance of [MeasurableSpace α]
-  sorry
-
-
--- There is some [inst_mea : MeasurableSpace ℝ] floating around somewhere in mathlib
--- somewhere in Mathlib, someone defined:
-/-
-instance realMeasurableInst : MeasurableSpace ℝ := by
-  sorry
--/
--- What happens next, is that now Lean kernel 'knows' instance [MeasurableSpace ℝ]
--- internally, so whenever [MeasurableSpace ℝ] is required, kernel fills that out with
--- `realMeasurableInst`.
-#check some_lemma ℝ
-
--- That's why above works.
-
-example (a : ENNReal) : ⊤ + a = ⊤ := by
-  simp only [_root_.top_add]
-
--- variable [Nonempty B]
--- #check Classical.arbitrary B
-
--- #check Set.Nonempty
 #check singleton_subset_iff
 #check add_subset_add_right
--- #check rw [addCommMonoid.proof_1]
 
--- ?????????????????????????????
+-- It's a shame
 example (A B : Set ℝ) : A + B = B + A := by
-  rw [addCommMonoid.proof_1 A]
--- ?????????????????????????????
+  exact Set.addCommMonoid.proof_1 A B
 
 lemma volume_le_volume_add_right
     {A B : Set ℝ} (hB : B.Nonempty)
