@@ -89,13 +89,31 @@ have hhh' : volume B ≤ volume C := by
 
 #check MeasurableSet.exists_isCompact_diff_lt
 
+#check MeasurableSet.exists_isCompact_lt_add
+
 -- important TODO: complete this
 lemma MeasurableSet.exists_isCompact_Nonempty_diff_lt
     {α : Type} [MeasurableSpace α] {μ : Measure α} [TopologicalSpace α]
     [OpensMeasurableSpace α] [T2Space α] [μ.InnerRegularCompactLTTop]
     {A : Set α} (hA : A.Nonempty) (mA : MeasurableSet A) (h'A : μ A ≠ ⊤)
     {ε : ENNReal} (hε : ε ≠ 0) : ∃ K ⊆ A, K.Nonempty ∧ IsCompact K ∧ μ (A \ K) < ε := by
-  sorry
+  -- rcases mA.exists_isCompact_diff_lt h'A hε with ⟨K, inclusion_K, cpt_K, diff_K⟩
+  obtain ⟨K, inclusion_K, cpt_K, diff_K⟩ := mA.exists_isCompact_diff_lt h'A hε
+  have nonempty_K : K.Nonempty := by
+    by_contra! empty_K
+    rw [empty_K] at diff_K
+    simp at diff_K
+    revert ε
+    simp
+    -- push_neg
+    intro ⊤
+    simp
+    -- TODO: want to show contradiction with h'A :<
+    sorry
+    -- #check ENNReal.eq_top_of_forall_nnreal_le
+    -- have feather : ¬ (⊤ : ENNReal) = 0 := by sorry
+    -- push_neg
+  exact ⟨K, inclusion_K, nonempty_K, cpt_K, diff_K⟩
 
 lemma one_dim_BMInequality (A B C : Set ℝ)
     -- TODO: remove the line below
