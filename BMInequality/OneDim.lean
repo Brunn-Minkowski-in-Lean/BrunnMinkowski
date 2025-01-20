@@ -173,30 +173,30 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
       calc Aε + Bε ⊆ A + B := by apply feather
       _ ⊆ C := by apply h
 
-    have ETS : volume Aε + volume Bε ≤ volume C := by sorry
-    have Aux1 : volume A < volume Aε + ε := by
-      have AuxAuxAuxAux1: volume Aε ≤ volume A := by
-            apply measure_mono inclusion_cptA
-      have AuxAuxAux1 : volume Aε ≠ ⊤ := by
-          push_neg at finA
-          by_contra! inf_cpt_vol
-          rw [inf_cpt_vol] at AuxAuxAuxAux1
-          absurd AuxAuxAuxAux1
-          simp
-          exact finA
-      --   have AuxAuxAux2 : NullMeasurableSet Aε volume := by sorry
-      --   -- have AuxAuxAux3 :
-      --   apply measure_diff inclusion_cptA AuxAuxAux2 AuxAuxAux1
-      -- rw [AuxAux1] at diff_cptA
-      -- have final : volume A - volume Aε < ε := by
-      --   rw [← AuxAux1]
-      --   exact
-      --   sorry
-      -- #check ENNReal.sub_lt_iff_lt_right.mpr AuxAuxAux1 AuxAuxAuxAux1
-      -- apply ENNReal.sub_lt_iff_lt_right AuxAuxAux1 AuxAuxAuxAux1 at diff_cptA
-      sorry
-    have Aux2 : volume B < volume Bε + ε := by sorry
-    sorry
+    -- have ETS : volume Aε + volume Bε ≤ volume C := by sorry
+    -- have Aux1 : volume A < volume Aε + ε := by
+    --   have AuxAuxAuxAux1: volume Aε ≤ volume A := by
+    --         apply measure_mono inclusion_cptA
+    --   have AuxAuxAux1 : volume Aε ≠ ⊤ := by
+    --       push_neg at finA
+    --       by_contra! inf_cpt_vol
+    --       rw [inf_cpt_vol] at AuxAuxAuxAux1
+    --       absurd AuxAuxAuxAux1
+    --       simp
+    --       exact finA
+    --   --   have AuxAuxAux2 : NullMeasurableSet Aε volume := by sorry
+    --   --   -- have AuxAuxAux3 :
+    --   --   apply measure_diff inclusion_cptA AuxAuxAux2 AuxAuxAux1
+    --   -- rw [AuxAux1] at diff_cptA
+    --   -- have final : volume A - volume Aε < ε := by
+    --   --   rw [← AuxAux1]
+    --   --   exact
+    --   --   sorry
+    --   -- #check ENNReal.sub_lt_iff_lt_right.mpr AuxAuxAux1 AuxAuxAuxAux1
+    --   -- apply ENNReal.sub_lt_iff_lt_right AuxAuxAux1 AuxAuxAuxAux1 at diff_cptA
+    --   sorry
+    -- have Aux2 : volume B < volume Bε + ε := by sorry
+    -- sorry
 
   -- Prove the theorem assuming cpt A, B
   obtain ⟨cA, cB⟩ := cAB
