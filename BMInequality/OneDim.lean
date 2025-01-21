@@ -99,21 +99,38 @@ lemma MeasurableSet.exists_isCompact_Nonempty_diff_lt
     {ε : ENNReal} (hε : ε ≠ 0) : ∃ K ⊆ A, K.Nonempty ∧ IsCompact K ∧ μ (A \ K) < ε := by
   -- rcases mA.exists_isCompact_diff_lt h'A hε with ⟨K, inclusion_K, cpt_K, diff_K⟩
   obtain ⟨K, inclusion_K, cpt_K, diff_K⟩ := mA.exists_isCompact_diff_lt h'A hε
-  have nonempty_K : K.Nonempty := by
-    by_contra! empty_K
-    rw [empty_K] at diff_K
-    simp at diff_K
-    revert ε
-    simp
-    -- push_neg
-    intro ⊤
-    simp
-    -- TODO: want to show contradiction with h'A :<
-    sorry
-    -- #check ENNReal.eq_top_of_forall_nnreal_le
-    -- have feather : ¬ (⊤ : ENNReal) = 0 := by sorry
-    -- push_neg
-  exact ⟨K, inclusion_K, nonempty_K, cpt_K, diff_K⟩
+  by_cases nonempty_K : K.Nonempty
+  · exact ⟨K, inclusion_K, nonempty_K, cpt_K, diff_K⟩
+  push_neg at nonempty_K
+  have small_A : μ A < ε := by
+    rw [nonempty_K] at diff_K
+    simp_all
+  obtain ⟨a, ha⟩ := hA
+  use {a}
+  simp
+  constructor
+  · exact ha
+  have feather1 : MeasurableSet {a} := by apply MeasurableSet.singleton
+  have feather2 : μ (A \ {a}) = μ (A) - μ {a} := by
+    have feather3 : μ (A ∩ {a}) + μ (A \ {a}) = μ (A) := by apply measure_inter_add_diff A feather1
+    have feather4 : μ (A ∩ {a}) = μ {a} := by
+      have feather5 : {a} ∩ A = {a} := by
+        simp [inter_eq_left, singleton_subset_iff]
+        exact ha
+      calc μ (A ∩ {a}) = μ ({a} ∩ A) := by rw [inter_comm]
+      _ = μ {a} := by rw [feather5]
+    rw [feather4] at feather3
+    have feather6 : μ {a} ≠ ⊤ := by sorry
+    apply ENNReal.eq_sub_of_add_eq feather6
+    rw [←feather3]
+    exact AddCommMagma.add_comm (μ (A \ {a})) (μ {a})
+  have feather6 : μ {a} = 0 := by sorry
+    -- This could be 1 if the measure is a counting measure.
+    -- We should restrict this lemma to the case of volume, rather than arbitrary measure
+    -- In case of volume, we can prove this by "Real.volume_singleton".
+  calc μ (A \ {a}) = μ (A) - μ {a} := by apply feather2
+  _ = μ (A) := by simp [feather6]
+  _ < ε := by exact small_A
 
 lemma one_dim_BMInequality (A B C : Set ℝ)
     -- TODO: remove the line below
