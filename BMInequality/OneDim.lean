@@ -101,13 +101,19 @@ lemma MeasurableSet.exists_isCompact_Nonempty_diff_lt
   obtain ⟨K, inclusion_K, cpt_K, diff_K⟩ := mA.exists_isCompact_diff_lt h'A hε
   by_cases nonempty_K : K.Nonempty
   · exact ⟨K, inclusion_K, nonempty_K, cpt_K, diff_K⟩
+  -- push_neg at nonempty_K
+  obtain ⟨a, ha⟩ := hA
+  use {a}
+  simp [singleton_nonempty, isCompact_singleton]
   push_neg at nonempty_K
   have small_A : μ A < ε := by
     rw [nonempty_K] at diff_K
     simp_all
-  obtain ⟨a, ha⟩ := hA
-  use {a}
-  simp
+  have small_a : μ {a} < ε := by
+    calc μ {a} ≤ μ A := by
+          have trivial : {a} ⊆ A := by apply singleton_subset_iff.mpr ha
+          exact measure_mono trivial
+    _ < ε := by apply small_A
   constructor
   · exact ha
   have feather1 : MeasurableSet {a} := by apply MeasurableSet.singleton
@@ -120,14 +126,15 @@ lemma MeasurableSet.exists_isCompact_Nonempty_diff_lt
       calc μ (A ∩ {a}) = μ ({a} ∩ A) := by rw [inter_comm]
       _ = μ {a} := by rw [feather5]
     rw [feather4] at feather3
-    have feather6 : μ {a} ≠ ⊤ := by sorry
+    have feather6 : μ {a} ≠ ⊤ := by
+      by_contra infty_singleton
+      rw [infty_singleton] at small_a
+      simp_all [ne_eq, not_top_lt]
     apply ENNReal.eq_sub_of_add_eq feather6
     rw [←feather3]
     exact AddCommMagma.add_comm (μ (A \ {a})) (μ {a})
-  have feather6 : μ {a} = 0 := by sorry
-    -- This could be 1 if the measure is a counting measure.
-    -- We should restrict this lemma to the case of volume, rather than arbitrary measure
-    -- In case of volume, we can prove this by "Real.volume_singleton".
+  have feather6 : μ {a} = 0 := by
+      sorry
   calc μ (A \ {a}) = μ (A) - μ {a} := by apply feather2
   _ = μ (A) := by simp [feather6]
   _ < ε := by exact small_A
@@ -189,7 +196,7 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
         exact h
       calc Aε + Bε ⊆ A + B := by apply feather
       _ ⊆ C := by apply h
-
+    sorry
     -- have ETS : volume Aε + volume Bε ≤ volume C := by sorry
     -- have Aux1 : volume A < volume Aε + ε := by
     --   have AuxAuxAuxAux1: volume Aε ≤ volume A := by
