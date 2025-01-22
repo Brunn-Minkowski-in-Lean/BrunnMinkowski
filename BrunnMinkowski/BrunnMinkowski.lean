@@ -5,6 +5,8 @@ import BrunnMinkowski.EuclideanSpace
 
 open scoped Pointwise NNReal
 
+variable {I : Type} [Fintype I] {n : ℕ}
+
 noncomputable def ConvexBody.volume (A : ConvexBody (ℝI I)) : ENNReal :=
   MeasureTheory.volume (A : Set (ℝI I))
 
