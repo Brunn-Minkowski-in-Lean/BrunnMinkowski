@@ -3,6 +3,7 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.MeasureTheory.Integral.Lebesgue
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 import Mathlib.Analysis.InnerProductSpace.EuclideanDist
+import BrunnMinkowski.EuclideanSpace
 
 open NNReal ENNReal MeasureTheory Finset
 open Real Set MeasureTheory Filter Asymptotics
@@ -23,11 +24,11 @@ theorem EuclideanSpace.induction_on_dimension
       P α → P β → P (α × β)} :
   (α : Type) → [AddCommGroup α] → [TopologicalSpace α] →  [TopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → P α := by sorry
 
-theorem ineqPrekopaLeindler
+theorem prekopa_leindler
     {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
-    {d : ℕ} (f g h : EuclideanSpace ℝ (Fin d) → ℝ)
+    {d : ℕ} (f g h : ℝn d → ℝ)
     (hlb :
-      ∀ x y : EuclideanSpace ℝ (Fin d),
+      ∀ x y : ℝn d,
       (f x)^(1 - t) * (g y)^t ≤ h (x + y)) :
   (∫ x, f x)^(1-t) * (∫ y, g y)^t ≤
   (1 - t)^(d * (1-t)) * t^(d*t) * (∫ x, h x)
