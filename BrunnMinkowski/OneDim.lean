@@ -174,7 +174,6 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
       rw [he] at hε
       rw [lt_self_iff_false] at hε
       exact hε
-    -- TODO: replace the followings with MeasurableSet.exists_isCompact_Nonempty_diff_lt
     obtain ⟨Aε, inclusion_cptA, nonempty_cptA, h_cptA, diff_cptA⟩ :=
       MeasurableSet.exists_isCompact_Nonempty_diff_lt hA mA finA hε'
     obtain ⟨Bε, inclusion_cptB, nonempty_cptB, h_cptB, diff_cptB⟩ :=
