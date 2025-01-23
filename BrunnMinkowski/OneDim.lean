@@ -163,18 +163,22 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
   -- Now assume B is finite
   wlog cAB : IsCompact A ∧ IsCompact B with goal_cpt
   · -- Prove non-cpt A, B case assuming cpt A, B case
-    apply le_of_forall_pos_le_add
+    apply le_of_forall_pos_lt_add'
+    -- le_of_forall_pos_le_add
     intros ε hε
-    have hε' : ε ≠ 0 := by
-      by_contra h
-      rw [h] at hε
+    have hε' : (ε/2) ≠ 0 := by
+      by_contra he
+      have he : ε = 0 := by
+        rw [ENNReal.div_eq_zero_iff] at he
+        simp_all only [and_imp, not_and, ENNReal.ofNat_ne_top, or_false]
+      rw [he] at hε
       rw [lt_self_iff_false] at hε
       exact hε
     -- TODO: replace the followings with MeasurableSet.exists_isCompact_Nonempty_diff_lt
-    obtain ⟨Aε, inclusion_cptA, h_cptA, diff_cptA⟩ :=
-      mA.exists_isCompact_diff_lt finA hε'
-    obtain ⟨Bε, inclusion_cptB, h_cptB, diff_cptB⟩ :=
-      mB.exists_isCompact_diff_lt finB hε'
+    obtain ⟨Aε, inclusion_cptA, nonempty_cptA, h_cptA, diff_cptA⟩ :=
+      MeasurableSet.exists_isCompact_Nonempty_diff_lt hA mA finA hε'
+    obtain ⟨Bε, inclusion_cptB, nonempty_cptB, h_cptB, diff_cptB⟩ :=
+      MeasurableSet.exists_isCompact_Nonempty_diff_lt hB mB finB hε'
     have inclusion_cpt : Aε + Bε ⊆ C := by
       have feather : Aε + Bε ⊆ A + B := by
         intros x hx
@@ -182,12 +186,10 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
           exact mem_add.mpr hx
         obtain ⟨a, ha, b, hb, hx'⟩ := hx'
         have ha : a ∈ A := by
-          -- found by `aesop?`
           subst hx'
           simp_all only [and_imp, not_and, ne_eq]
           exact inclusion_cptA ha
         have hb : b ∈ B := by
-          -- found by `aesop?`
           subst hx'
           simp_all only [and_imp, not_and, ne_eq]
           exact inclusion_cptB hb
@@ -196,31 +198,43 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
         exact h
       calc Aε + Bε ⊆ A + B := by apply feather
       _ ⊆ C := by apply h
-    sorry
-    -- have ETS : volume Aε + volume Bε ≤ volume C := by sorry
-    -- have Aux1 : volume A < volume Aε + ε := by
-    --   have AuxAuxAuxAux1: volume Aε ≤ volume A := by
-    --         apply measure_mono inclusion_cptA
-    --   have AuxAuxAux1 : volume Aε ≠ ⊤ := by
-    --       push_neg at finA
-    --       by_contra! inf_cpt_vol
-    --       rw [inf_cpt_vol] at AuxAuxAuxAux1
-    --       absurd AuxAuxAuxAux1
-    --       simp
-    --       exact finA
-    --   --   have AuxAuxAux2 : NullMeasurableSet Aε volume := by sorry
-    --   --   -- have AuxAuxAux3 :
-    --   --   apply measure_diff inclusion_cptA AuxAuxAux2 AuxAuxAux1
-    --   -- rw [AuxAux1] at diff_cptA
-    --   -- have final : volume A - volume Aε < ε := by
-    --   --   rw [← AuxAux1]
-    --   --   exact
-    --   --   sorry
-    --   -- #check ENNReal.sub_lt_iff_lt_right.mpr AuxAuxAux1 AuxAuxAuxAux1
-    --   -- apply ENNReal.sub_lt_iff_lt_right AuxAuxAux1 AuxAuxAuxAux1 at diff_cptA
-    --   sorry
-    -- have Aux2 : volume B < volume Bε + ε := by sorry
-    -- sorry
+    have mAε : MeasurableSet Aε := by sorry
+    have mBε : MeasurableSet Bε := by sorry
+    have diff_cptA' : volume A < volume Aε + ε/2 := by
+      have feather1 : volume A = volume Aε + volume (A\Aε) := by
+        have feather2 : volume (A ∩ Aε) + volume (A \ Aε) = volume A := by apply measure_inter_add_diff A mAε
+        have feather3 : volume (A ∩ Aε) = volume Aε := by rw [inter_eq_right.mpr inclusion_cptA]
+        calc volume A = volume (A ∩ Aε) + volume (A \ Aε) := by rw [←feather2]
+        _ = volume Aε + volume (A \ Aε) := by rw [feather3]
+      calc volume A = volume Aε + volume (A \ Aε) := by apply feather1
+      _ < volume Aε + ε/2 := by sorry
+    have diff_cptB' : volume B < volume Bε + ε/2 := by
+    -- Proof of B is exactly the same as the case of A
+      have feather1 : volume B = volume Bε + volume (B\Bε) := by
+        have feather2 : volume (B ∩ Bε) + volume (B \ Bε) = volume B := by apply measure_inter_add_diff B mBε
+        have feather3 : volume (B ∩ Bε) = volume Bε := by rw [inter_eq_right.mpr inclusion_cptB]
+        calc volume B = volume (B ∩ Bε) + volume (B \ Bε) := by rw [←feather2]
+        _ = volume Bε + volume (B \ Bε) := by rw [feather3]
+      calc volume B = volume Bε + volume (B \ Bε) := by apply feather1
+      _ < volume Bε + ε/2 := by sorry
+    --
+    have wma_cpt : volume Aε + volume Bε ≤ volume C := by
+      have feather : IsCompact Aε ∧ IsCompact Bε := by apply And.intro h_cptA h_cptB
+      have finAε : ¬ volume Aε = ⊤ := by
+        by_contra infty_Aε
+        have feather : volume Aε ≤ volume A := by exact measure_mono inclusion_cptA
+        simp_all
+      have finBε : ¬ volume Bε = ⊤ := by
+        by_contra infty_Bε
+        have feather : volume Bε ≤ volume B := by exact measure_mono inclusion_cptA
+        simp_all
+      exact goal_cpt Aε Bε C nonempty_cptA nonempty_cptB hC mAε mBε mC inclusion_cpt finAε finBε feather
+    calc volume A + volume B < volume Aε + ε/2 + (volume Bε + ε/2) := by
+            exact ENNReal.add_lt_add diff_cptA' diff_cptB'
+    _ = volume Aε + volume Bε + ε := by
+      ring_nf
+      sorry
+    _ ≤  volume C + ε := by exact add_le_add_right wma_cpt ε
 
   -- Prove the theorem assuming cpt A, B
   obtain ⟨cA, cB⟩ := cAB
