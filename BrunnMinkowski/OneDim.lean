@@ -164,7 +164,8 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     rw [eq_At]
     simp only [measure_vadd]
   have eq_Bt_vol : volume Bt = volume B := by
-    sorry
+    rw [eq_Bt]
+    simp only [measure_vadd]
   have sub_At : At ⊆ C := by
     rw [eq_At]
     apply Subset.trans _ h
@@ -174,9 +175,17 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     simp only [singleton_subset_iff]
     exact cB.sInf_mem hB
   have sub_Bt : Bt ⊆ C := by
-    sorry
+    rw [eq_Bt]
+    apply Subset.trans _ h
+    rw [← Set.singleton_vadd]
+    apply Set.add_subset_add_right
+    simp only [singleton_subset_iff]
+    exact cA.sSup_mem hA
   have cup_At_Bt : At ∪ Bt ⊆ C := by
-    sorry
+    simp only [union_subset_iff]
+    constructor
+    · exact sub_At
+    · exact sub_Bt
   have cap_At_Bt : At ∩ Bt = {sSup A + sInf B} := by
     sorry
   sorry
