@@ -24,10 +24,11 @@ instance : FunLike (JordanArc s t) unitInterval ℝ² where
   coe a := a.toFun
   coe_injective' := sorry
 
+/-- An image of a Jordan curve `c` is a mapping of `c` from the unit circle to `ℝ²` -/
 def image (a : JordanArc s t) : Set ℝ² :=
   a '' univ
 
-theorem jordanPath_source_ne_target (a : JordanArc s t) : s ≠ t := by
+theorem jordanPath_source_not_target (a : JordanArc s t) : s ≠ t := by
   intro h; simp_rw [← a.source', ← a.target'] at h; exact zero_ne_one (a.injective_toFun h)
 
 end JordanArc
@@ -44,9 +45,7 @@ variable {p : ℝ²}
 variable {c : JordanCurve p}
 
 noncomputable instance : FunLike (JordanCurve p) Circle ℝ² where
-  coe a x := a.toFun ⟨(x.argEquiv + Real.pi) / (2 * Real.pi), by
-    simp
-    sorry⟩
+  coe a x := a.toFun ⟨(x.argEquiv + Real.pi) / (2 * Real.pi), sorry⟩
   coe_injective' := sorry
 
 def image (c : JordanCurve p) : Set ℝ² :=
@@ -105,6 +104,8 @@ theorem isOpen_innerComponent : IsOpen c.innerComponent :=
 -- Jordan Curve theorem
 theorem isConnected_innerComponent : IsConnected c.innerComponent :=
   sorry
+
+theorem jordanCurve_
 
 end JordanCurve
 
