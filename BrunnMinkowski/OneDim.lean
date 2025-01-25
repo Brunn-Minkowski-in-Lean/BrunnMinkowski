@@ -278,8 +278,7 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
       sorry
     calc volume (At ∩ Bt) = volume {sSup A + sInf B} := by rw [cap_At_Bt]
     _ = 0 := by rw [Real.volume_singleton]
-  calc volume A + volume B = volume At + volume Bt := by rw [eq_At_vol, eq_Bt_vol]
-  _ = volume At + volume Bt - 0 := by simp [sub_zero]
+  calc volume A + volume B = volume At + volume Bt - 0 := by simp [eq_At_vol, eq_Bt_vol]
   _ = volume At + volume Bt - volume (At ∩ Bt) := by rw [← m_zero_AtBt]
   _ = volume (At ∪ Bt) := by
     have vol_union_AtBt : volume (At ∪ Bt) + volume (At ∩ Bt) = volume At + volume Bt := by
