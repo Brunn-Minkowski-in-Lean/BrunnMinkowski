@@ -1,5 +1,7 @@
 import Mathlib.Dynamics.Ergodic.Action.Regular
+import Mathlib.MeasureTheory.Group.Pointwise
 import Mathlib.MeasureTheory.Measure.Haar.OfBasis
+import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 import Mathlib.MeasureTheory.Measure.RegularityCompacts
 import Mathlib.Order.CompletePartialOrder
 import Mathlib.Topology.EMetricSpace.Paracompact
@@ -46,6 +48,10 @@ theorem measure_translation_of_set (s : Set ℝ) (c : ℝ) : volume (image (fun 
 #check IsCompact.sInf_mem
 #check singleton_subset_iff
 #check add_subset_add_right
+
+#check MeasurableSet.const_vadd
+
+#check Real.volume_singleton
 
 -- It's a shame
 example (A B : Set ℝ) : A + B = B + A := by
@@ -267,6 +273,17 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     constructor
     · exact sub_At
     · exact sub_Bt
-  have cap_At_Bt : At ∩ Bt = {sSup A + sInf B} := by
-    sorry
-  sorry
+  have m_zero_AtBt : volume (At ∩ Bt) = 0 := by
+    have cap_At_Bt : At ∩ Bt = {sSup A + sInf B} := by
+      sorry
+    calc volume (At ∩ Bt) = volume {sSup A + sInf B} := by rw [cap_At_Bt]
+    _ = 0 := by rw [Real.volume_singleton]
+  calc volume A + volume B = volume At + volume Bt := by rw [eq_At_vol, eq_Bt_vol]
+  _ = volume At + volume Bt - 0 := by simp [sub_zero]
+  _ = volume At + volume Bt - volume (At ∩ Bt) := by rw [← m_zero_AtBt]
+  _ = volume (At ∪ Bt) := by
+    have vol_union_AtBt : volume (At ∪ Bt) + volume (At ∩ Bt) = volume At + volume Bt := by
+      have mBt : MeasurableSet Bt := by exact MeasurableSet.const_vadd mB (sSup A)
+      exact measure_union_add_inter At mBt
+    simp_all
+  _ ≤ volume C := by exact measure_mono cup_At_Bt
