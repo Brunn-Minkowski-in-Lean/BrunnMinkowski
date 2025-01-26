@@ -111,39 +111,17 @@ lemma MeasurableSet.exists_isCompact_Nonempty_diff_lt
   obtain ⟨a, ha⟩ := hA
   use {a}
   simp [singleton_nonempty, isCompact_singleton]
-  push_neg at nonempty_K
-  have small_A : μ A < ε := by
-    rw [nonempty_K] at diff_K
-    simp_all
-  have small_a : μ {a} < ε := by
-    calc μ {a} ≤ μ A := by
-          have trivial : {a} ⊆ A := by apply singleton_subset_iff.mpr ha
-          exact measure_mono trivial
-    _ < ε := by apply small_A
   constructor
   · exact ha
-  have feather1 : MeasurableSet {a} := by apply MeasurableSet.singleton
-  have feather2 : μ (A \ {a}) = μ (A) - μ {a} := by
-    have feather3 : μ (A ∩ {a}) + μ (A \ {a}) = μ (A) := by apply measure_inter_add_diff A feather1
-    have feather4 : μ (A ∩ {a}) = μ {a} := by
-      have feather5 : {a} ∩ A = {a} := by
-        simp [inter_eq_left, singleton_subset_iff]
-        exact ha
-      calc μ (A ∩ {a}) = μ ({a} ∩ A) := by rw [inter_comm]
-      _ = μ {a} := by rw [feather5]
-    rw [feather4] at feather3
-    have feather6 : μ {a} ≠ ⊤ := by
-      by_contra infty_singleton
-      rw [infty_singleton] at small_a
-      simp_all [ne_eq, not_top_lt]
-    apply ENNReal.eq_sub_of_add_eq feather6
-    rw [←feather3]
-    exact AddCommMagma.add_comm (μ (A \ {a})) (μ {a})
-  have feather6 : μ {a} = 0 := by
-      sorry
-  calc μ (A \ {a}) = μ (A) - μ {a} := by apply feather2
-  _ = μ (A) := by simp [feather6]
-  _ < ε := by exact small_A
+  · push_neg at nonempty_K
+    have small_A : μ A < ε := by
+      rw [nonempty_K] at diff_K
+      simp_all
+    have bound_mAa : μ (A \ {a}) ≤ μ A := by simp only [diff_subset, measure_mono]
+      -- have feather : A \ {a} ⊆ A := by exact diff_subset
+      -- exact measure_mono feather
+    calc μ (A \ {a}) ≤ μ A := by exact bound_mAa
+    _ < ε := by exact small_A
 
 lemma one_dim_BMInequality (A B C : Set ℝ)
     -- TODO: remove the line below
@@ -275,7 +253,45 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     · exact sub_Bt
   have m_zero_AtBt : volume (At ∩ Bt) = 0 := by
     have cap_At_Bt : At ∩ Bt = {sSup A + sInf B} := by
-      sorry
+      rw [Set.ext_iff]
+      intro x
+      constructor
+      · intro hx
+        simp_all
+        obtain ⟨xAt, xBt⟩ := hx
+        apply mem_vadd_set.mp at xAt
+        cases' xAt with a ha
+        obtain ⟨ha, hax⟩ := ha
+        apply mem_vadd_set.mp at xBt
+        cases' xBt with b hb
+        obtain ⟨hb, hbx⟩ := hb
+        sorry
+        -- simp_all
+
+        -- rw [add_comm] at hax
+        -- -- rw [← hax] at xBt
+        -- have h_eq_a : a = sSup A := by
+        --   apply mem_vadd_set.mp at xBt
+        --   simp at xBt
+
+        --   sorry
+        -- have xAtt : ∃ z ∈ A, x = z +ᵥ sInf B := by sorry
+        -- have x =
+        -- #check mem_vadd_set.mp
+      · intro hx
+        simp at hx
+        constructor
+        · have x_At : sSup A + sInf B ∈ sInf B +ᵥ A := by
+            have supA_A : sSup A ∈ A := by exact IsCompact.sSup_mem cA hA
+            rw [add_comm]
+            apply vadd_mem_vadd_set_iff.mpr
+            exact supA_A
+          simp only [hx, eq_At, x_At]
+        · have x_Bt : sSup A  + sInf B ∈ sSup A +ᵥ B := by
+            have infB_B : sInf B ∈ B := by exact IsCompact.sInf_mem cB hB
+            apply vadd_mem_vadd_set_iff.mpr
+            exact infB_B
+          simp only [hx, eq_Bt, x_Bt]
     calc volume (At ∩ Bt) = volume {sSup A + sInf B} := by rw [cap_At_Bt]
     _ = 0 := by rw [Real.volume_singleton]
   calc volume A + volume B = volume At + volume Bt - 0 := by simp [eq_At_vol, eq_Bt_vol]
