@@ -260,11 +260,11 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
         simp_all
         obtain ⟨xAt, xBt⟩ := hx
         apply mem_vadd_set.mp at xAt
-        cases' xAt with a ha
-        obtain ⟨ha, hax⟩ := ha
+        -- cases' xAt with a ha
+        -- obtain ⟨ha, hax⟩ := ha
         apply mem_vadd_set.mp at xBt
-        cases' xBt with b hb
-        obtain ⟨hb, hbx⟩ := hb
+        -- cases' xBt with b hb
+        -- obtain ⟨hb, hbx⟩ := hb
         sorry
         -- simp_all
 
