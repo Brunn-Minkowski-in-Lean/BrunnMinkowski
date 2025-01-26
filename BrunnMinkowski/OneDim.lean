@@ -260,24 +260,25 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
         simp_all
         obtain ⟨xAt, xBt⟩ := hx
         apply mem_vadd_set.mp at xAt
-        -- cases' xAt with a ha
-        -- obtain ⟨ha, hax⟩ := ha
+        cases' xAt with a ha
+        obtain ⟨ha, hax⟩ := ha
         apply mem_vadd_set.mp at xBt
-        -- cases' xBt with b hb
-        -- obtain ⟨hb, hbx⟩ := hb
-        sorry
-        -- simp_all
-
-        -- rw [add_comm] at hax
-        -- -- rw [← hax] at xBt
-        -- have h_eq_a : a = sSup A := by
-        --   apply mem_vadd_set.mp at xBt
-        --   simp at xBt
-
-        --   sorry
-        -- have xAtt : ∃ z ∈ A, x = z +ᵥ sInf B := by sorry
-        -- have x =
-        -- #check mem_vadd_set.mp
+        cases' xBt with b hb
+        obtain ⟨hb, hbx⟩ := hb
+        have upper_x : x ≤ sInf B + sSup A := by
+          rw [← hax]
+          have a_le_supA : a ≤ sSup A := by
+            have bdd_A : BddAbove A := by exact IsCompact.bddAbove cA
+            exact le_csSup bdd_A ha
+          simp [a_le_supA]
+        have lower_x : sSup A + sInf B ≤ x := by
+          rw [← hbx]
+          have infB_le_b : sInf B ≤ b := by
+            have bdd_B : BddBelow B := by exact IsCompact.bddBelow cB
+            exact csInf_le bdd_B hb
+          simp [infB_le_b]
+        rw [add_comm] at upper_x
+        exact le_antisymm upper_x lower_x
       · intro hx
         simp at hx
         constructor
