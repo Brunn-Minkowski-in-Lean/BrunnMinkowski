@@ -5,3 +5,171 @@
 % If you want to split the blueprint content into several files then
 % the current file can be a simple sequence of \input. Otherwise It
 % can start with a \section or \chapter for instance.
+
+\chapter{Brunn--Minkowski Inequality}
+
+\section{One-dimensional}
+
+\begin{definition}
+    Let \(A, B \subset \mathbb{R}^n\). The \textit{Minkowski sum} \(A+B\) of two subsets \(A\) and \(B\) is defined by
+    \begin{equation*}
+        A+B:= \{a+b\in\mathbb{R}^n : a \in A, b \in B\}.
+    \end{equation*}
+\end{definition}
+
+\begin{theorem}
+    \lean{brunn_minkowski}
+    Let \(n \geq 1\) and let \(\mu\) denote the Lebesgue measure on \(\mathbb{R}^n\). Let \(A\) and \(B\) be two nonempty compact subsets of \(\mathbb{R}^n\). Then
+    \begin{equation*}
+        \mu(A+B)^{1/n} \geq \mu(A)^{1/n} + \mu(B)^{1/n},
+    \end{equation*}
+    where \(A+B\) denotes the Minkowski sum.
+\end{theorem}
+
+\begin{lemma}
+    If \(A, B, C \subset \mathbb{R}\) are non-empty measurable sets with \(A+B\subset C \subset \mathbb{R}\), then
+    \begin{equation*}
+        \mu(A) + \mu(B) \leq \mu(C).
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    \begin{enumerate}
+        \item We may assume that \(\mu(A)\) and \(\mu(B)\) are finite:
+        
+        First, we observe that 
+        \begin{eqnarray}
+            {\color{teal}\mu(A) \leq \mu(A+B)} \leq \mu(C), \label{eq: A <= A+B}\\
+            {\color{teal}\mu(B) \leq \mu(A+B)} \leq \mu(C) \label{eq: B <= A+B}
+        \end{eqnarray}
+        :\begin{enumerate}
+            \item Since \(B\) is a nonzero set, there is an element \(b \in B\).
+            \item \(\mu(A) =\mu(A+\{b\})\) -- \texttt{simp?}
+            \item Since \(\{b\} \subseteq B\), we note that \(A + \{b\} \subseteq A + B\).
+            \item Then \(\mu(A) = \mu(A + \{b\}) \leq \mu(A+B)\).
+        \end{enumerate}
+        since \(A\) and \(B\) are nonempty.
+        \begin{itemize}
+            \item (\textbf{Case I}: \(\mu(A)=\infty\)) 
+            \begin{itemize}
+                \item (\textbf{Case I-I}: \(\mu(B) = \infty\))  
+                \begin{enumerate}
+                    \item From the assumptions, we see that \(\mu(A) + \mu(B) = {\color{teal}\infty + \infty = \infty}\) where the last equality holds from \texttt{top\_add\_top} in Mathlib4. 
+                    \item From the equation (\ref{eq: A <= A+B}) or (\ref{eq: B <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumptions.
+                    \item To sum up,
+                    \begin{eqnarray*}
+                        \mu(A) + \mu (B) = \infty + \infty = \infty \leq \mu(C).
+                    \end{eqnarray*}
+                \end{enumerate}
+
+                \item (\textbf{Case I-II}: \(\mu(B) < \infty\)) 
+                \begin{enumerate}
+                    \item From the assumptions, we see that \(\mu(A) + \mu(B) = {\color{teal}\infty + \mu(B) = \infty}\) where the last equality holds from \texttt{coe\_add\_top} in Mathlib4. 
+                    \item From the equation (\ref{eq: A <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumption on \(\mu(A)\).
+                    \item To sum up,
+                    \begin{eqnarray*}
+                        \mu(A) + \mu (B) = \infty + \mu(B) = \infty \leq \mu(C).
+                    \end{eqnarray*}
+                \end{enumerate}
+            \end{itemize}
+            \item (\textbf{Case II}: \(\mu(A) < \infty\))
+            \begin{itemize}
+                \item (\textbf{Case II-I}: \(\mu(B)=\infty\))
+                \begin{enumerate}
+                    \item From the assumptions, we see that \(\mu(B) + \mu(A) = {\color{teal}\infty + \mu(A) = \infty}\) where the last equality holds from \texttt{coe\_add\_top} in Mathlib4. 
+                    \item From the equation (\ref{eq: B <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumption on \(\mu(B)\).
+                    \item To sum up,
+                    \begin{eqnarray*}
+                        \mu(A) + \mu (B) = \mu(B) + \mu(A) = \infty + \mu(A) = \infty \leq \mu(C).
+                    \end{eqnarray*}
+                \end{enumerate}
+            \end{itemize}
+        \end{itemize}
+
+        
+        \item Since {\color{teal}the Lebesgue measure has inner regularity}, we may assume that \(A\) and \(B\) are compact:
+
+        \begin{enumerate}
+            \item Let \(A\) and \(B\) be measurable sets. Then for any \(\epsilon>0\), there exist compact sets \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\) such that 
+            \begin{equation}
+                \mu(A \setminus A_\epsilon)< \epsilon, \quad \text{and} \quad \mu(B \setminus B_\epsilon) < \epsilon.
+                \label{eq: inner regularity}
+            \end{equation}
+            by inner regularity of measurable sets (\texttt{MeasurableSet.exists\_isCompact\_diff\_lt} in Mathlib4).
+
+            \item First, it is easy to see that for any \(\epsilon>0\), 
+            \begin{equation*}
+                A_\epsilon + B_\epsilon \subseteq A + B \subset C.
+            \end{equation*}
+
+            \item It suffices to show that for any \(\epsilon>0\), given two compact and {\color{red}nonempty} sets \(A_\epsilon\) and \(B_\epsilon\) such that 
+            {\color{red}
+            \(A_\epsilon + B_\epsilon \subset C\) satisfies
+            \begin{equation}
+                \mu(A_\epsilon) + \mu(B_\epsilon) \leq \mu(C).
+                \label{eq: STS}
+            \end{equation}
+            }
+            
+            Indeed, 
+            \begin{enumerate}[(c1)]
+                \item We first can see that the equation (\ref{eq: inner regularity}) can be written as
+                \begin{equation}
+                    \mu(A)-\mu(A_\epsilon) < \epsilon, \quad \text{and} \quad \mu(B) - \mu(B_\epsilon) < \epsilon
+                    \label{eq: inner regularity 2}
+                \end{equation}
+                since \(\mu(A\setminus A_\epsilon) = \mu(A)-\mu(A_\epsilon)\) holds from \texttt{MeasureTheory.measure\_diff} in Mathlib4.
+
+                \item Then we have \(\mu(A) + \mu(B) < \mu(C) + 2\epsilon\) by using (\ref{eq: STS}) and (\ref{eq: inner regularity 2}) from \texttt{linarith}.
+
+                \item Thus, we have \(\mu(A) + \mu(B) \leq \mu(C)\) by \texttt{le\_of\_forall\_pos\_lt\_add} in Mathlib4.
+            \end{enumerate}
+        \end{enumerate}
+
+
+
+
+
+
+        
+        \item Since \(A\) and \(B\) are compact, {\color{teal} \(\sup A \in A\) and \(\inf B \in B\). Then} we see that each of the following translations of \(B\) and \(A\) is contained in~\(C\) as follows:
+        \begin{eqnarray*}
+            \sup A + B 
+            % & \subseteq & \left[\sup A + \inf B, \sup A + \sup B\right] 
+            {
+            \color{teal} \subseteq A + B} \subseteq C, \\
+            A + \inf B 
+            % & \subseteq & \left[\inf A + \inf B, \sup A + \inf B\right] 
+            {
+            \color{teal} \subseteq A + B} \subseteq C.
+        \end{eqnarray*} 
+        \item As the only intersection point of \(\sup A + B\) and \(A + \inf B\) is \(\sup A + \inf B\), we see that 
+        \begin{equation*}
+            (A + \inf B) \cup (\sup A + B) \subseteq C.
+        \end{equation*}
+        % As the only intersection point of \(\sup A + B\) and \(A + \inf B\) is \(\sup A + \inf B\), the above two intervals \(A + \inf B\) and \(\sup A + B\) are nonoverlapping. 
+        {\color{teal}
+        \begin{lemma}
+            For measurable sets \(A\) and \(B\),
+            \(\mu(A \cup B) = \mu(A) + \mu(B) - \mu(A \cap B)\).
+        \end{lemma}
+        \begin{lemma}
+            For measurable set \(A\subset \mathbb{R}\) and \(x \in \mathbb{R}\), \(\mu(x+A) = \mu(A)\).
+        \end{lemma}
+        }
+        We first observe that 
+        \begin{eqnarray*}
+            \mu\left((A+\inf B) \cup (\sup A + B)\right) & = & \mu(A+\inf B) + \mu(\sup A + B) - \mu(\sup A + \inf B)\\
+            & = & \mu(A) + \mu(B).
+        \end{eqnarray*}
+        {\color{teal}
+        \begin{lemma}
+            For measurable sets \(A\) and \(B\) satisfying \(A \subseteq B\), \(\mu(A) \leq \mu(B)\).
+        \end{lemma}
+        }
+        Thus, we see that 
+        \begin{equation*}
+            \mu(A) + \mu(B) = \mu\left((A+\inf B) \cup (\sup A + B)\right) \leq \mu(C).
+        \end{equation*}
+    \end{enumerate}
+\end{proof}
