@@ -42,6 +42,7 @@ lemma convbody_vol_le_vol_add_right (A B: ConvexBody (ℝn n)) :
         apply Set.add_subset_add_left
         simp_all [singleton_to_convbody, SetLike.mem_coe]
 
+-- Brunn-Minkowski inequality
 def brunn_minkowski (A B : ConvexBody (ℝn n)) :
     A.volume ^ (n⁻¹ : ℝ) + B.volume ^ (n⁻¹ : ℝ) ≤
     (A + B).volume ^ (n⁻¹ : ℝ) := by
@@ -70,8 +71,6 @@ def brunn_minkowski (A B : ConvexBody (ℝn n)) :
   have hAvol_pow_ninv_pos : 0 < Avol ^ ninv := NNReal.rpow_pos hAvol_pos
   have hBvol_pow_ninv_pos : 0 < Bvol ^ ninv := NNReal.rpow_pos hBvol_pos
 
-  have hABvol_pow_ninv_sum_nonzero : Avol^ninv + Bvol^ninv ≠ 0 := by positivity
-
   have prekopa_leindler_special_case {t : ℝ} (h0t : 0 < t) (ht1 : t < 1) :
         Avol ^ (1 - t) * Bvol ^ t
         ≤ ((1 - t) ^ (1 - t) * t ^ t) ^ n * (A + B).volume
@@ -91,13 +90,12 @@ def brunn_minkowski (A B : ConvexBody (ℝn n)) :
       · exact hBvol_pow_ninv_pos
       · exact add_pos hAvol_pow_ninv_pos hBvol_pow_ninv_pos
     · -- θ < 1
-      sorry
-      -- rw [div_lt_one (pos_iff_ne_zero.mpr hABvol_pow_ninv_sum_nonzero)]
-      -- simp [hAvol_pow_ninv_pos]
+      have hhh: 0 < ((Avol : ℝ) ^ ninv + (Bvol : ℝ) ^ ninv) := by positivity
+      simp [div_lt_one hhh]
+      positivity
 
-  have prekopa_leindler_special_case' :=
-    prekopa_leindler_special_case hθ.1 hθ.2
-  simp at prekopa_leindler_special_case'
+  -- Modify the special case of Prékopa–Leindler
+  have prekopa_leindler_special_case' := prekopa_leindler_special_case hθ.1 hθ.2
 
   have hcoeff_simp : (1 - θ) ^ (1 - θ) * (θ) ^ (θ)
       = (Avol ^ ninv) ^ (1 - θ) * (Bvol ^ ninv) ^ (θ)
@@ -110,7 +108,7 @@ def brunn_minkowski (A B : ConvexBody (ℝn n)) :
     field_simp [Real.div_rpow]
     rw [← Real.rpow_add]
     simp
-    exact pos_iff_ne_zero.mpr hABvol_pow_ninv_sum_nonzero
+    exact add_pos hAvol_pow_ninv_pos hBvol_pow_ninv_pos
 
   rw [hcoeff_simp] at prekopa_leindler_special_case'
 
@@ -126,26 +124,20 @@ def brunn_minkowski (A B : ConvexBody (ℝn n)) :
       all_goals rw [mul_comm, ← mul_assoc, hn_mul_ninv_eq_one, one_mul]
 
   field_simp at prekopa_leindler_special_case'
-
   unfold ninv at prekopa_leindler_special_case'
 
+  -- Modify the goal
   apply le_of_pow_le_pow_left₀ hn_nonzero (le_of_lt (NNReal.rpow_pos hABsumvol_pos))
-  rw [← NNReal.rpow_mul_natCast]
-  simp [inv_mul_cancel₀, hn_nonzero]
+  simp [← NNReal.rpow_mul_natCast, inv_mul_cancel₀, hn_nonzero]
 
   apply (mul_le_mul_left (Real.rpow_pos_of_pos (NNReal.coe_pos.mpr hBvol_pos) θ)).mp
   apply (mul_le_mul_left (Real.rpow_pos_of_pos (NNReal.coe_pos.mpr hAvol_pos) (1 - θ))).mp
 
-  -- simp [Avol, Bvol] at prekopa_leindler_special_case'
   have hAvol_Bvol_def : A.volume = Avol ∧ B.volume = Bvol := by trivial
-  simp [hAvol_Bvol_def]
+  simp [hAvol_Bvol_def, ← mul_assoc]
 
-  rw [← mul_assoc]
+  have hhh : 0 < (Avol : ℝ) ^ (n : ℝ)⁻¹ + (Bvol : ℝ) ^ (n : ℝ)⁻¹ := by positivity
+  apply (le_div_iff₀ (pow_pos hhh n)).mp
 
-  have hABvol_pow_ninv_sum_pos :
-      0 < (Avol : ℝ) ^ (n : ℝ)⁻¹ + (Bvol : ℝ) ^ (n : ℝ)⁻¹ := by positivity
-
-  apply (le_div_iff₀ (pow_pos hABvol_pow_ninv_sum_pos n)).mp
-  rw [mul_div_assoc] at prekopa_leindler_special_case'
   apply le_trans prekopa_leindler_special_case'
-  rw [← mul_assoc, mul_comm, mul_div_assoc, mul_comm]
+  rfl
