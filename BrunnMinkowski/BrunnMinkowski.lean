@@ -50,7 +50,7 @@ def brunn_minkowski (A B : ConvexBody (ℝn n)) :
   -- Assume n is nonzero
   have hn_nonzero : n ≠ 0 := sorry
   let ninv := (n⁻¹ : ℝ)
-  have hninv_pos : 0 < ninv := by simpa [ninv, Nat.pos_iff_ne_zero]
+  have hninv_pos : 0 < ninv := by positivity -- simpa [ninv, Nat.pos_iff_ne_zero]
   have hn_mul_ninv_eq_one : (n : ℝ) * ninv = 1 := by simp [ninv, hn_nonzero]
 
   let Avol := A.volume
@@ -77,6 +77,7 @@ def brunn_minkowski (A B : ConvexBody (ℝn n)) :
       := by
       sorry
 
+  -- Prepare θ as an input in t
   let θ : ℝ := Bvol ^ ninv / (Avol ^ ninv + Bvol ^ ninv)
 
   have hone_minus_θ : 1 - θ = Avol ^ ninv / (Avol ^ ninv + Bvol ^ ninv)
