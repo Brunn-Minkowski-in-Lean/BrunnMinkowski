@@ -26,6 +26,19 @@
     where \(A+B\) denotes the Minkowski sum.
 \end{theorem}
 
+\begin{theorem}
+    \label{prekopa_leindler}
+    \lean{PrekopaLeindler.prekopa_leindler}
+    Let \(0<t<1\) be real and \(d\) be a nonnegative integer. Let \(f,g,h\colon \RR^d\to \RR\) be such that for all \(x,y\in \RR^d\),
+    \[
+        f(x)^{1-t} g(y)^{t} \le h(x+y).
+    \]
+    Then
+    \[
+        \biggl( \int f(x) \biggr)^{\!1-t} \biggl( \int g(y) \biggr)^{\!t} \le (1-t)^{d(1-t)} t^{dt} \int h(x) \diff x.
+    \]
+\end{theorem}
+
 \begin{lemma}
     If \(A, B, C \subset \mathbb{R}\) are non-empty measurable sets with \(A+B\subset C \subset \mathbb{R}\), then
     \begin{equation*}
