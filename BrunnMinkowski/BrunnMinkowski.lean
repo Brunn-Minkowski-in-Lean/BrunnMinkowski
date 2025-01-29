@@ -16,7 +16,7 @@ theorem convbody_set_vol_ne_top (A : ConvexBody (ℝI I)) :
   apply lt_top_iff_ne_top.mp
   apply Bornology.IsBounded.measure_lt_top A.isBounded
 
--- Change x to ConvexBody {x}
+-- Convert x to ConvexBody {x}
 noncomputable def singleton_to_convbody (x : ℝn n) : ConvexBody (ℝn n) :=
   { carrier := {x},
     convex' := convex_singleton x,
@@ -100,7 +100,7 @@ def brunn_minkowski (A B : ConvexBody (ℝn n)) :
   have hcoeff_simp : (1 - θ) ^ (1 - θ) * (θ) ^ (θ)
       = (Avol ^ ninv) ^ (1 - θ) * (Bvol ^ ninv) ^ (θ)
         / (Avol ^ ninv + Bvol ^ ninv)
-      := by
+    := by
     conv_lhs =>
       congr
       · congr; simp [hone_minus_θ]
@@ -139,5 +139,4 @@ def brunn_minkowski (A B : ConvexBody (ℝn n)) :
   have hhh : 0 < (Avol : ℝ) ^ (n : ℝ)⁻¹ + (Bvol : ℝ) ^ (n : ℝ)⁻¹ := by positivity
   apply (le_div_iff₀ (pow_pos hhh n)).mp
 
-  apply le_trans prekopa_leindler_special_case'
-  rfl
+  exact prekopa_leindler_special_case'
