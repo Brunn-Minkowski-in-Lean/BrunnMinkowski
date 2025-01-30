@@ -2,6 +2,7 @@ import Mathlib.Analysis.Convex.Body
 import Mathlib.MeasureTheory.Measure.Haar.OfBasis
 import Mathlib.Order.CompletePartialOrder
 import BrunnMinkowski.EuclideanSpace
+import BrunnMinkowski.PrekopaLeindler
 
 open scoped Pointwise NNReal
 
@@ -49,21 +50,27 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
 
   -- Assume n is nonzero
   let ninv := (n⁻¹ : ℝ)
-  have hninv_pos : 0 < ninv := by positivity -- simpa [ninv, Nat.pos_iff_ne_zero]
   have hn_mul_ninv_eq_one : (n : ℝ) * ninv = 1 := by simp [ninv, ngz]
 
   let Avol := A.volume
   let Bvol := B.volume
 
-  by_cases hAvol_nonzero : A.volume = 0
+  by_cases hAvol_zero : A.volume = 0
   · -- Assume A.volume = 0
-    sorry
-  by_cases hBvol_nonzero : B.volume = 0
+    simp [hAvol_zero, ngz]
+    rw [add_comm, NNReal.rpow_le_rpow_iff]
+    exact convbody_vol_le_vol_add_right B A
+    positivity
+  by_cases hBvol_zero : B.volume = 0
   · -- Assume B.volume = 0
-    sorry
+    simp [hBvol_zero, ngz]
+    rw [NNReal.rpow_le_rpow_iff]
+    exact convbody_vol_le_vol_add_right A B
+    positivity
   -- Now assume A.volume ≠ 0 and B.volume ≠ 0
-  have hAvol_pos : 0 < Avol := pos_iff_ne_zero.mpr hAvol_nonzero
-  have hBvol_pos : 0 < Bvol := pos_iff_ne_zero.mpr hBvol_nonzero
+  rename' hAvol_zero => hAvol_nonzero, hBvol_zero => hBvol_nonzero
+  have hAvol_pos : 0 < Avol := by positivity
+  have hBvol_pos : 0 < Bvol := by positivity
   have hABsumvol_pos : 0 < (A + B).volume :=
     lt_of_lt_of_le (pos_iff_ne_zero.mpr hAvol_nonzero) (convbody_vol_le_vol_add_right A B)
 
@@ -74,7 +81,53 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
         Avol ^ (1 - t) * Bvol ^ t
         ≤ ((1 - t) ^ (1 - t) * t ^ t) ^ n * (A + B).volume
       := by
-      sorry
+      -- Define the indicator functions on A and B
+      let ind_A : (ℝn n) → ℝ := (A : Set (ℝn n)).indicator 1
+      let ind_B : (ℝn n) → ℝ := (B : Set (ℝn n)).indicator 1
+      let ind_ABsum : (ℝn n) → ℝ := (A + B : Set (ℝn n)).indicator 1
+
+      have hind_cond (x y : ℝn n) : (ind_A x) ^ (1 - t) * (ind_B y) ^ t
+          ≤ ind_ABsum (x + y) := by
+        by_cases hx_nin_A :  x ∉ A
+        · -- Assume x ∉ A
+          simp [ind_A, hx_nin_A]
+          rw [Real.zero_rpow (by simp [ne_of_gt, ht1])]
+          simp [ind_ABsum, Set.indicator_apply_nonneg]
+        by_cases hy_nin_B :  y ∉ B
+        · -- Assume y ≠ B
+          simp [ind_B, hy_nin_B]
+          rw [Real.zero_rpow (by exact ne_of_gt h0t)]
+          simp [ind_ABsum, Set.indicator_apply_nonneg]
+        -- Now assume x ∈ A and y ∈ B
+        have hx_in_A : x ∈ A := by contrapose hx_nin_A; simp [hx_nin_A]
+        have hy_in_B : y ∈ B := by contrapose hy_nin_B; simp [hy_nin_B]
+
+        have hxy_in_ABsum : x + y ∈ (A + B : Set (ℝn n)) := by
+          rw [Set.mem_add]
+          exact ⟨x, hx_in_A, y, hy_in_B, rfl⟩
+        simp [ind_A, ind_B, ind_ABsum, hx_in_A, hy_in_B, hxy_in_ABsum]
+
+      have prekopa_leinler_app := prekopa_leindler h0t ht1
+          ind_A ind_B ind_ABsum hind_cond
+
+      have hind_ConvBody_int_eq_vol (C : ConvexBody (ℝn n)) {f : (ℝn n) → ℝ} :
+          f = (C : Set (ℝn n)).indicator 1 →
+          ∫ x, f x = C.volume := by
+        intro hf
+        rw [hf, MeasureTheory.integral_indicator_one]
+        simp [ConvexBody.volume, ENNReal.coe_toNNReal_eq_toReal]
+        apply IsCompact.measurableSet C.isCompact
+
+      simp [ind_A, ind_B, ind_ABsum] at prekopa_leinler_app
+      rw [hind_ConvBody_int_eq_vol _ (by rfl),
+        hind_ConvBody_int_eq_vol B (by rfl),
+        hind_ConvBody_int_eq_vol (A + B) (by rfl)] at prekopa_leinler_app
+      simp [Avol, Bvol]
+      rw [mul_pow, ← Real.rpow_mul_natCast (by simp; exact le_of_lt ht1),
+        ← Real.rpow_mul_natCast (by positivity)]
+      conv in (occs := 1 2) (_ * (n : ℝ)) => all_goals rw [mul_comm]
+
+      exact prekopa_leinler_app
 
   -- Prepare θ as an input in t
   let θ : ℝ := Bvol ^ ninv / (Avol ^ ninv + Bvol ^ ninv)
@@ -90,7 +143,7 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
       · exact hBvol_pow_ninv_pos
       · exact add_pos hAvol_pow_ninv_pos hBvol_pow_ninv_pos
     · -- θ < 1
-      have hhh: 0 < ((Avol : ℝ) ^ ninv + (Bvol : ℝ) ^ ninv) := by positivity
+      have hhh: 0 < (Avol : ℝ) ^ ninv + (Bvol : ℝ) ^ ninv := by positivity
       simp [div_lt_one hhh]
       positivity
 
@@ -112,8 +165,8 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
 
   rw [hcoeff_simp] at prekopa_leindler_special_case'
 
-  have hAvol_toreal_nonneg : 0 ≤ (Avol : ℝ) := le_of_lt (NNReal.coe_pos.mpr hAvol_pos)
-  have hBvol_toreal_nonneg : 0 ≤ (Bvol : ℝ) := le_of_lt (NNReal.coe_pos.mpr hBvol_pos)
+  have hAvol_toreal_nonneg : 0 ≤ (Avol : ℝ) := by positivity
+  have hBvol_toreal_nonneg : 0 ≤ (Bvol : ℝ) := by positivity
   conv_rhs at prekopa_leindler_special_case' =>
     simp [div_pow, mul_pow]
     rw [← Real.rpow_mul hAvol_toreal_nonneg,
@@ -135,8 +188,6 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
 
   have hAvol_Bvol_def : A.volume = Avol ∧ B.volume = Bvol := by trivial
   simp [hAvol_Bvol_def, ← mul_assoc]
-
-  -- have hhh : 0 < (Avol : ℝ) ^ (n : ℝ)⁻¹ + (Bvol : ℝ) ^ (n : ℝ)⁻¹ := by positivity
   apply (le_div_iff₀ (pow_pos (by positivity) n)).mp
 
   exact prekopa_leindler_special_case'
