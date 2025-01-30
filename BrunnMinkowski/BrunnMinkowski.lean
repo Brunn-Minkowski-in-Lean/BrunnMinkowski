@@ -43,15 +43,14 @@ lemma convbody_vol_le_vol_add_right (A B: ConvexBody (ℝn n)) :
         simp_all [singleton_to_convbody, SetLike.mem_coe]
 
 -- Brunn-Minkowski inequality
-def brunn_minkowski (A B : ConvexBody (ℝn n)) :
+def brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
     A.volume ^ (n⁻¹ : ℝ) + B.volume ^ (n⁻¹ : ℝ) ≤
     (A + B).volume ^ (n⁻¹ : ℝ) := by
-
+    
   -- Assume n is nonzero
-  have hn_nonzero : n ≠ 0 := sorry
   let ninv := (n⁻¹ : ℝ)
   have hninv_pos : 0 < ninv := by positivity -- simpa [ninv, Nat.pos_iff_ne_zero]
-  have hn_mul_ninv_eq_one : (n : ℝ) * ninv = 1 := by simp [ninv, hn_nonzero]
+  have hn_mul_ninv_eq_one : (n : ℝ) * ninv = 1 := by simp [ninv, ngz]
 
   let Avol := A.volume
   let Bvol := B.volume
@@ -128,8 +127,8 @@ def brunn_minkowski (A B : ConvexBody (ℝn n)) :
   unfold ninv at prekopa_leindler_special_case'
 
   -- Modify the goal
-  apply le_of_pow_le_pow_left₀ hn_nonzero (le_of_lt (NNReal.rpow_pos hABsumvol_pos))
-  simp [← NNReal.rpow_mul_natCast, inv_mul_cancel₀, hn_nonzero]
+  apply le_of_pow_le_pow_left₀ ngz (le_of_lt (NNReal.rpow_pos hABsumvol_pos))
+  simp [← NNReal.rpow_mul_natCast, inv_mul_cancel₀, ngz]
 
   apply (mul_le_mul_left (Real.rpow_pos_of_pos (NNReal.coe_pos.mpr hBvol_pos) θ)).mp
   apply (mul_le_mul_left (Real.rpow_pos_of_pos (NNReal.coe_pos.mpr hAvol_pos) (1 - θ))).mp
