@@ -1,4 +1,4 @@
-name: Compile Blueprint
+name: Compile Blueprinta
 
 on:
   push:
@@ -19,13 +19,6 @@ permissions:
   id-token: write # Write access to ID tokens
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-
-
-jobs:
   build_project:
     runs-on: ubuntu-latest
     name: Build project
@@ -36,6 +29,22 @@ jobs:
           fetch-depth: 0 # Fetch all history for all branches and tags
 
       - uses: leanprover/lean-action@v1
+
+      - name: Cache mathlib API docs
+        uses: actions/cache@v4
+        with:
+          path: |
+            .lake/build/doc/Init
+            .lake/build/doc/Lake
+            .lake/build/doc/Lean
+            .lake/build/doc/Std
+            .lake/build/doc/Mathlib
+            .lake/build/doc/declarations
+            .lake/build/doc/find
+            .lake/build/doc/*.*
+            !.lake/build/doc/declarations/declaration-data-BrunnMinkowski*
+          key: MathlibDoc-${{ hashFiles('lake-manifest.json') }}
+          restore-keys: MathlibDoc-${{ hashFiles('lake-manifest.json') }}
 
       - name: Build project API documentation
         run: lake -R -Kenv=dev build BrunnMinkowski:docs
