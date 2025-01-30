@@ -43,10 +43,10 @@ lemma convbody_vol_le_vol_add_right (A B: ConvexBody (ℝn n)) :
         simp_all [singleton_to_convbody, SetLike.mem_coe]
 
 -- Brunn-Minkowski inequality
-def brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
+theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
     A.volume ^ (n⁻¹ : ℝ) + B.volume ^ (n⁻¹ : ℝ) ≤
     (A + B).volume ^ (n⁻¹ : ℝ) := by
-    
+
   -- Assume n is nonzero
   let ninv := (n⁻¹ : ℝ)
   have hninv_pos : 0 < ninv := by positivity -- simpa [ninv, Nat.pos_iff_ne_zero]
@@ -136,7 +136,7 @@ def brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
   have hAvol_Bvol_def : A.volume = Avol ∧ B.volume = Bvol := by trivial
   simp [hAvol_Bvol_def, ← mul_assoc]
 
-  have hhh : 0 < (Avol : ℝ) ^ (n : ℝ)⁻¹ + (Bvol : ℝ) ^ (n : ℝ)⁻¹ := by positivity
-  apply (le_div_iff₀ (pow_pos hhh n)).mp
+  -- have hhh : 0 < (Avol : ℝ) ^ (n : ℝ)⁻¹ + (Bvol : ℝ) ^ (n : ℝ)⁻¹ := by positivity
+  apply (le_div_iff₀ (pow_pos (by positivity) n)).mp
 
   exact prekopa_leindler_special_case'
