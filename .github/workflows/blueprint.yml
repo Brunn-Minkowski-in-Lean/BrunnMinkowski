@@ -1,12 +1,12 @@
-name: Compile blueprint
+name: Compile Blueprint
 
 on:
   push:
     branches:
-      - main # Trigger on pushes to the default branch
+      - main
   pull_request:
     types: [opened, reopened]
-  workflow_dispatch:        # Allow manual triggering of the workflow from the GitHub Actions interface
+  workflow_dispatch:
 
 # Cancel previous runs if a new commit is pushed to the same PR or branch
 concurrency:
@@ -29,14 +29,7 @@ jobs:
         with:
           fetch-depth: 0 # Fetch all history for all branches and tags
 
-      - name: Install elan
-        run: curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
-
-      - name: Get Mathlib cache
-        run: ~/.elan/bin/lake exe cache get || true
-
-      - name: Build project
-        run: ~/.elan/bin/lake build BrunnMinkowski
+      - uses: leanprover/lean-action@v1
 
       - name: Cache mathlib API docs
         uses: actions/cache@v4
@@ -47,15 +40,19 @@ jobs:
             .lake/build/doc/Lean
             .lake/build/doc/Std
             .lake/build/doc/Mathlib
+            .lake/build/doc/Batteries
+            .lake/build/doc/Aesop
+            .lake/build/doc/LeanSearchClient
+            .lake/build/doc/ImportGraph
             .lake/build/doc/declarations
             .lake/build/doc/find
             .lake/build/doc/*.*
             !.lake/build/doc/declarations/declaration-data-BrunnMinkowski*
           key: MathlibDoc-${{ hashFiles('lake-manifest.json') }}
-          restore-keys: MathlibDoc-
+          restore-keys: MathlibDoc-${{ hashFiles('lake-manifest.json') }}
 
       - name: Build project API documentation
-        run: ~/.elan/bin/lake -R -Kenv=dev build BrunnMinkowski:docs
+        run: lake -R -Kenv=dev build BrunnMinkowski:docs
 
       - name: Check for `home_page` folder # this is meant to detect a Jekyll-based website
         id: check_home_page
@@ -91,7 +88,7 @@ jobs:
 
       - name: Check declarations mentioned in the blueprint exist in Lean code
         run: |
-            ~/.elan/bin/lake exe checkdecls blueprint/lean_decls
+            lake exe checkdecls blueprint/lean_decls
 
       - name: Copy API documentation to `home_page/docs`
         run: cp -r .lake/build/doc home_page/docs
