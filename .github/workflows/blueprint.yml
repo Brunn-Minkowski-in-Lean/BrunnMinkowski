@@ -1,10 +1,11 @@
-name: Compile Blueprinta
+name: Compile Blueprint
 
 on:
   push:
-    branches: ["main"] # replace "main" with the default branch
+    branches:
+      - main
   pull_request:
-    branches: ["main"]
+    types: [opened, reopened]
   workflow_dispatch:
 
 # Cancel previous runs if a new commit is pushed to the same PR or branch
@@ -39,6 +40,10 @@ jobs:
             .lake/build/doc/Lean
             .lake/build/doc/Std
             .lake/build/doc/Mathlib
+            .lake/build/doc/Batteries
+            .lake/build/doc/Aesop
+            .lake/build/doc/LeanSearchClient
+            .lake/build/doc/ImportGraph
             .lake/build/doc/declarations
             .lake/build/doc/find
             .lake/build/doc/*.*
