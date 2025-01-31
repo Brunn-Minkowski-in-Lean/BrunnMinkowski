@@ -1,27 +1,49 @@
 \section{One-dimensional}
 
 \begin{definition}
-    Let \(A, B \subset \mathbb{R}^n\). The \textit{Minkowski sum} \(A+B\) of two subsets \(A\) and \(B\) is defined by
+    Let \(A, B \subset \mathbb{R}\). The \textit{Minkowski sum} \(A+B\) of two subsets \(A\) and \(B\) is defined by
     \begin{equation*}
-        A+B:= \{a+b\in\mathbb{R}^n : a \in A, b \in B\}.
+        A+B:= \{a+b\in\mathbb{R} : a \in A, b \in B\}.
     \end{equation*}
 \end{definition}
 
-\begin{theorem}
-    \lean{brunn_minkowski}
-    Let \(n \geq 1\) and let \(\mu\) denote the Lebesgue measure on \(\mathbb{R}^n\). Let \(A\) and \(B\) be two nonempty compact subsets of \(\mathbb{R}^n\). Then
-    \begin{equation*}
-        \mu(A+B)^{1/n} \geq \mu(A)^{1/n} + \mu(B)^{1/n},
-    \end{equation*}
-    where \(A+B\) denotes the Minkowski sum.
-\end{theorem}
-
 \begin{lemma}
+    Let \(A\) be a non-empty measurable set with finite measure. 
+    Then for any \(\epsilon > 0\), there exists a non-empty compact subset \(K \subseteq A\) such that 
+    \begin{equation*}
+        \mu(A \setminus K) < \epsilon
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    Since \(A\) has a finite measure, there exists a compact subset \(\widetilde{K} \subseteq A\) such that 
+    \begin{equation*}
+        \mu (A \setminus \widetilde{K}) < \epsilon
+    \end{equation*}
+    by the inner regularity of measure for finite measure sets.
+    \begin{enumerate}
+        \item If \(\widetilde{K}\) is nonempty, then we've done by taking \(K = \widetilde{K}\).
+        \item Otherwise, we assume that \(\widetilde{K} = \emptyset\) and take \(K = {a}\), where \(a\) is an element of \(A\), which exists since \(A\) is non-empty. 
+        It is trivial that \(K\) is nonempty. It is easy to see that \(K\) is compact since a set consisting of a singleton is compact.
+        Additionally, we have \(K \subseteq A\) since \(a \in A\). Finally, we need to show that 
+        \begin{equation*}
+            \mu(A \setminus {a}) < \epsilon.
+        \end{equation*}
+        First, we note that \(\mu(A)<\epsilon\) since \(\widetilde{K} = \emptyset\), which implies \(\mu(A\setminus \widetilde{K}) = \mu(A) < \epsilon\).
+        Moreover, we observe that \(\mu(A \setminus {a}) \leq \mu(A)\), since \(A\setminus {a} \subseteq A\) and by the monotonicity of the measure. 
+        Thus, we conclude that
+        \begin{equation*}
+            \mu (A \setminus {a}) \leq \mu(A) < \epsilon.
+        \end{equation*}
+    \end{enumerate}
+\end{proof}
+
+\begin{theorem}
     If \(A, B, C \subset \mathbb{R}\) are non-empty measurable sets with \(A+B\subset C \subset \mathbb{R}\), then
     \begin{equation*}
         \mu(A) + \mu(B) \leq \mu(C).
     \end{equation*}
-\end{lemma}
+\end{theorem}
 
 \begin{proof}
     \begin{enumerate}
