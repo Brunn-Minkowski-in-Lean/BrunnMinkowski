@@ -1,0 +1,22 @@
+\section{Pr\'{e}kopa-Leindler thoerem}
+
+\begin{theorem}
+    \label{thm:prekopa-leindler}
+    \lean{PrekopaLeindler.prekopa_leindler}
+    Let \(0<t<1\) be real and \(d\) be a nonnegative integer. Let \(f,g,h\colon \RR^d\to \RR\) be nonnegative measurable functions such that for all \(x,y\in \RR^d\),
+    \begin{equation}\label{eq:prekopa-leindler_cond}
+        f(x)^{1-t} g(y)^{t} \le h(x+y).
+    \end{equation}
+    Then
+    \[
+        \biggl( \int f(x) \biggr)^{\!1-t} \biggl( \int g(y) \biggr)^{\!t} \le (1-t)^{d(1-t)} t^{dt} \int h(x) \diff x.
+    \]
+\end{theorem}
+
+\begin{lemma}
+    If \Cref{thm:prekopa-leindler} holds for \(d=d_1\) and \(d_2\), then it also holds for \(d=d_1+d_2\).
+\end{lemma}
+\begin{proof}
+    Let \(f,g,h\colon \RR^{d_1+d_2}\to \RR\) be functions which satisfy \eqref{eq:prekopa-leindler_cond}. We may regard them as the functions whose domains are \(\RR^{d_1}\times \RR^{d_2}\). Then for any \(x_1,y_1\in \RR^{d_1}\), the functions \(f(x_1,\cdot)\), \(g(y_1,\cdot)\), and \(h(x_1+y_1,\cdot)\) satisfy \eqref{eq:prekopa-leindler_cond} in dimension \(d_2\).
+\end{proof}
+
