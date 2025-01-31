@@ -118,28 +118,62 @@
         \item Without loss of generality, we may assume that \(A\) and \(B\) are compact.
 
         \begin{enumerate}
-            \item We first show that we can obtain the result in the general settings if the statement has been shown under the compact settings. 
-            Let \(A\) and \(B\) be non-empty measurable sets with finite measures. Then for any \(\epsilon/2>0\), there exists a non-empty compact subsets \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\) such that 
-            \begin{equation*}
+            \item We first show that the result holds in the general setting if it has been established under the compact setting. 
+
+            Let \(A\) and \(B\) be non-empty measurable sets with finite measure. 
+            Fix \(\epsilon>0\).
+            
+            Then for any \(\epsilon/2>0\), there exists a non-empty compact subsets \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\) such that 
+            \begin{equation}
                 \mu(A \setminus A_\epsilon) < \epsilon/2 \quad \text{and} \quad \mu(B \setminus B_\epsilon) < \epsilon/2
-            \end{equation*}
+                \label{eqn: diff with cpt is small}
+            \end{equation}
             by Lemma~\ref{lemma: exists_isCompact_Nonempty_diff_lt}.
-            Here, it is easy to see that each measure \(\mu(A_\epsilon)\) and  \(\mu(B_\epsilon)\) is finite by contradiction. 
+            
+            Since \(A_\epsilon\) and \(B_\epsilon\) are compact, they are also measurable. 
+            It is easy to see that \(\mu(A_\epsilon)\) and  \(\mu(B_\epsilon)\) are finite by contradiction.
             Indeed, suppose that \(\mu(A_\epsilon) = \infty\). 
-            Since \(A_\epsilon \subseteq A\), we have \(\mu(A_\epsilon) \leq \mu(A)\) by the monotonicity of the Lebesgue measure. 
-            Then this contradicts to the fact that \(\mu(A)<\infty\).
+            Since \(A_\epsilon \subseteq A\), we have \(\mu(A_\epsilon) \leq \mu(A)\) by the monotonicity of the Lebesgue measure, 
+            which contradicts the assumption that \(\mu(A)<\infty\).
 
             Now, we observe that 
-            \begin{equation*}
-                \mu(A) = \mu(A_\epsilon) + \mu(A \setminus A_\epsilon) < \mu(A_\epsilon) + \epsilon/2
-            \end{equation*}
-            where the first equality holds due to the facts that \(\mu(A) = \mu(A \cap A_\epsilon) + \mu(A \setminus A_\epsilon)\) and \(\mu(A \cap A_\epsilon) = \mu (A_\epsilon)\).
-            With the similar arguments, we obtain 
-            \begin{equation*}
-                \mu(B) < \mu(B_\epsilon) + \epsilon/2
-            \end{equation*}
+            \begin{equation}
+                \mu(A) = \mu(A_\epsilon) + \mu(A \setminus A_\epsilon) < \mu(A_\epsilon) + \epsilon/2.
+                \label{eqn: volA bdd by Ae}
+            \end{equation}
+            The equality holds since \(\mu(A) = \mu(A \cap A_\epsilon) + \mu(A \setminus A_\epsilon)\) and \(\mu(A \cap A_\epsilon) = \mu (A_\epsilon)\), 
+            and the inequlity follows from (\ref{eqn: diff with cpt is small}).
+            Similarly, we obtain 
+            \begin{equation}
+                \mu(B) < \mu(B_\epsilon) + \epsilon/2.
+                \label{eqn: volB bdd by Be}
+            \end{equation}
 
-            \item
+            
+            Next, we show that 
+            \begin{equation*}
+                A_\epsilon + B_\epsilon \subseteq C.
+            \end{equation*}
+            First, we establish that \(A_\epsilon + B_\epsilon \subseteq A + B\).
+            Let \(x \in A_\epsilon + B_\epsilon\). Then, there exist \(a \in A_\epsilon\) and \(b \in B_\epsilon\) such that \(x = a + b\).
+            Since \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\), it follows that \(a \in A\) and \(b \in B\), 
+            so \(x = a + b \in A + B\).
+            Thus by assumption \(A + B \subset C\), we have the desired inclusion.
+            
+            Finally, we obtain
+            \begin{equation}
+                \mu(A_\epsilon) + \mu(B_\epsilon) \leq \mu(C)
+                \label{eqn: BM for cpt}
+            \end{equation}
+            for non-empty measurable compact sets \(A_\epsilon\) and \(B_\epsilon\) with finite measure.
+
+            Therefore, we conclude that 
+            \begin{equation*}
+                \mu(A) + \mu(B) < \mu(A_\epsilon) + \mu(B_\epsilon) + \epsilon \leq \mu(C) + \epsilon
+            \end{equation*}
+            where the first inequality holds from (\ref{eqn: volA bdd by Ae}) and (\ref{eqn: volB bdd by Be}) and the second follows from (\ref{eqn: BM for cpt}).
+            Since this argument holds for any fixed \(\epsilon>0\), the proof is complete.
+
         \end{enumerate}
         
         Since {the Lebesgue measure has inner regularity}, we may assume that \(A\) and \(B\) are compact:

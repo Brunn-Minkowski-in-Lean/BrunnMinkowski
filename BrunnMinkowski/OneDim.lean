@@ -163,6 +163,11 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     obtain ⟨Bε, inclusion_cptB, nonempty_cptB, h_cptB, diff_cptB⟩ :=
       MeasurableSet.exists_isCompact_Nonempty_diff_lt hB mB finB hε'
 
+    -- TO-check: To measure the volume of Aε or Bε, measurability is needed?
+    have mAε : MeasurableSet Aε := by exact IsCompact.measurableSet h_cptA
+    have mBε : MeasurableSet Bε := by exact IsCompact.measurableSet h_cptB
+    -------------------------------------------------
+
     have finAε : volume Aε ≠ ⊤ := by
       by_contra inftyAε
       have feather : volume Aε ≤ volume A := by exact measure_mono inclusion_cptA
@@ -173,28 +178,7 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
       have feather : volume Bε ≤ volume B := by exact measure_mono inclusion_cptB
       simp_all
 
-    have diff_cptA' : volume A < volume Aε + ε/2 := by
-      have feather1 : volume A = volume Aε + volume (A\Aε) := by
-        have feather2 : volume (A ∩ Aε) + volume (A \ Aε) = volume A := by apply measure_inter_add_diff A mAε
-        have feather3 : volume (A ∩ Aε) = volume Aε := by rw [inter_eq_right.mpr inclusion_cptA]
-        calc volume A = volume (A ∩ Aε) + volume (A \ Aε) := by rw [←feather2]
-        _ = volume Aε + volume (A \ Aε) := by rw [feather3]
-      calc volume A = volume Aε + volume (A \ Aε) := by apply feather1
-      _ < volume Aε + ε/2 := by exact ENNReal.add_lt_add_left finAε diff_cptA
-
-    have diff_cptB' : volume B < volume Bε + ε/2 := by
-    -- Proof of B is exactly the same as the case of A
-      have feather1 : volume B = volume Bε + volume (B\Bε) := by
-        have feather2 : volume (B ∩ Bε) + volume (B \ Bε) = volume B := by apply measure_inter_add_diff B mBε
-        have feather3 : volume (B ∩ Bε) = volume Bε := by rw [inter_eq_right.mpr inclusion_cptB]
-        calc volume B = volume (B ∩ Bε) + volume (B \ Bε) := by rw [←feather2]
-        _ = volume Bε + volume (B \ Bε) := by rw [feather3]
-      calc volume B = volume Bε + volume (B \ Bε) := by apply feather1
-      _ < volume Bε + ε/2 := by exact ENNReal.add_lt_add_left finBε diff_cptB
-    --
     have wma_cpt : volume Aε + volume Bε ≤ volume C := by
-      have mAε : MeasurableSet Aε := by exact IsCompact.measurableSet h_cptA
-      have mBε : MeasurableSet Bε := by exact IsCompact.measurableSet h_cptB
       have inclusion_cpt : Aε + Bε ⊆ C := by
         have feather : Aε + Bε ⊆ A + B := by
           intros x hx
@@ -209,6 +193,25 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
         _ ⊆ C := by apply h
       have feather : IsCompact Aε ∧ IsCompact Bε := by apply And.intro h_cptA h_cptB
       exact goal_cpt Aε Bε C nonempty_cptA nonempty_cptB hC mAε mBε mC inclusion_cpt finAε finBε feather
+
+    have diff_cptA' : volume A < volume Aε + ε/2 := by
+      have feather1 : volume A = volume Aε + volume (A\Aε) := by
+        have feather2 : volume (A ∩ Aε) + volume (A \ Aε) = volume A := by apply measure_inter_add_diff A mAε
+        have feather3 : volume (A ∩ Aε) = volume Aε := by rw [inter_eq_right.mpr inclusion_cptA]
+        calc volume A = volume (A ∩ Aε) + volume (A \ Aε) := by rw [←feather2]
+        _ = volume Aε + volume (A \ Aε) := by rw [feather3]
+      calc volume A = volume Aε + volume (A \ Aε) := by apply feather1
+      _ < volume Aε + ε/2 := by exact ENNReal.add_lt_add_left finAε diff_cptA
+
+    have diff_cptB' : volume B < volume Bε + ε/2 := by
+      have feather1 : volume B = volume Bε + volume (B\Bε) := by
+        have feather2 : volume (B ∩ Bε) + volume (B \ Bε) = volume B := by apply measure_inter_add_diff B mBε
+        have feather3 : volume (B ∩ Bε) = volume Bε := by rw [inter_eq_right.mpr inclusion_cptB]
+        calc volume B = volume (B ∩ Bε) + volume (B \ Bε) := by rw [←feather2]
+        _ = volume Bε + volume (B \ Bε) := by rw [feather3]
+      calc volume B = volume Bε + volume (B \ Bε) := by apply feather1
+      _ < volume Bε + ε/2 := by exact ENNReal.add_lt_add_left finBε diff_cptB
+
     calc volume A + volume B < volume Aε + ε/2 + (volume Bε + ε/2) := by
             exact ENNReal.add_lt_add diff_cptA' diff_cptB'
     _ = volume Aε + volume Bε + ε := by
