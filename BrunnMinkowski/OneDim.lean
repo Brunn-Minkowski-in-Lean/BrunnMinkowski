@@ -193,29 +193,21 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
       _ < volume Bε + ε/2 := by exact ENNReal.add_lt_add_left finBε diff_cptB
     --
     have wma_cpt : volume Aε + volume Bε ≤ volume C := by
-      have feather : IsCompact Aε ∧ IsCompact Bε := by apply And.intro h_cptA h_cptB
+      have mAε : MeasurableSet Aε := by exact IsCompact.measurableSet h_cptA
+      have mBε : MeasurableSet Bε := by exact IsCompact.measurableSet h_cptB
       have inclusion_cpt : Aε + Bε ⊆ C := by
         have feather : Aε + Bε ⊆ A + B := by
           intros x hx
-          have hx' : ∃ a ∈ Aε, ∃ b ∈ Bε, a + b = x := by
-            exact mem_add.mpr hx
+          have hx' : ∃ a ∈ Aε, ∃ b ∈ Bε, a + b = x := by exact mem_add.mpr hx
           obtain ⟨a, ha, b, hb, hx'⟩ := hx'
-          have ha : a ∈ A := by
-            subst hx'
-            simp_all only [and_imp, not_and, ne_eq]
-            exact inclusion_cptA ha
-          have hb : b ∈ B := by
-            subst hx'
-            simp_all only [and_imp, not_and, ne_eq]
-            exact inclusion_cptB hb
+          have ha : a ∈ A := by exact inclusion_cptA ha
+          have hb : b ∈ B := by exact inclusion_cptB hb
           have h : a + b ∈ A + B := by apply add_mem_add ha hb
           rw [← hx']
           exact h
         calc Aε + Bε ⊆ A + B := by apply feather
         _ ⊆ C := by apply h
-      have mAε : MeasurableSet Aε := by exact IsCompact.measurableSet h_cptA
-      have mBε : MeasurableSet Bε := by exact IsCompact.measurableSet h_cptB
-
+      have feather : IsCompact Aε ∧ IsCompact Bε := by apply And.intro h_cptA h_cptB
       exact goal_cpt Aε Bε C nonempty_cptA nonempty_cptB hC mAε mBε mC inclusion_cpt finAε finBε feather
     calc volume A + volume B < volume Aε + ε/2 + (volume Bε + ε/2) := by
             exact ENNReal.add_lt_add diff_cptA' diff_cptB'

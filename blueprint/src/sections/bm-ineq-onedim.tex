@@ -119,11 +119,25 @@
 
         \begin{enumerate}
             \item We first show that we can obtain the result in the general settings if the statement has been shown under the compact settings. 
-            For any \(\epsilon/2>0\), there exists a non-empty compact subsets \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\) such that 
+            Let \(A\) and \(B\) be non-empty measurable sets with finite measures. Then for any \(\epsilon/2>0\), there exists a non-empty compact subsets \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\) such that 
             \begin{equation*}
-                \mu(A \setminus A_\epsilon) < \epsilon/2 \quad \text{and} \quad \(\mu(B \setminus B_\epsilon) < \epsilon/2\)
+                \mu(A \setminus A_\epsilon) < \epsilon/2 \quad \text{and} \quad \mu(B \setminus B_\epsilon) < \epsilon/2
             \end{equation*}
             by Lemma~\ref{lemma: exists_isCompact_Nonempty_diff_lt}.
+            Here, it is easy to see that each measure \(\mu(A_\epsilon)\) and  \(\mu(B_\epsilon)\) is finite by contradiction. 
+            Indeed, suppose that \(\mu(A_\epsilon) = \infty\). 
+            Since \(A_\epsilon \subseteq A\), we have \(\mu(A_\epsilon) \leq \mu(A)\) by the monotonicity of the Lebesgue measure. 
+            Then this contradicts to the fact that \(\mu(A)<\infty\).
+
+            Now, we observe that 
+            \begin{equation*}
+                \mu(A) = \mu(A_\epsilon) + \mu(A \setminus A_\epsilon) < \mu(A_\epsilon) + \epsilon/2
+            \end{equation*}
+            where the first equality holds due to the facts that \(\mu(A) = \mu(A \cap A_\epsilon) + \mu(A \setminus A_\epsilon)\) and \(\mu(A \cap A_\epsilon) = \mu (A_\epsilon)\).
+            With the similar arguments, we obtain 
+            \begin{equation*}
+                \mu(B) < \mu(B_\epsilon) + \epsilon/2
+            \end{equation*}
 
             \item
         \end{enumerate}
