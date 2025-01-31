@@ -4,9 +4,6 @@ import Mathlib.Order.CompletePartialOrder
 import BrunnMinkowski.EuclideanSpace
 import BrunnMinkowski.PrekopaLeindler
 
-import LeanSearchClient
-
-
 open scoped Pointwise NNReal
 
 variable {I : Type} [Fintype I] {n : ℕ}
