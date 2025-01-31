@@ -176,52 +176,8 @@
 
         \end{enumerate}
         
-        Since {the Lebesgue measure has inner regularity}, we may assume that \(A\) and \(B\) are compact:
-
-        \begin{enumerate}
-            \item Let \(A\) and \(B\) be measurable sets. Then for any \(\epsilon>0\), there exist compact sets \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\) such that
-            \begin{equation}
-                \mu(A \setminus A_\epsilon)< \epsilon, \quad \text{and} \quad \mu(B \setminus B_\epsilon) < \epsilon.
-                \label{eq: inner regularity}
-            \end{equation}
-            by inner regularity of measurable sets (\texttt{MeasurableSet.exists\_isCompact\_diff\_lt} in Mathlib4).
-
-            \item First, it is easy to see that for any \(\epsilon>0\),
-            \begin{equation*}
-                A_\epsilon + B_\epsilon \subseteq A + B \subset C.
-            \end{equation*}
-
-            \item It suffices to show that for any \(\epsilon>0\), given two compact and {\color{red}nonempty} sets \(A_\epsilon\) and \(B_\epsilon\) such that
-            {\color{red}
-            \(A_\epsilon + B_\epsilon \subset C\) satisfies
-            \begin{equation}
-                \mu(A_\epsilon) + \mu(B_\epsilon) \leq \mu(C).
-                \label{eq: STS}
-            \end{equation}
-            }
-
-            Indeed,
-            \begin{enumerate}
-            \item
-              We first can see that the equation (\ref{eq: inner regularity}) can be written as
-              \begin{equation}
-                \mu(A)-\mu(A_\epsilon) < \epsilon, \quad \text{and} \quad \mu(B) - \mu(B_\epsilon) < \epsilon
-                \label{eq: inner regularity 2}
-              \end{equation}
-              since \(\mu(A\setminus A_\epsilon) = \mu(A)-\mu(A_\epsilon)\) holds from \texttt{MeasureTheory.measure\_diff} in Mathlib4.
-
-            \item Then we have \(\mu(A) + \mu(B) < \mu(C) + 2\epsilon\) by using (\ref{eq: STS}) and (\ref{eq: inner regularity 2}) from \texttt{linarith}.
-
-            \item Thus, we have \(\mu(A) + \mu(B) \leq \mu(C)\) by \texttt{le\_of\_forall\_pos\_lt\_add} in Mathlib4.
-            \end{enumerate}
-        \end{enumerate}
-
-
-
-
-
-
-
+        -- TO-DO : complete the blueprint of Step 3 (under cpt setting)
+        
         \item Since \(A\) and \(B\) are compact, { \(\sup A \in A\) and \(\inf B \in B\). Then} we see that each of the following translations of \(B\) and \(A\) is contained in~\(C\) as follows:
         \begin{eqnarray*}
             \sup A + B
@@ -233,7 +189,8 @@
             {
              \subseteq A + B} \subseteq C.
         \end{eqnarray*}
-        \item As the only intersection point of \(\sup A + B\) and \(A + \inf B\) is \(\sup A + \inf B\), we see that
+        
+        As the only intersection point of \(\sup A + B\) and \(A + \inf B\) is \(\sup A + \inf B\), we see that
         \begin{equation*}
             (A + \inf B) \cup (\sup A + B) \subseteq C.
         \end{equation*}
