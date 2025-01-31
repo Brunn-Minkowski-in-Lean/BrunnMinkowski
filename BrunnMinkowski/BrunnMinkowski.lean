@@ -113,7 +113,9 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
 
       -- Modify the special case of Prékopa–Leindler
       simp [ind_A, ind_B, ind_ABsum] at prekopa_leinler_app
-      simp only [hind_ConvBody_int_eq_vol _ (by rfl),] at prekopa_leinler_app
+      rw [hind_ConvBody_int_eq_vol A (by rfl),
+        hind_ConvBody_int_eq_vol B (by rfl),
+        hind_ConvBody_int_eq_vol (A + B) (by rfl)] at prekopa_leinler_app
 
       -- Modify the goal
       rw [mul_pow,
