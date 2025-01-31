@@ -162,35 +162,17 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
       MeasurableSet.exists_isCompact_Nonempty_diff_lt hA mA finA hε'
     obtain ⟨Bε, inclusion_cptB, nonempty_cptB, h_cptB, diff_cptB⟩ :=
       MeasurableSet.exists_isCompact_Nonempty_diff_lt hB mB finB hε'
-    have inclusion_cpt : Aε + Bε ⊆ C := by
-      have feather : Aε + Bε ⊆ A + B := by
-        intros x hx
-        have hx' : ∃ a ∈ Aε, ∃ b ∈ Bε, a + b = x := by
-          exact mem_add.mpr hx
-        obtain ⟨a, ha, b, hb, hx'⟩ := hx'
-        have ha : a ∈ A := by
-          subst hx'
-          simp_all only [and_imp, not_and, ne_eq]
-          exact inclusion_cptA ha
-        have hb : b ∈ B := by
-          subst hx'
-          simp_all only [and_imp, not_and, ne_eq]
-          exact inclusion_cptB hb
-        have h : a + b ∈ A + B := by apply add_mem_add ha hb
-        rw [← hx']
-        exact h
-      calc Aε + Bε ⊆ A + B := by apply feather
-      _ ⊆ C := by apply h
-    have mAε : MeasurableSet Aε := by exact IsCompact.measurableSet h_cptA
-    have mBε : MeasurableSet Bε := by exact IsCompact.measurableSet h_cptB
+
     have finAε : volume Aε ≠ ⊤ := by
       by_contra inftyAε
       have feather : volume Aε ≤ volume A := by exact measure_mono inclusion_cptA
       simp_all
+
     have finBε : volume Bε ≠ ⊤ := by
       by_contra inftyBε
       have feather : volume Bε ≤ volume B := by exact measure_mono inclusion_cptB
       simp_all
+
     have diff_cptA' : volume A < volume Aε + ε/2 := by
       have feather1 : volume A = volume Aε + volume (A\Aε) := by
         have feather2 : volume (A ∩ Aε) + volume (A \ Aε) = volume A := by apply measure_inter_add_diff A mAε
@@ -199,6 +181,7 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
         _ = volume Aε + volume (A \ Aε) := by rw [feather3]
       calc volume A = volume Aε + volume (A \ Aε) := by apply feather1
       _ < volume Aε + ε/2 := by exact ENNReal.add_lt_add_left finAε diff_cptA
+
     have diff_cptB' : volume B < volume Bε + ε/2 := by
     -- Proof of B is exactly the same as the case of A
       have feather1 : volume B = volume Bε + volume (B\Bε) := by
@@ -211,6 +194,28 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     --
     have wma_cpt : volume Aε + volume Bε ≤ volume C := by
       have feather : IsCompact Aε ∧ IsCompact Bε := by apply And.intro h_cptA h_cptB
+      have inclusion_cpt : Aε + Bε ⊆ C := by
+        have feather : Aε + Bε ⊆ A + B := by
+          intros x hx
+          have hx' : ∃ a ∈ Aε, ∃ b ∈ Bε, a + b = x := by
+            exact mem_add.mpr hx
+          obtain ⟨a, ha, b, hb, hx'⟩ := hx'
+          have ha : a ∈ A := by
+            subst hx'
+            simp_all only [and_imp, not_and, ne_eq]
+            exact inclusion_cptA ha
+          have hb : b ∈ B := by
+            subst hx'
+            simp_all only [and_imp, not_and, ne_eq]
+            exact inclusion_cptB hb
+          have h : a + b ∈ A + B := by apply add_mem_add ha hb
+          rw [← hx']
+          exact h
+        calc Aε + Bε ⊆ A + B := by apply feather
+        _ ⊆ C := by apply h
+      have mAε : MeasurableSet Aε := by exact IsCompact.measurableSet h_cptA
+      have mBε : MeasurableSet Bε := by exact IsCompact.measurableSet h_cptB
+
       exact goal_cpt Aε Bε C nonempty_cptA nonempty_cptB hC mAε mBε mC inclusion_cpt finAε finBε feather
     calc volume A + volume B < volume Aε + ε/2 + (volume Bε + ε/2) := by
             exact ENNReal.add_lt_add diff_cptA' diff_cptB'

@@ -13,6 +13,7 @@
     \begin{equation*}
         \mu(A \setminus K) < \epsilon
     \end{equation*}
+    \label{lemma: exists_isCompact_Nonempty_diff_lt}
 \end{lemma}
 
 \begin{proof}
@@ -43,63 +44,91 @@
     \begin{equation*}
         \mu(A) + \mu(B) \leq \mu(C).
     \end{equation*}
+    Here, \(\mu\) is a Lebesgue measure.
 \end{theorem}
 
 \begin{proof}
     \begin{enumerate}
         \item We may assume that \(\mu(A)\) and \(\mu(B)\) are finite:
 
-        First, we observe that
-        \begin{eqnarray}
-            {\mu(A) \leq \mu(A+B)} \leq \mu(C), \label{eq: A <= A+B}\\
-            {\mu(B) \leq \mu(A+B)} \leq \mu(C) \label{eq: B <= A+B}
-        \end{eqnarray}
-        :\begin{enumerate}
-            \item Since \(B\) is a nonzero set, there is an element \(b \in B\).
-            \item \(\mu(A) =\mu(A+\{b\})\) -- \texttt{simp?}
-            \item Since \(\{b\} \subseteq B\), we note that \(A + \{b\} \subseteq A + B\).
-            \item Then \(\mu(A) = \mu(A + \{b\}) \leq \mu(A+B)\).
+        \begin{enumerate}
+            \item Suppose \(\mu(A) = \infty\). Then it suffices to show that \(\mu(A) \leq \mu(C)\),
+            since adding any quantity to infinity is still results in infinity. 
+            We observe that \(\mu(A) \leq \mu(A+B)\) since \(B\) is non-empty.
+            Moreover, by the monotonicity of the Lebesgue measure, we have \(\mu (A+B) \leq \mu(C)\).
+            By transitivity of these inequalities, we conclude that \(\mu(A) \leq \mu(C)\) as required.
+
+            \item Now we may assume that \(\mu(A) < \infty\).
+            \begin{enumerate}
+                \item Suppose that \(\mu(B) = \infty\). 
+                Then, using exactly the same arguments as before, we obtain the desired result. 
+                \item Thus, we may assume that \(\mu(B) < \infty\).
+            \end{enumerate}
         \end{enumerate}
-        since \(A\) and \(B\) are nonempty.
-        \begin{itemize}
-            \item (\textbf{Case I}: \(\mu(A)=\infty\))
-            \begin{itemize}
-                \item (\textbf{Case I-I}: \(\mu(B) = \infty\))
-                \begin{enumerate}
-                    \item From the assumptions, we see that \(\mu(A) + \mu(B) = {\infty + \infty = \infty}\) where the last equality holds from \texttt{top\_add\_top} in Mathlib4.
-                    \item From the equation (\ref{eq: A <= A+B}) or (\ref{eq: B <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumptions.
-                    \item To sum up,
-                    \begin{eqnarray*}
-                        \mu(A) + \mu (B) = \infty + \infty = \infty \leq \mu(C).
-                    \end{eqnarray*}
-                \end{enumerate}
 
-                \item (\textbf{Case I-II}: \(\mu(B) < \infty\))
-                \begin{enumerate}
-                    \item From the assumptions, we see that \(\mu(A) + \mu(B) = {\infty + \mu(B) = \infty}\) where the last equality holds from \texttt{coe\_add\_top} in Mathlib4.
-                    \item From the equation (\ref{eq: A <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumption on \(\mu(A)\).
-                    \item To sum up,
-                    \begin{eqnarray*}
-                        \mu(A) + \mu (B) = \infty + \mu(B) = \infty \leq \mu(C).
-                    \end{eqnarray*}
-                \end{enumerate}
-            \end{itemize}
-            \item (\textbf{Case II}: \(\mu(A) < \infty\))
-            \begin{itemize}
-                \item (\textbf{Case II-I}: \(\mu(B)=\infty\))
-                \begin{enumerate}
-                    \item From the assumptions, we see that \(\mu(B) + \mu(A) = {\infty + \mu(A) = \infty}\) where the last equality holds from \texttt{coe\_add\_top} in Mathlib4.
-                    \item From the equation (\ref{eq: B <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumption on \(\mu(B)\).
-                    \item To sum up,
-                    \begin{eqnarray*}
-                        \mu(A) + \mu (B) = \mu(B) + \mu(A) = \infty + \mu(A) = \infty \leq \mu(C).
-                    \end{eqnarray*}
-                \end{enumerate}
-            \end{itemize}
-        \end{itemize}
+        % First, we observe that
+        % \begin{eqnarray}
+        %     {\mu(A) \leq \mu(A+B)} \leq \mu(C), \label{eq: A <= A+B}\\
+        %     {\mu(B) \leq \mu(A+B)} \leq \mu(C) \label{eq: B <= A+B}
+        % \end{eqnarray}
+        % :\begin{enumerate}
+        %     \item Since \(B\) is a nonzero set, there is an element \(b \in B\).
+        %     \item \(\mu(A) =\mu(A+\{b\})\) -- \texttt{simp?}
+        %     \item Since \(\{b\} \subseteq B\), we note that \(A + \{b\} \subseteq A + B\).
+        %     \item Then \(\mu(A) = \mu(A + \{b\}) \leq \mu(A+B)\).
+        % \end{enumerate}
+        % since \(A\) and \(B\) are nonempty.
+        % \begin{itemize}
+        %     \item (\textbf{Case I}: \(\mu(A)=\infty\))
+        %     \begin{itemize}
+        %         \item (\textbf{Case I-I}: \(\mu(B) = \infty\))
+        %         \begin{enumerate}
+        %             \item From the assumptions, we see that \(\mu(A) + \mu(B) = {\infty + \infty = \infty}\) where the last equality holds from \texttt{top\_add\_top} in Mathlib4.
+        %             \item From the equation (\ref{eq: A <= A+B}) or (\ref{eq: B <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumptions.
+        %             \item To sum up,
+        %             \begin{eqnarray*}
+        %                 \mu(A) + \mu (B) = \infty + \infty = \infty \leq \mu(C).
+        %             \end{eqnarray*}
+        %         \end{enumerate}
 
+        %         \item (\textbf{Case I-II}: \(\mu(B) < \infty\))
+        %         \begin{enumerate}
+        %             \item From the assumptions, we see that \(\mu(A) + \mu(B) = {\infty + \mu(B) = \infty}\) where the last equality holds from \texttt{coe\_add\_top} in Mathlib4.
+        %             \item From the equation (\ref{eq: A <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumption on \(\mu(A)\).
+        %             \item To sum up,
+        %             \begin{eqnarray*}
+        %                 \mu(A) + \mu (B) = \infty + \mu(B) = \infty \leq \mu(C).
+        %             \end{eqnarray*}
+        %         \end{enumerate}
+        %     \end{itemize}
+        %     \item (\textbf{Case II}: \(\mu(A) < \infty\))
+        %     \begin{itemize}
+        %         \item (\textbf{Case II-I}: \(\mu(B)=\infty\))
+        %         \begin{enumerate}
+        %             \item From the assumptions, we see that \(\mu(B) + \mu(A) = {\infty + \mu(A) = \infty}\) where the last equality holds from \texttt{coe\_add\_top} in Mathlib4.
+        %             \item From the equation (\ref{eq: B <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumption on \(\mu(B)\).
+        %             \item To sum up,
+        %             \begin{eqnarray*}
+        %                 \mu(A) + \mu (B) = \mu(B) + \mu(A) = \infty + \mu(A) = \infty \leq \mu(C).
+        %             \end{eqnarray*}
+        %         \end{enumerate}
+        %     \end{itemize}
+        % \end{itemize}
 
-        \item Since {the Lebesgue measure has inner regularity}, we may assume that \(A\) and \(B\) are compact:
+        \item Without loss of generality, we may assume that \(A\) and \(B\) are compact.
+
+        \begin{enumerate}
+            \item We first show that we can obtain the result in the general settings if the statement has been shown under the compact settings. 
+            For any \(\epsilon/2>0\), there exists a non-empty compact subsets \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\) such that 
+            \begin{equation*}
+                \mu(A \setminus A_\epsilon) < \epsilon/2 \quad \text{and} \quad \(\mu(B \setminus B_\epsilon) < \epsilon/2\)
+            \end{equation*}
+            by Lemma~\ref{lemma: exists_isCompact_Nonempty_diff_lt}.
+
+            \item
+        \end{enumerate}
+        
+        Since {the Lebesgue measure has inner regularity}, we may assume that \(A\) and \(B\) are compact:
 
         \begin{enumerate}
             \item Let \(A\) and \(B\) be measurable sets. Then for any \(\epsilon>0\), there exist compact sets \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\) such that
