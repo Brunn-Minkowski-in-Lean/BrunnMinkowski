@@ -4,6 +4,9 @@ import Mathlib.Order.CompletePartialOrder
 import BrunnMinkowski.EuclideanSpace
 import BrunnMinkowski.PrekopaLeindler
 
+import LeanSearchClient
+
+
 open scoped Pointwise NNReal
 
 variable {I : Type} [Fintype I] {n : ℕ}
@@ -31,9 +34,6 @@ lemma convbody_vol_le_vol_add_right (A B: ConvexBody (ℝn n)) :
     A.volume
       = (A + singleton_to_convbody b).volume := by
       simp [ConvexBody.volume]
-      apply (ENNReal.toNNReal_eq_toNNReal_iff'
-        (convbody_set_vol_ne_top A)
-        (convbody_set_vol_ne_top (A + singleton_to_convbody b))).mpr
       simp [singleton_to_convbody]
     _ ≤ (A + B).volume := by
       simp [ConvexBody.volume]
@@ -52,30 +52,27 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
   let ninv := (n⁻¹ : ℝ)
   have hn_mul_ninv_eq_one : (n : ℝ) * ninv = 1 := by simp [ninv, ngz]
 
-  let Avol := A.volume
-  let Bvol := B.volume
+  set Avol := A.volume with eq_Avol
+  set Bvol := B.volume with eq_Bvol
 
-  by_cases hAvol_zero : A.volume = 0
-  · -- Assume A.volume = 0
-    simp [hAvol_zero, ngz]
+  rcases eq_zero_or_pos Avol with hAvol | hAvol
+  · simp only [hAvol, ne_eq, inv_eq_zero, Nat.cast_eq_zero, ngz, not_false_eq_true,
+      NNReal.zero_rpow, zero_add, ge_iff_le, ninv]
     rw [add_comm, NNReal.rpow_le_rpow_iff]
     exact convbody_vol_le_vol_add_right B A
     positivity
-  by_cases hBvol_zero : B.volume = 0
+  rcases eq_zero_or_pos Bvol with hBvol | hBvol
   · -- Assume B.volume = 0
-    simp [hBvol_zero, ngz]
+    simp only [hBvol, ne_eq, inv_eq_zero, Nat.cast_eq_zero, ngz, not_false_eq_true,
+      NNReal.zero_rpow, add_zero, ge_iff_le, ninv]
     rw [NNReal.rpow_le_rpow_iff]
     exact convbody_vol_le_vol_add_right A B
     positivity
-  -- Now assume A.volume ≠ 0 and B.volume ≠ 0
-  rename' hAvol_zero => hAvol_nonzero, hBvol_zero => hBvol_nonzero
-  have hAvol_pos : 0 < Avol := by positivity
-  have hBvol_pos : 0 < Bvol := by positivity
   have hABsumvol_pos : 0 < (A + B).volume :=
-    lt_of_lt_of_le (pos_iff_ne_zero.mpr hAvol_nonzero) (convbody_vol_le_vol_add_right A B)
+    lt_of_lt_of_le hAvol (convbody_vol_le_vol_add_right A B)
 
-  have hAvol_pow_ninv_pos : 0 < Avol ^ ninv := NNReal.rpow_pos hAvol_pos
-  have hBvol_pow_ninv_pos : 0 < Bvol ^ ninv := NNReal.rpow_pos hBvol_pos
+  have hAvol_pow_ninv_pos : 0 < Avol ^ ninv := NNReal.rpow_pos hAvol
+  have hBvol_pow_ninv_pos : 0 < Bvol ^ ninv := NNReal.rpow_pos hBvol
 
   have prekopa_leindler_special_case {t : ℝ} (h0t : 0 < t) (ht1 : t < 1) :
         Avol ^ (1 - t) * Bvol ^ t
@@ -184,10 +181,11 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
   apply le_of_pow_le_pow_left₀ ngz (le_of_lt (NNReal.rpow_pos hABsumvol_pos))
   simp [← NNReal.rpow_mul_natCast, inv_mul_cancel₀, ngz]
 
-  apply (mul_le_mul_left (Real.rpow_pos_of_pos (NNReal.coe_pos.mpr hBvol_pos) θ)).mp
-  apply (mul_le_mul_left (Real.rpow_pos_of_pos (NNReal.coe_pos.mpr hAvol_pos) (1 - θ))).mp
+  apply (mul_le_mul_left (Real.rpow_pos_of_pos (NNReal.coe_pos.mpr hBvol) θ)).mp
+  apply (mul_le_mul_left (Real.rpow_pos_of_pos (NNReal.coe_pos.mpr hAvol) (1 - θ))).mp
 
   simp [← mul_assoc]
+
   apply (le_div_iff₀ (pow_pos (by positivity) n)).mp
 
   exact prekopa_leindler_special_case'
