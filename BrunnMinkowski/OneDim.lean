@@ -178,22 +178,6 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
       have feather : volume Bε ≤ volume B := by exact measure_mono inclusion_cptB
       simp_all
 
-    have wma_cpt : volume Aε + volume Bε ≤ volume C := by
-      have inclusion_cpt : Aε + Bε ⊆ C := by
-        have feather : Aε + Bε ⊆ A + B := by
-          intros x hx
-          have hx' : ∃ a ∈ Aε, ∃ b ∈ Bε, a + b = x := by exact mem_add.mpr hx
-          obtain ⟨a, ha, b, hb, hx'⟩ := hx'
-          have ha : a ∈ A := by exact inclusion_cptA ha
-          have hb : b ∈ B := by exact inclusion_cptB hb
-          have h : a + b ∈ A + B := by apply add_mem_add ha hb
-          rw [← hx']
-          exact h
-        calc Aε + Bε ⊆ A + B := by apply feather
-        _ ⊆ C := by apply h
-      have feather : IsCompact Aε ∧ IsCompact Bε := by apply And.intro h_cptA h_cptB
-      exact goal_cpt Aε Bε C nonempty_cptA nonempty_cptB hC mAε mBε mC inclusion_cpt finAε finBε feather
-
     have diff_cptA' : volume A < volume Aε + ε/2 := by
       have feather1 : volume A = volume Aε + volume (A\Aε) := by
         have feather2 : volume (A ∩ Aε) + volume (A \ Aε) = volume A := by apply measure_inter_add_diff A mAε
@@ -211,6 +195,22 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
         _ = volume Bε + volume (B \ Bε) := by rw [feather3]
       calc volume B = volume Bε + volume (B \ Bε) := by apply feather1
       _ < volume Bε + ε/2 := by exact ENNReal.add_lt_add_left finBε diff_cptB
+
+    have wma_cpt : volume Aε + volume Bε ≤ volume C := by
+      have inclusion_cpt : Aε + Bε ⊆ C := by
+        have feather : Aε + Bε ⊆ A + B := by
+          intros x hx
+          have hx' : ∃ a ∈ Aε, ∃ b ∈ Bε, a + b = x := by exact mem_add.mpr hx
+          obtain ⟨a, ha, b, hb, hx'⟩ := hx'
+          have ha : a ∈ A := by exact inclusion_cptA ha
+          have hb : b ∈ B := by exact inclusion_cptB hb
+          have h : a + b ∈ A + B := by apply add_mem_add ha hb
+          rw [← hx']
+          exact h
+        calc Aε + Bε ⊆ A + B := by apply feather
+        _ ⊆ C := by apply h
+      have feather : IsCompact Aε ∧ IsCompact Bε := by apply And.intro h_cptA h_cptB
+      exact goal_cpt Aε Bε C nonempty_cptA nonempty_cptB hC mAε mBε mC inclusion_cpt finAε finBε feather
 
     calc volume A + volume B < volume Aε + ε/2 + (volume Bε + ε/2) := by
             exact ENNReal.add_lt_add diff_cptA' diff_cptB'
