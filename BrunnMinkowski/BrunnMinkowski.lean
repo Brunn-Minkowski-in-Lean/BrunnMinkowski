@@ -71,9 +71,6 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
   have hABsumvol_pos : 0 < (A + B).volume :=
     lt_of_lt_of_le hAvol (convbody_vol_le_vol_add_right A B)
 
-  have hAvol_pow_ninv_pos : 0 < Avol ^ ninv := NNReal.rpow_pos hAvol
-  have hBvol_pow_ninv_pos : 0 < Bvol ^ ninv := NNReal.rpow_pos hBvol
-
   have prekopa_leindler_special_case {t : ℝ} (h0t : 0 < t) (ht1 : t < 1) :
         Avol ^ (1 - t) * Bvol ^ t
         ≤ ((1 - t) ^ (1 - t) * t ^ t) ^ n * (A + B).volume
