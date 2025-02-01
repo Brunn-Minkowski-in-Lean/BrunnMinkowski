@@ -24,7 +24,7 @@
     by the inner regularity of measure for finite measure sets.
     \begin{enumerate}
         \item If \(\widetilde{K}\) is nonempty, then we've done by taking \(K = \widetilde{K}\).
-        \item Otherwise, we assume that \(\widetilde{K} = \emptyset\) and take \(K = {a}\), where \(a\) is an element of \(A\), which exists since \(A\) is non-empty. 
+        \item Otherwise, we assume that \(\widetilde{K} = \emptyset\) and take \(K = \{a\}\), where \(a\) is an element of \(A\), which exists since \(A\) is non-empty. 
         It is trivial that \(K\) is nonempty. It is easy to see that \(K\) is compact since a set consisting of a singleton is compact.
         Additionally, we have \(K \subseteq A\) since \(a \in A\). Finally, we need to show that 
         \begin{equation*}
@@ -123,7 +123,7 @@
             Let \(A\) and \(B\) be non-empty measurable sets with finite measure. 
             Fix \(\epsilon>0\).
             
-            Then for any \(\epsilon/2>0\), there exists a non-empty compact subsets \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\) such that 
+            Then for \(\epsilon/2>0\), there exists a non-empty compact subsets \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\) such that 
             \begin{equation}
                 \mu(A \setminus A_\epsilon) < \epsilon/2 \quad \text{and} \quad \mu(B \setminus B_\epsilon) < \epsilon/2
                 \label{eqn: diff with cpt is small}
@@ -172,51 +172,67 @@
                 \mu(A) + \mu(B) < \mu(A_\epsilon) + \mu(B_\epsilon) + \epsilon \leq \mu(C) + \epsilon
             \end{equation*}
             where the first inequality holds from (\ref{eqn: volA bdd by Ae}) and (\ref{eqn: volB bdd by Be}) and the second follows from (\ref{eqn: BM for cpt}).
-            Since this argument holds for any fixed \(\epsilon>0\), the proof is complete.
+            Since this argument holds for any fixed \(\epsilon>0\), the proof is completed.
 
+            \item Now, we may assume that \(A\) and \(B\) are compact.
+            
+            Define the translated sets 
+            \begin{equation*}
+                A_t := \inf B + A \quad \text{and} \quad B_t := \sup A + B.
+            \end{equation*}
+            It is easy to see that 
+            \begin{equation*}
+                \mu(A_t) = \mu(A), \quad \text{and} \quad \mu(B_t) = \mu(B).
+            \end{equation*}
+
+            We first show that 
+            \begin{equation}
+                A_t \cup B_t \subseteq C.
+                \label{eqn: union At Bt included in C}
+            \end{equation}
+            We start by proving \(A_t = \inf B + A \subseteq C\). 
+            Since \(B\) is compact, we have \(\inf B \in B\), which implies that \(\{\inf B\} \subseteq B\).
+            Thus, 
+            \begin{equation*}
+                A_t = \inf B + A = \{\inf B\} + A \subseteq B + A = A + B
+            \end{equation*}
+            where the last eqality holds due to the commutativity of addition. 
+            By assumption, \(A + B \subseteq C\), so we conclude that \(A_t \subseteq C\).
+            Similarly, we obtain \(B_t = \sup A + B \subseteq C\).
+            Therefore, by using the above inclusions, we have the desired inclusion.
+            
+            Next, we show that 
+            \begin{equation*}
+                A_t \cap B_t = \{\sup A + \inf B\}.
+            \end{equation*}
+            We will first show that \(A_t \cap B_t \subseteq \{\sup A + \inf B\}\). 
+            Let \(x \in A_t \cap B_t\), which implies \(x \in A_t\) and \(x \in B_t\).
+            Then there exists \(a \in A\) such that \(x = \inf B + a\) since \(x \in A_t\). 
+            Similarly, there exists \(b \in B\) such that \(x = \sup A + b\) since \(x \in B_t\).
+            From this, we deduce \(x = \inf B + a \leq \inf B + \sup A\). 
+            Since \(A\) is compact, it is bounded by its supremum, which implies \(a \leq \sup A\).
+            Thus, we have established the required inequality. 
+            Similarly, we obtain that \(\sup A + \inf B \leq x\). 
+            These inequalities imply that \(x = \sup A + \inf B\) as required.
+
+            Conversely, let \(x = \sup A + \inf B\).
+            Since \(A\) is a non-empty compact set, we have \(\sup A \in A\).
+            Thus, \(x = \sup A + \inf B \in A + \inf B = A_t\).
+            Similarly, since \(\inf B \in B\), we have \(x = \sup A + \inf B \in \sup A + B = B_t\).
+            These prove that \(x \in A_t \cap B_t\).
+
+            Since \(A_t \cap B_t\) is a singleton set from the above argument, it has Lebesgue measure zero, 
+            i.e., \(\mu (At \cap Bt) = 0\).
+
+            Therefore, we see that 
+            \begin{eqnarray*}
+                \mu(A) + \mu(B) & = & \mu(A_t) + \mu(B_t)\\
+                & = & \mu(A_t) + \mu(B_t) - \mu(A_t \cap B_t)\\
+                & = & \mu(At \cup B_t)\\
+                & \leq & \mu (C)
+            \end{eqnarray*}
+            where the last inequlity follows from the monotonicity of the Lebesgue measure and~(\ref{eqn: union At Bt included in C}).
+            Thus, the proof is completed.
         \end{enumerate}
-        
-        -- TO-DO : complete the blueprint of Step 3 (under cpt setting)
-        
-        \item Since \(A\) and \(B\) are compact, { \(\sup A \in A\) and \(\inf B \in B\). Then} we see that each of the following translations of \(B\) and \(A\) is contained in~\(C\) as follows:
-        \begin{eqnarray*}
-            \sup A + B
-            % & \subseteq & \left[\sup A + \inf B, \sup A + \sup B\right]
-            {
-             \subseteq A + B} \subseteq C, \\
-            A + \inf B
-            % & \subseteq & \left[\inf A + \inf B, \sup A + \inf B\right]
-            {
-             \subseteq A + B} \subseteq C.
-        \end{eqnarray*}
-        
-        As the only intersection point of \(\sup A + B\) and \(A + \inf B\) is \(\sup A + \inf B\), we see that
-        \begin{equation*}
-            (A + \inf B) \cup (\sup A + B) \subseteq C.
-        \end{equation*}
-        % As the only intersection point of \(\sup A + B\) and \(A + \inf B\) is \(\sup A + \inf B\), the above two intervals \(A + \inf B\) and \(\sup A + B\) are nonoverlapping.
-        {
-        \begin{lemma}
-            For measurable sets \(A\) and \(B\),
-            \(\mu(A \cup B) = \mu(A) + \mu(B) - \mu(A \cap B)\).
-        \end{lemma}
-        \begin{lemma}
-            For measurable set \(A\subset \mathbb{R}\) and \(x \in \mathbb{R}\), \(\mu(x+A) = \mu(A)\).
-        \end{lemma}
-        }
-        We first observe that
-        \begin{eqnarray*}
-            \mu\left((A+\inf B) \cup (\sup A + B)\right) & = & \mu(A+\inf B) + \mu(\sup A + B) - \mu(\sup A + \inf B)\\
-            & = & \mu(A) + \mu(B).
-        \end{eqnarray*}
-        {
-        \begin{lemma}
-            For measurable sets \(A\) and \(B\) satisfying \(A \subseteq B\), \(\mu(A) \leq \mu(B)\).
-        \end{lemma}
-        }
-        Thus, we see that
-        \begin{equation*}
-            \mu(A) + \mu(B) = \mu\left((A+\inf B) \cup (\sup A + B)\right) \leq \mu(C).
-        \end{equation*}
     \end{enumerate}
 \end{proof}

@@ -225,32 +225,32 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
   obtain ⟨cA, cB⟩ := cAB
   set At := sInf B +ᵥ A with eq_At
   set Bt := sSup A +ᵥ B with eq_Bt
+
   have eq_At_vol : volume At = volume A := by
-    rw [eq_At]
-    simp only [measure_vadd]
+    -- rw [eq_At]
+    simp_all only [measure_vadd]
+
   have eq_Bt_vol : volume Bt = volume B := by
-    rw [eq_Bt]
-    simp only [measure_vadd]
-  have sub_At : At ⊆ C := by
-    rw [eq_At]
-    apply Subset.trans _ h
-    rw [add_comm]
-    rw [← Set.singleton_vadd]
-    apply Set.add_subset_add_right
-    simp only [singleton_subset_iff]
-    exact cB.sInf_mem hB
-  have sub_Bt : Bt ⊆ C := by
-    rw [eq_Bt]
-    apply Subset.trans _ h
-    rw [← Set.singleton_vadd]
-    apply Set.add_subset_add_right
-    simp only [singleton_subset_iff]
-    exact cA.sSup_mem hA
+    -- rw [eq_Bt]
+    simp_all only [measure_vadd]
+
   have cup_At_Bt : At ∪ Bt ⊆ C := by
-    simp only [union_subset_iff]
-    constructor
-    · exact sub_At
-    · exact sub_Bt
+    have sub_At : At ⊆ C := by
+      rw [eq_At]
+      apply Subset.trans _ h
+      rw [add_comm, ← Set.singleton_vadd]
+      apply Set.add_subset_add_right
+      simp only [singleton_subset_iff]
+      exact cB.sInf_mem hB
+    have sub_Bt : Bt ⊆ C := by
+      rw [eq_Bt]
+      apply Subset.trans _ h
+      rw [← Set.singleton_vadd]
+      apply Set.add_subset_add_right
+      simp only [singleton_subset_iff]
+      exact cA.sSup_mem hA
+    exact union_subset_iff.mpr ⟨sub_At, sub_Bt⟩
+
   have m_zero_AtBt : volume (At ∩ Bt) = 0 := by
     have cap_At_Bt : At ∩ Bt = {sSup A + sInf B} := by
       rw [Set.ext_iff]
@@ -267,7 +267,9 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
         obtain ⟨hb, hbx⟩ := hb
         have upper_x : x ≤ sInf B + sSup A := by
           rw [← hax]
+          -- simp [(le_csSup (IsCompact.bddAbove cA) ha)]
           have a_le_supA : a ≤ sSup A := by
+          --   -- exact le_csSup (IsCompact.bddAbove cA) ha
             have bdd_A : BddAbove A := by exact IsCompact.bddAbove cA
             exact le_csSup bdd_A ha
           simp [a_le_supA]
