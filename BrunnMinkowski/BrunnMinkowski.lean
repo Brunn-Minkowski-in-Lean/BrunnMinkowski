@@ -49,8 +49,8 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
   let ninv := (n⁻¹ : ℝ)
   have hn_mul_ninv_eq_one : (n : ℝ) * ninv = 1 := by simp [ninv, ngz]
 
-  set Avol := A.volume with eq_Avol
-  set Bvol := B.volume with eq_Bvol
+  set Avol := A.volume
+  set Bvol := B.volume
 
   rcases eq_zero_or_pos Avol with hAvol | hAvol
   · simp only [hAvol, ne_eq, inv_eq_zero, Nat.cast_eq_zero, ngz, not_false_eq_true,
