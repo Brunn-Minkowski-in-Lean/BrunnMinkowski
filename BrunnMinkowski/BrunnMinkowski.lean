@@ -30,18 +30,21 @@ lemma convbody_vol_le_vol_add_right (A B: ConvexBody (ℝn n)) :
   calc
     A.volume
       = (A + singleton_to_convbody b).volume := by
-      simp [ConvexBody.volume]
+      simp only [ConvexBody.volume, ConvexBody.coe_add]
       apply (ENNReal.toNNReal_eq_toNNReal_iff'
         (convbody_set_vol_ne_top A)
         (convbody_set_vol_ne_top (A + singleton_to_convbody b))).mpr
-      simp [singleton_to_convbody]
+      simp only [singleton_to_convbody,
+        ConvexBody.coe_add, ConvexBody.coe_mk, Set.add_singleton,
+        Set.image_add_right, MeasureTheory.measure_preimage_add_right]
     _ ≤ (A + B).volume := by
-      simp [ConvexBody.volume]
+      simp only [ConvexBody.volume, ConvexBody.coe_add]
       apply ENNReal.toNNReal_mono
       · exact convbody_set_vol_ne_top (A + B)
       · apply MeasureTheory.measure_mono
         apply Set.add_subset_add_left
-        simp_all [singleton_to_convbody, SetLike.mem_coe]
+        simp only [singleton_to_convbody, ConvexBody.coe_mk,
+          Set.singleton_subset_iff, hb]
 
 -- Brunn-Minkowski inequality
 theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
@@ -57,13 +60,15 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
 
   by_cases hAvol_zero : A.volume = 0
   · -- Assume A.volume = 0
-    simp [hAvol_zero, ngz]
+    simp only [hAvol_zero, ne_eq, inv_eq_zero, Nat.cast_eq_zero,
+      ngz, not_false_eq_true, NNReal.zero_rpow, zero_add, ge_iff_le, ninv]
     rw [add_comm, NNReal.rpow_le_rpow_iff]
     exact convbody_vol_le_vol_add_right B A
     positivity
   by_cases hBvol_zero : B.volume = 0
   · -- Assume B.volume = 0
-    simp [hBvol_zero, ngz]
+    simp only [hBvol_zero, ne_eq, inv_eq_zero, Nat.cast_eq_zero,
+      ngz, not_false_eq_true, NNReal.zero_rpow, add_zero, ge_iff_le, ninv]
     rw [NNReal.rpow_le_rpow_iff]
     exact convbody_vol_le_vol_add_right A B
     positivity
@@ -89,24 +94,42 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
       -- Check the indicator functions satisfy the condition of Prékopa-Leindler
       have hind_cond (x y : ℝn n) : (ind_A x) ^ (1 - t) * (ind_B y) ^ t
           ≤ ind_ABsum (x + y) := by
-        by_cases hx_nin_A : x ∉ A
+        by_cases hx_nin_A : x ∉ (A : Set (ℝn n))
         · -- Assume x ∉ A
-          simp [ind_A, hx_nin_A]
-          rw [Real.zero_rpow (by simp [ne_of_gt, ht1])]
-          simp [ind_ABsum, Set.indicator_apply_nonneg]
+          unfold ind_A ind_ABsum
+          rw [Set.indicator_of_not_mem hx_nin_A]
+          have h1_sub_t_lt_0 : 1 - t ≠ 0 := by apply ne_of_gt; rwa [sub_pos]
+          rw [Real.zero_rpow h1_sub_t_lt_0, zero_mul]
+          apply Set.indicator_apply_nonneg
+          rw [Pi.one_apply]
+          simp only [zero_le_one, implies_true] -- or norm_num?
+          -- equivalent with:
+          -- simp only [zero_mul, Pi.one_apply, zero_le_one, Set.indicator_apply_nonneg, ind_ABsum, implies_true]
         by_cases hy_nin_B : y ∉ B
-        · -- Assume y ≠ B
-          simp [ind_B, hy_nin_B]
-          rw [Real.zero_rpow (by exact ne_of_gt h0t)]
-          simp [ind_ABsum, Set.indicator_apply_nonneg]
+        · -- Assume y ∉ B
+          unfold ind_B ind_ABsum
+          rw [Set.indicator_of_not_mem hy_nin_B]
+          rw [Real.zero_rpow (by exact ne_of_gt h0t), mul_zero]
+          apply Set.indicator_apply_nonneg
+          rw [Pi.one_apply]
+          simp only [zero_le_one, implies_true]
         -- Now assume x ∈ A and y ∈ B
-        have hx_in_A : x ∈ A := by contrapose hx_nin_A; simp [hx_nin_A]
-        have hy_in_B : y ∈ B := by contrapose hy_nin_B; simp [hy_nin_B]
-        have hxy_in_ABsum : x + y ∈ (A + B : Set (ℝn n)) := by
+        have hx_in_A : x ∈ A := by
+          simp only [not_not] at hx_nin_A
+          exact hx_nin_A
+        have hy_in_B : y ∈ B := by
+          simp only [not_not] at hy_nin_B
+          exact hy_nin_B
+        have hxy_sum_in_AB_sum : x + y ∈ (A + B : Set (ℝn n)) := by
           rw [Set.mem_add]
           exact ⟨x, hx_in_A, y, hy_in_B, rfl⟩
 
-        simp [ind_A, ind_B, ind_ABsum, hx_in_A, hy_in_B, hxy_in_ABsum]
+        simp only [ind_A, ind_B, ind_ABsum]
+        iterate 3 rw [Set.indicator_of_mem _]
+        rotate_left
+        exact hxy_sum_in_AB_sum; exact hy_in_B; exact hx_in_A
+        simp only [Pi.one_apply, Real.one_rpow, mul_one, le_refl] -- or norm_num
+
 
       have prekopa_leinler_app := prekopa_leindler h0t ht1
           ind_A ind_B ind_ABsum hind_cond
