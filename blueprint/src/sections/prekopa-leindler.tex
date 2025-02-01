@@ -1,6 +1,6 @@
-\section{Pr\'{e}kopa-Leindler thoerem}
+\section{Pr\'{e}kopa--Leindler thoerem}
 
-\begin{theorem}
+\begin{theorem}[Pr\'{e}kopa--Leindler]
     \label{thm:prekopa-leindler}
     \lean{PrekopaLeindler.prekopa_leindler}
     Let \(0<t<1\) be real and \(d\) be a nonnegative integer. Let \(f,g,h\colon \RR^d\to \RR\) be nonnegative measurable functions such that for all \(x,y\in \RR^d\),
@@ -9,7 +9,7 @@
     \end{equation}
     Then
     \[
-        \biggl( \int f(x) \biggr)^{\!1-t} \biggl( \int g(y) \biggr)^{\!t} \le (1-t)^{d(1-t)} t^{dt} \int h(x) \diff x.
+        \biggl( \int f(x) \diff x \biggr)^{\!1-t} \biggl( \int g(y) \diff y \biggr)^{\!t} \le (1-t)^{d(1-t)} t^{dt} \int h(x) \diff x.
     \]
 \end{theorem}
 
@@ -17,6 +17,16 @@
     If \Cref{thm:prekopa-leindler} holds for \(d=d_1\) and \(d_2\), then it also holds for \(d=d_1+d_2\).
 \end{lemma}
 \begin{proof}
-    Let \(f,g,h\colon \RR^{d_1+d_2}\to \RR\) be functions which satisfy \eqref{eq:prekopa-leindler_cond}. We may regard them as the functions whose domains are \(\RR^{d_1}\times \RR^{d_2}\). Then for any \(x_1,y_1\in \RR^{d_1}\), the functions \(f(x_1,\cdot)\), \(g(y_1,\cdot)\), and \(h(x_1+y_1,\cdot)\) satisfy \eqref{eq:prekopa-leindler_cond} in dimension \(d_2\).
+    Let \(f,g,h\colon \RR^{d_1+d_2}\to \RR\) be functions which satisfy \eqref{eq:prekopa-leindler_cond}. We may regard them as the functions whose domains are \(\RR^{d_1}\times \RR^{d_2}\). Then for any \(x_1,y_1\in \RR^{d_1}\), the functions \(f(x_1,\cdot)\), \(g(y_1,\cdot)\), and \(h(x_1+y_1,\cdot)\) satisfy \eqref{eq:prekopa-leindler_cond} in dimension \(d_2\). Applying \Cref{thm:prekopa-leindler} for \(d=d_2\) yields that
+    \[
+        F(x_1)^{\!1-t} G(y_1)^{\!t}
+        \le (1-t)^{d_2(1-t)} t^{d_2t} H(x_1+y_1),
+    \]
+    where
+    \begin{align*}
+        F(x_1) &\defeq \int f(x_1,\cdot) \diff x_2, \\
+        G(y_1) &\defeq \int g(y_1,\cdot) \diff y_2, \\
+        H(z) &\defeq \int h(z,\cdot) \diff z_2.
+    \end{align*}
 \end{proof}
 
