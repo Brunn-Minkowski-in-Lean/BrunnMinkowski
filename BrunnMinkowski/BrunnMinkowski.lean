@@ -1,7 +1,4 @@
 import Mathlib.Analysis.Convex.Body
-import Mathlib.MeasureTheory.Measure.Haar.OfBasis
-import Mathlib.Order.CompletePartialOrder
-import BrunnMinkowski.EuclideanSpace
 import BrunnMinkowski.PrekopaLeindler
 
 open scoped Pointwise NNReal
