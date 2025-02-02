@@ -32,12 +32,10 @@ lemma convbody_vol_le_vol_add_right (A B: ConvexBody (ℝn n)) :
         MeasureTheory.measure_preimage_add_right]
     _ ≤ (A + B).volume := by
       simp only [ConvexBody.volume, ConvexBody.coe_add]
-      apply ENNReal.toNNReal_mono
-      · exact convbody_set_vol_ne_top (A + B)
-      · apply MeasureTheory.measure_mono
-        apply Set.add_subset_add_left
-        simp only [singleton_to_convbody, ConvexBody.coe_mk,
-          Set.singleton_subset_iff, hb]
+      refine ENNReal.toNNReal_mono (convbody_set_vol_ne_top (A + B))
+        (MeasureTheory.measure_mono (Set.add_subset_add_left ?_))
+      simp only [singleton_to_convbody, ConvexBody.coe_mk,
+        Set.singleton_subset_iff, hb]
 
 -- Brunn-Minkowski inequality
 theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
