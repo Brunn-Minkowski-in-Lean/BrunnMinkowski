@@ -11,7 +11,7 @@
     Let \(A\) be a non-empty measurable set with finite measure. 
     Then for any \(\epsilon > 0\), there exists a non-empty compact subset \(K \subseteq A\) such that 
     \begin{equation*}
-        \mu(A \setminus K) < \epsilon
+        \mu(A \setminus K) < \epsilon.
     \end{equation*}
     \label{lemma: exists_isCompact_Nonempty_diff_lt}
 \end{lemma}
@@ -28,13 +28,13 @@
         It is trivial that \(K\) is nonempty. It is easy to see that \(K\) is compact since a set consisting of a singleton is compact.
         Additionally, we have \(K \subseteq A\) since \(a \in A\). Finally, we need to show that 
         \begin{equation*}
-            \mu(A \setminus {a}) < \epsilon.
+            \mu(A \setminus \{a\}) < \epsilon.
         \end{equation*}
         First, we note that \(\mu(A)<\epsilon\) since \(\widetilde{K} = \emptyset\), which implies \(\mu(A\setminus \widetilde{K}) = \mu(A) < \epsilon\).
-        Moreover, we observe that \(\mu(A \setminus {a}) \leq \mu(A)\), since \(A\setminus {a} \subseteq A\) and by the monotonicity of the measure. 
+        Moreover, we observe that \(\mu(A \setminus \{a\}) \leq \mu(A)\), since \(A\setminus \{a\} \subseteq A\) and by the monotonicity of the measure. 
         Thus, we conclude that
         \begin{equation*}
-            \mu (A \setminus {a}) \leq \mu(A) < \epsilon.
+            \mu (A \setminus \{a\}) \leq \mu(A) < \epsilon.
         \end{equation*}
     \end{enumerate}
 \end{proof}
@@ -182,7 +182,7 @@
             \end{equation*}
             It is easy to see that 
             \begin{equation*}
-                \mu(A_t) = \mu(A), \quad \text{and} \quad \mu(B_t) = \mu(B).
+                \mu(A_t) = \mu(A) \quad \text{and} \quad \mu(B_t) = \mu(B).
             \end{equation*}
 
             We first show that 
@@ -228,7 +228,7 @@
             \begin{eqnarray*}
                 \mu(A) + \mu(B) & = & \mu(A_t) + \mu(B_t)\\
                 & = & \mu(A_t) + \mu(B_t) - \mu(A_t \cap B_t)\\
-                & = & \mu(At \cup B_t)\\
+                & = & \mu(A_t \cup B_t)\\
                 & \leq & \mu (C)
             \end{eqnarray*}
             where the last inequlity follows from the monotonicity of the Lebesgue measure and~(\ref{eqn: union At Bt included in C}).

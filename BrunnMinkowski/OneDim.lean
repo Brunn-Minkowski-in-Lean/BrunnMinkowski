@@ -68,8 +68,7 @@ lemma volume_le_volume_add_right
     _ ≤ volume (A + B) := by
       apply measure_mono
       apply add_subset_add_left
-      rw [singleton_subset_iff]
-      exact hb
+      exact singleton_subset_iff.mpr hb
 
 lemma volume_le_volume_add_left
     {A B : Set ℝ} (hB : B.Nonempty)
@@ -97,40 +96,43 @@ have hhh' : volume B ≤ volume C := by
 
 #check MeasurableSet.exists_isCompact_lt_add
 
--- important TODO: complete this
 lemma MeasurableSet.exists_isCompact_Nonempty_diff_lt
     {α : Type} [MeasurableSpace α] {μ : Measure α} [TopologicalSpace α]
     [OpensMeasurableSpace α] [T2Space α] [μ.InnerRegularCompactLTTop]
     {A : Set α} (hA : A.Nonempty) (mA : MeasurableSet A) (h'A : μ A ≠ ⊤)
     {ε : ENNReal} (hε : ε ≠ 0) : ∃ K ⊆ A, K.Nonempty ∧ IsCompact K ∧ μ (A \ K) < ε := by
-  -- rcases mA.exists_isCompact_diff_lt h'A hε with ⟨K, inclusion_K, cpt_K, diff_K⟩
-  obtain ⟨K, inclusion_K, cpt_K, diff_K⟩ := mA.exists_isCompact_diff_lt h'A hε
-  by_cases nonempty_K : K.Nonempty
-  · exact ⟨K, inclusion_K, nonempty_K, cpt_K, diff_K⟩
-  -- push_neg at nonempty_K
-  obtain ⟨a, ha⟩ := hA
-  use {a}
-  simp [singleton_nonempty, isCompact_singleton]
-  constructor
-  · exact ha
-  · push_neg at nonempty_K
-    have small_A : μ A < ε := by
-      rw [nonempty_K] at diff_K
-      simp_all
-    have bound_mAa : μ (A \ {a}) ≤ μ A := by simp only [diff_subset, measure_mono]
-      -- have feather : A \ {a} ⊆ A := by exact diff_subset
-      -- exact measure_mono feather
-    calc μ (A \ {a}) ≤ μ A := by exact bound_mAa
-    _ < ε := by exact small_A
+  obtain ⟨K_tilde, inclusion_K_tilde, cpt_K_tilde, diff_K_tilde⟩ := mA.exists_isCompact_diff_lt h'A hε
+  by_cases nonempty_K_tilde : K_tilde.Nonempty
+  · -- K_tilde is nonempty : Take K = K_tilde
+    exact ⟨K_tilde, inclusion_K_tilde, nonempty_K_tilde, cpt_K_tilde, diff_K_tilde⟩
+  · -- K_tilde is empty
+    obtain ⟨a, ha⟩ := hA
+    use {a} -- Take K = {a}
+    constructor
+    · -- {a} ⊆ A
+      exact singleton_subset_iff.mpr ha
+    · constructor
+      · -- {a} is nonempty
+        exact singleton_nonempty a
+      · constructor
+        · -- {a} is cpt
+          exact isCompact_singleton
+        · -- μ (A \ {a}) ≤ μ A
+          have small_A : μ A < ε := by
+            push_neg at nonempty_K_tilde
+            rw [nonempty_K_tilde, diff_empty] at diff_K_tilde
+            exact diff_K_tilde
+          have bound_mAa : μ (A \ {a}) ≤ μ A := by
+            simp only [diff_subset, measure_mono]
+          calc
+            μ (A \ {a}) ≤ μ A := by exact bound_mAa
+            _ < ε := by exact small_A
 
 lemma one_dim_BMInequality (A B C : Set ℝ)
-    -- TODO: remove the line below
-    -- [TopologicalSpace ℝ] [OpensMeasurableSpace ℝ] [T2Space ℝ]
     (hA : A.Nonempty) (hB : B.Nonempty) (hC : C.Nonempty)
     (mA : MeasurableSet A) (mB : MeasurableSet B) (mC : MeasurableSet C)
     (h : A + B ⊆ C)
     : volume A + volume B ≤ volume C := by
-    --
   by_cases finA : volume A = ⊤
   · -- A is infinite
     rw [finA, _root_.top_add, ← finA]
@@ -148,15 +150,16 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
   wlog cAB : IsCompact A ∧ IsCompact B with goal_cpt
   · -- Prove non-cpt A, B case assuming cpt A, B case
     apply le_of_forall_pos_lt_add'
-    -- le_of_forall_pos_le_add
     intros ε hε
     have hε' : (ε/2) ≠ 0 := by
       by_contra he
       have he : ε = 0 := by
         rw [ENNReal.div_eq_zero_iff] at he
-        simp_all only [and_imp, not_and, ENNReal.ofNat_ne_top, or_false]
-      rw [he] at hε
-      rw [lt_self_iff_false] at hε
+        cases' he with zero_ε two_eq_top
+        · exact zero_ε
+        · contradiction
+        -- simp_all only [and_imp, not_and, ENNReal.ofNat_ne_top, or_false]
+      rw [he, lt_self_iff_false] at hε
       exact hε
     obtain ⟨Aε, inclusion_cptA, nonempty_cptA, h_cptA, diff_cptA⟩ :=
       MeasurableSet.exists_isCompact_Nonempty_diff_lt hA mA finA hε'
@@ -171,12 +174,13 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     have finAε : volume Aε ≠ ⊤ := by
       by_contra inftyAε
       have feather : volume Aε ≤ volume A := by exact measure_mono inclusion_cptA
-      simp_all
-
+      rw [inftyAε, top_le_iff] at feather
+      contradiction
     have finBε : volume Bε ≠ ⊤ := by
       by_contra inftyBε
       have feather : volume Bε ≤ volume B := by exact measure_mono inclusion_cptB
-      simp_all
+      rw [inftyBε, top_le_iff] at feather
+      contradiction
 
     have diff_cptA' : volume A < volume Aε + ε/2 := by
       have feather1 : volume A = volume Aε + volume (A\Aε) := by
@@ -215,7 +219,6 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     calc volume A + volume B < volume Aε + ε/2 + (volume Bε + ε/2) := by
             exact ENNReal.add_lt_add diff_cptA' diff_cptB'
     _ = volume Aε + volume Bε + ε := by
-      -- ring_nf
       simp only [add_left_comm, add_halves, ←add_assoc]
       rw [add_assoc]
       simp_all [add_assoc]
@@ -227,12 +230,12 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
   set Bt := sSup A +ᵥ B with eq_Bt
 
   have eq_At_vol : volume At = volume A := by
-    -- rw [eq_At]
-    simp_all only [measure_vadd]
+    rw [eq_At]
+    simp only [measure_vadd]
 
   have eq_Bt_vol : volume Bt = volume B := by
-    -- rw [eq_Bt]
-    simp_all only [measure_vadd]
+    rw [eq_Bt]
+    simp only [measure_vadd]
 
   have cup_At_Bt : At ∪ Bt ⊆ C := by
     have sub_At : At ⊆ C := by
@@ -257,7 +260,6 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
       intro x
       constructor
       · intro hx
-        simp_all
         obtain ⟨xAt, xBt⟩ := hx
         apply mem_vadd_set.mp at xAt
         cases' xAt with a ha
@@ -278,11 +280,13 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
           have infB_le_b : sInf B ≤ b := by
             have bdd_B : BddBelow B := by exact IsCompact.bddBelow cB
             exact csInf_le bdd_B hb
-          simp [infB_le_b]
+          subst hbx
+          rw [vadd_eq_add, add_le_add_iff_left]
+          exact infB_le_b
         rw [add_comm] at upper_x
         exact le_antisymm upper_x lower_x
       · intro hx
-        simp at hx
+        apply mem_singleton_iff.mp at hx
         constructor
         · have x_At : sSup A + sInf B ∈ sInf B +ᵥ A := by
             have supA_A : sSup A ∈ A := by exact IsCompact.sSup_mem cA hA
@@ -297,11 +301,16 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
           simp only [hx, eq_Bt, x_Bt]
     calc volume (At ∩ Bt) = volume {sSup A + sInf B} := by rw [cap_At_Bt]
     _ = 0 := by rw [Real.volume_singleton]
-  calc volume A + volume B = volume At + volume Bt - 0 := by simp [eq_At_vol, eq_Bt_vol]
+  calc volume A + volume B = volume At + volume Bt - 0 := by rw [eq_At_vol, eq_Bt_vol, tsub_zero]
   _ = volume At + volume Bt - volume (At ∩ Bt) := by rw [← m_zero_AtBt]
   _ = volume (At ∪ Bt) := by
     have vol_union_AtBt : volume (At ∪ Bt) + volume (At ∩ Bt) = volume At + volume Bt := by
       have mBt : MeasurableSet Bt := by exact MeasurableSet.const_vadd mB (sSup A)
       exact measure_union_add_inter At mBt
-    simp_all
+    have m_not_top_AtBt : volume (At ∩ Bt) ≠ ⊤ := by
+      by_contra feather
+      rw [m_zero_AtBt] at feather
+      contradiction
+    rw [←vol_union_AtBt, add_comm, ENNReal.add_sub_cancel_left]
+    exact m_not_top_AtBt
   _ ≤ volume C := by exact measure_mono cup_At_Bt
