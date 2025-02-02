@@ -3,7 +3,7 @@
 \begin{theorem}[Pr\'{e}kopa--Leindler]
     \label{thm:prekopa-leindler}
     \lean{PrekopaLeindler.prekopa_leindler}
-    Let \(0<t<1\) be real and \(d\) be a nonnegative integer. Let \(f,g,h\colon \RR^d\to \RR\) be nonnegative measurable functions such that for all \(x,y\in \RR^d\),
+    Let \(0<t<1\) be real and \(d\) be a nonnegative integer. Let \(f,g,h\colon \RR^d\to \RR\) be nonnegative integrable functions such that for all \(x,y\in \RR^d\),
     \begin{equation}\label{eq:prekopa-leindler_cond}
         f(x)^{1-t} g(y)^{t} \le h(x+y).
     \end{equation}
@@ -17,16 +17,22 @@
     If \Cref{thm:prekopa-leindler} holds for \(d=d_1\) and \(d_2\), then it also holds for \(d=d_1+d_2\).
 \end{lemma}
 \begin{proof}
-    Let \(f,g,h\colon \RR^{d_1+d_2}\to \RR\) be functions which satisfy \eqref{eq:prekopa-leindler_cond}. We may regard them as the functions whose domains are \(\RR^{d_1}\times \RR^{d_2}\). Then for any \(x_1,y_1\in \RR^{d_1}\), the functions \(f(x_1,\cdot)\), \(g(y_1,\cdot)\), and \(h(x_1+y_1,\cdot)\) satisfy \eqref{eq:prekopa-leindler_cond} in dimension \(d_2\). Applying \Cref{thm:prekopa-leindler} for \(d=d_2\) yields that
-    \[
-        F(x_1)^{\!1-t} G(y_1)^{\!t}
+    Let \(f,g,h\colon \RR^{d_1+d_2}\to \RR\) be nonnegative integrable functions which satisfy \eqref{eq:prekopa-leindler_cond}. We may regard them as the functions whose domains are \(\RR^{d_1}\times \RR^{d_2}\). Then for any \(x_1,y_1\in \RR^{d_1}\), the functions \(f(x_1,\cdot)\), \(g(y_1,\cdot)\), and \(h(x_1+y_1,\cdot)\) satisfy \eqref{eq:prekopa-leindler_cond} in dimension \(d_2\). Applying \Cref{thm:prekopa-leindler} for \(d=d_2\) yields that
+    \begin{equation}\label{eq:FGH_cond}
+        F(x_1)^{1-t} G(y_1)^{t}
         \le (1-t)^{d_2(1-t)} t^{d_2t} H(x_1+y_1),
-    \]
+    \end{equation}
     where
-    \begin{align*}
-        F(x_1) &\defeq \int f(x_1,\cdot) \diff x_2, \\
-        G(y_1) &\defeq \int g(y_1,\cdot) \diff y_2, \\
-        H(z) &\defeq \int h(z,\cdot) \diff z_2.
-    \end{align*}
+    \[
+        F(x_1) \defeq \int f(x_1,\cdot) \diff x_2, \qquad
+        G(y_1) \defeq \int g(y_1,\cdot) \diff y_2, \qquad
+        H(z) \defeq \int h(z,\cdot) \diff z_2.
+    \]
+    Regarding \eqref{eq:FGH_cond} as the condition \eqref{eq:prekopa-leindler_cond} for \Cref{thm:prekopa-leindler}, we can apply the theorem for \(d=d_1\) using \(F\), \(G\), and \((1-t)^{d_2(1-t)} t^{d_2 t} H\). This gives
+    \[
+        \biggl( \int F(x) \diff x \biggr)^{\!1-t} \biggl( \int G(y) \diff y \biggr)^{\!t} 
+        \le (1-t)^{d_1(1-t)} t^{dt} \int (1-t)^{d_2(1-t)} t^{d_2 t} H(x) \diff x.
+    \]
+    Unfolding the definitions of \(F\), \(G\), and \(H\), and applying the Fubini--Tonelli theorem complete the proof.
 \end{proof}
 
