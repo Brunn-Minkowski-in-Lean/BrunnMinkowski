@@ -33,19 +33,19 @@ lemma convbody_vol_le_vol_add_right (A B: ConvexBody (ℝn n)) :
       simp [ConvexBody.volume]
       simp [singleton_to_convbody]
     _ ≤ (A + B).volume := by
-      simp [ConvexBody.volume]
+      simp only [ConvexBody.volume, ConvexBody.coe_add]
       apply ENNReal.toNNReal_mono
       · exact convbody_set_vol_ne_top (A + B)
       · apply MeasureTheory.measure_mono
         apply Set.add_subset_add_left
-        simp_all [singleton_to_convbody, SetLike.mem_coe]
+        simp only [singleton_to_convbody, ConvexBody.coe_mk,
+          Set.singleton_subset_iff, hb]
 
 -- Brunn-Minkowski inequality
 theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
     A.volume ^ (n⁻¹ : ℝ) + B.volume ^ (n⁻¹ : ℝ) ≤
     (A + B).volume ^ (n⁻¹ : ℝ) := by
 
-  -- Assume n is nonzero
   let ninv := (n⁻¹ : ℝ)
   have hn_mul_ninv_eq_one : (n : ℝ) * ninv = 1 := by simp [ninv, ngz]
 
@@ -82,52 +82,62 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
           ≤ ind_ABsum (x + y) := by
         by_cases hx_nin_A : x ∉ A
         · -- Assume x ∉ A
-          simp [ind_A, hx_nin_A]
-          rw [Real.zero_rpow (by simp [ne_of_gt, ht1])]
-          simp [ind_ABsum, Set.indicator_apply_nonneg]
+          have h1_sub_t_lt_0 : 1 - t ≠ 0 := by apply ne_of_gt; rwa [sub_pos]
+          simp only [ind_A ,ind_ABsum,
+            Set.indicator_of_not_mem hx_nin_A,
+            Real.zero_rpow h1_sub_t_lt_0, zero_mul, Set.indicator_apply_nonneg,
+            Pi.one_apply, zero_le_one, implies_true]
         by_cases hy_nin_B : y ∉ B
-        · -- Assume y ≠ B
-          simp [ind_B, hy_nin_B]
-          rw [Real.zero_rpow (by exact ne_of_gt h0t)]
-          simp [ind_ABsum, Set.indicator_apply_nonneg]
+        · -- Assume y ∉ B
+          simp only [ind_B ,ind_ABsum,
+            Set.indicator_of_not_mem hy_nin_B,
+            Real.zero_rpow (by exact ne_of_gt h0t), mul_zero,
+            Set.indicator_apply_nonneg, Pi.one_apply, zero_le_one, implies_true]
         -- Now assume x ∈ A and y ∈ B
-        have hx_in_A : x ∈ A := by contrapose hx_nin_A; simp [hx_nin_A]
-        have hy_in_B : y ∈ B := by contrapose hy_nin_B; simp [hy_nin_B]
-        have hxy_in_ABsum : x + y ∈ (A + B : Set (ℝn n)) := by
+        have hx_in_A : x ∈ A := of_not_not hx_nin_A
+        have hy_in_B : y ∈ B := of_not_not hy_nin_B
+        have hxy_sum_in_AB_sum : x + y ∈ (A + B : Set (ℝn n)) := by
           rw [Set.mem_add]
           exact ⟨x, hx_in_A, y, hy_in_B, rfl⟩
 
-        simp [ind_A, ind_B, ind_ABsum, hx_in_A, hy_in_B, hxy_in_ABsum]
+        simp only [ind_A, ind_B, ind_ABsum]
+        iterate 3 rw [Set.indicator_of_mem _]
+        rotate_left
+        exact hxy_sum_in_AB_sum; exact hy_in_B; exact hx_in_A
+        norm_num
 
+      -- Apply t = θ in Prékopa-Leindler
       have prekopa_leinler_app := prekopa_leindler h0t ht1
           ind_A ind_B ind_ABsum hind_cond
 
       -- ∫ indicator function of C = C.volume
-      have hind_ConvBody_int_eq_vol (C : ConvexBody (ℝn n)) {f : (ℝn n) → ℝ} :
-          f = (C : Set (ℝn n)).indicator 1 →
+      have hind_ConvBody_int_eq_vol (C : ConvexBody (ℝn n)) {f : (ℝn n) → ℝ} (hf : f = (C : Set (ℝn n)).indicator 1) :
           ∫ x, f x = C.volume := by
-        intro hf
         rw [hf, MeasureTheory.integral_indicator_one]
-        simp [ConvexBody.volume, ENNReal.coe_toNNReal_eq_toReal]
+        simp only [hf, MeasureTheory.integral_indicator_one,
+          ConvexBody.volume, ENNReal.coe_toNNReal_eq_toReal]
         apply IsCompact.measurableSet C.isCompact
 
       -- Modify the special case of Prékopa–Leindler
-      simp [ind_A, ind_B, ind_ABsum] at prekopa_leinler_app
+      unfold ind_A ind_B ind_ABsum at prekopa_leinler_app
       rw [hind_ConvBody_int_eq_vol A (by rfl),
         hind_ConvBody_int_eq_vol B (by rfl),
         hind_ConvBody_int_eq_vol (A + B) (by rfl)] at prekopa_leinler_app
 
       -- Modify the goal
       rw [mul_pow,
-        ← Real.rpow_mul_natCast (by simp; exact le_of_lt ht1),
-        ← Real.rpow_mul_natCast (by positivity)]
-      simpa [mul_comm] using prekopa_leinler_app
+        ← Real.rpow_mul_natCast (by rw [sub_nonneg]; exact le_of_lt ht1),
+        ← Real.rpow_mul_natCast (by exact le_of_lt h0t)]
+      simpa only [mul_comm] using prekopa_leinler_app
 
   -- Prepare θ as an input in t
   let θ : ℝ := Bvol ^ ninv / (Avol ^ ninv + Bvol ^ ninv)
 
-  have hone_minus_θ : 1 - θ = Avol ^ ninv / (Avol ^ ninv + Bvol ^ ninv)
-    := by field_simp [θ]
+  have hone_minus_θ : 1 - θ = Avol ^ ninv / (Avol ^ ninv + Bvol ^ ninv) := by
+    unfold θ
+    have : (Avol : ℝ) ^ ninv + (Bvol : ℝ) ^ ninv ≠ 0 := by positivity
+    rw [eq_div_iff this, sub_mul, div_mul_cancel₀ _ this, one_mul,
+      add_sub_cancel_right]
 
   have hθ : 0 < θ ∧ θ < 1 := by
     unfold θ
@@ -136,50 +146,42 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
       positivity
     · -- θ < 1
       have hhh: 0 < (Avol : ℝ) ^ ninv + (Bvol : ℝ) ^ ninv := by positivity
-      simp [div_lt_one hhh]
+      simp only [div_lt_one hhh, lt_add_iff_pos_left]
       positivity
 
-  -- Modify the special case of Prékopa–Leindler
-  have prekopa_leindler_special_case' := prekopa_leindler_special_case hθ.1 hθ.2
+  -- Modify the special case of Prékopa–Leindler with t = θ
+  have prekopa_leindler_special_case_θ :=
+    prekopa_leindler_special_case hθ.1 hθ.2
 
-  have hcoeff_simp : (1 - θ) ^ (1 - θ) * (θ) ^ (θ)
-      = (Avol ^ ninv) ^ (1 - θ) * (Bvol ^ ninv) ^ (θ)
-        / (Avol ^ ninv + Bvol ^ ninv)
-    := by
+  have : (1 - θ) ^ (1 - θ) * θ ^ θ
+      = (Avol ^ ninv) ^ (1 - θ) * (Bvol ^ ninv) ^ θ
+        / (Avol ^ ninv + Bvol ^ ninv) := by
     conv_lhs =>
       congr
-      · congr; simp [hone_minus_θ]
+      · congr; rw [hone_minus_θ]
       · congr; unfold θ
-    field_simp [Real.div_rpow]
-    rw [← Real.rpow_add]
-    simp
-    positivity
+    rw [Real.div_rpow, Real.div_rpow, ← mul_div_mul_comm,
+      ← Real.rpow_add, sub_add_cancel, Real.rpow_one]
+    iterate 5 positivity
 
-  rw [hcoeff_simp] at prekopa_leindler_special_case'
+  rw [this] at prekopa_leindler_special_case_θ
 
   have hAvol_toreal_nonneg : 0 ≤ (Avol : ℝ) := by positivity
   have hBvol_toreal_nonneg : 0 ≤ (Bvol : ℝ) := by positivity
-  conv_rhs at prekopa_leindler_special_case' =>
-    simp [div_pow, mul_pow]
-    rw [← Real.rpow_mul hAvol_toreal_nonneg,
+  conv_rhs at prekopa_leindler_special_case_θ =>
+    rw [div_pow, mul_pow,
+      ← Real.rpow_mul hAvol_toreal_nonneg,
       ← Real.rpow_mul_natCast hAvol_toreal_nonneg,
       ← Real.rpow_mul hBvol_toreal_nonneg,
       ← Real.rpow_mul_natCast hBvol_toreal_nonneg]
     conv in (occs := 1 2) (ninv * _ * (n : ℝ)) =>
-      all_goals rw [mul_comm, ← mul_assoc, hn_mul_ninv_eq_one, one_mul]
+      all_goals rw [mul_comm, ← mul_assoc,
+        mul_inv_cancel₀ (Nat.cast_ne_zero.mpr ngz), one_mul]
 
-  field_simp at prekopa_leindler_special_case'
-  unfold ninv at prekopa_leindler_special_case'
+  rw [div_mul_eq_mul_div₀, le_div_iff₀ (by positivity),
+    mul_le_mul_left (by positivity)] at prekopa_leindler_special_case_θ
 
   -- Modify the goal
-  apply le_of_pow_le_pow_left₀ ngz (le_of_lt (NNReal.rpow_pos hABsumvol_pos))
-  simp [← NNReal.rpow_mul_natCast, inv_mul_cancel₀, ngz]
-
-  apply (mul_le_mul_left (Real.rpow_pos_of_pos (NNReal.coe_pos.mpr hBvol) θ)).mp
-  apply (mul_le_mul_left (Real.rpow_pos_of_pos (NNReal.coe_pos.mpr hAvol) (1 - θ))).mp
-
-  simp [← mul_assoc]
-
-  apply (le_div_iff₀ (pow_pos (by positivity) n)).mp
-
-  exact prekopa_leindler_special_case'
+  apply le_of_pow_le_pow_left₀ ngz (by positivity)
+  rwa [← NNReal.rpow_mul_natCast, inv_mul_cancel₀ (Nat.cast_ne_zero.mpr ngz),
+    NNReal.rpow_one]
