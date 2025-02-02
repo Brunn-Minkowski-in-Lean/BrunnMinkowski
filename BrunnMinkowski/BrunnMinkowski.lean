@@ -30,13 +30,8 @@ lemma convbody_vol_le_vol_add_right (A B: ConvexBody (ℝn n)) :
   calc
     A.volume
       = (A + singleton_to_convbody b).volume := by
-      simp only [ConvexBody.volume, ConvexBody.coe_add]
-      apply (ENNReal.toNNReal_eq_toNNReal_iff'
-        (convbody_set_vol_ne_top A)
-        (convbody_set_vol_ne_top (A + singleton_to_convbody b))).mpr
-      simp only [singleton_to_convbody,
-        ConvexBody.coe_add, ConvexBody.coe_mk, Set.add_singleton,
-        Set.image_add_right, MeasureTheory.measure_preimage_add_right]
+      simp [ConvexBody.volume]
+      simp [singleton_to_convbody]
     _ ≤ (A + B).volume := by
       simp only [ConvexBody.volume, ConvexBody.coe_add]
       apply ENNReal.toNNReal_mono
@@ -51,30 +46,27 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
     A.volume ^ (n⁻¹ : ℝ) + B.volume ^ (n⁻¹ : ℝ) ≤
     (A + B).volume ^ (n⁻¹ : ℝ) := by
 
-  -- Assume n is nonzero
   let ninv := (n⁻¹ : ℝ)
-  let Avol := A.volume
-  let Bvol := B.volume
+  have hn_mul_ninv_eq_one : (n : ℝ) * ninv = 1 := by simp [ninv, ngz]
 
-  by_cases hAvol_zero : A.volume = 0
-  · -- Assume A.volume = 0
-    simp only [hAvol_zero, ne_eq, inv_eq_zero, Nat.cast_eq_zero,
-      ngz, not_false_eq_true, NNReal.zero_rpow, zero_add, ge_iff_le, ninv]
+  set Avol := A.volume
+  set Bvol := B.volume
+
+  rcases eq_zero_or_pos Avol with hAvol | hAvol
+  · simp only [hAvol, ne_eq, inv_eq_zero, Nat.cast_eq_zero, ngz, not_false_eq_true,
+      NNReal.zero_rpow, zero_add, ge_iff_le, ninv]
     rw [add_comm, NNReal.rpow_le_rpow_iff]
     exact convbody_vol_le_vol_add_right B A
     positivity
-  by_cases hBvol_zero : B.volume = 0
+  rcases eq_zero_or_pos Bvol with hBvol | hBvol
   · -- Assume B.volume = 0
-    simp only [hBvol_zero, ne_eq, inv_eq_zero, Nat.cast_eq_zero,
-      ngz, not_false_eq_true, NNReal.zero_rpow, add_zero, ge_iff_le, ninv]
+    simp only [hBvol, ne_eq, inv_eq_zero, Nat.cast_eq_zero, ngz, not_false_eq_true,
+      NNReal.zero_rpow, add_zero, ge_iff_le, ninv]
     rw [NNReal.rpow_le_rpow_iff]
     exact convbody_vol_le_vol_add_right A B
     positivity
-  -- Now assume A.volume ≠ 0 and B.volume ≠ 0
-  rename' hAvol_zero => hAvol_nonzero, hBvol_zero => hBvol_nonzero
-
   have hABsumvol_pos : 0 < (A + B).volume :=
-    lt_of_lt_of_le (pos_iff_ne_zero.mpr hAvol_nonzero) (convbody_vol_le_vol_add_right A B)
+    lt_of_lt_of_le hAvol (convbody_vol_le_vol_add_right A B)
 
   have prekopa_leindler_special_case {t : ℝ} (h0t : 0 < t) (ht1 : t < 1) :
         Avol ^ (1 - t) * Bvol ^ t
