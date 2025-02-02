@@ -91,7 +91,7 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
         · -- Assume y ∉ B
           simp only [ind_B ,ind_ABsum,
             Set.indicator_of_not_mem hy_nin_B,
-            Real.zero_rpow (by exact ne_of_gt h0t), mul_zero,
+            Real.zero_rpow (ne_of_gt h0t), mul_zero,
             Set.indicator_apply_nonneg, Pi.one_apply, zero_le_one, implies_true]
         -- Now assume x ∈ A and y ∈ B
         have hx_in_A : x ∈ A := of_not_not hx_nin_A
