@@ -82,7 +82,7 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
           ≤ ind_ABsum (x + y) := by
         by_cases hx_nin_A : x ∉ A
         · -- Assume x ∉ A
-          have h1_sub_t_lt_0 : 1 - t ≠ 0 := by apply ne_of_gt; rwa [sub_pos]
+          have h1_sub_t_lt_0 : 1 - t ≠ 0 := ne_of_gt (sub_pos.mpr ht1)
           simp only [ind_A, ind_ABsum,
             Set.indicator_of_not_mem hx_nin_A,
             Real.zero_rpow h1_sub_t_lt_0, zero_mul, Set.indicator_apply_nonneg,
