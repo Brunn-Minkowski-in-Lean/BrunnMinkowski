@@ -112,7 +112,7 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
         rw [hf, MeasureTheory.integral_indicator_one]
         simp only [hf, MeasureTheory.integral_indicator_one,
           ConvexBody.volume, ENNReal.coe_toNNReal_eq_toReal]
-        apply IsCompact.measurableSet C.isCompact
+        exact IsCompact.measurableSet C.isCompact
 
       -- Modify the special case of Prékopa–Leindler
       unfold ind_A ind_B ind_ABsum at prekopa_leinler_app
