@@ -14,6 +14,7 @@
 \end{theorem}
 
 \begin{lemma}
+    \label{lem:prekopa-leindler-dimension-sum}
     If \Cref{thm:prekopa-leindler} holds for \(d=d_1\) and \(d_2\), then it also holds for \(d=d_1+d_2\).
 \end{lemma}
 \begin{proof}
@@ -36,4 +37,19 @@
     Unfolding the definitions of \(F\), \(G\), and \(H\), and applying the Fubini--Tonelli theorem complete the proof.
 \end{proof}
 
+\begin{corollary}
+    If \Cref{thm:prekopa-leindler} holds for $d=1$, then it also holds for every $d\geq 1$.
+\end{corollary}
+\begin{proof}
+    We prove by induction on $d$.
+    The base case when $d=1$ is trivial, so suppose $d>1$.
+    By induction, we know that \Cref{thm:prekopa-leindler} holds for dimension $d-1$ and $1$.
+    Thus by \Cref{lem:prekopa-leindler-dimension-sum}, it becomes clear that \Cref{thm:prekopa-leindler} also holds for dimension $d$.
+\end{proof}
 
+\begin{lemma}[Pr\'ekopa--Leindler inequality in $\mathbb{R}$]
+    The \Cref{eq:prekopa-leindler_cond} holds for $d=1$.
+\end{lemma}
+\begin{proof}
+    
+\end{proof}
