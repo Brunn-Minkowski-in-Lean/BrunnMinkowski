@@ -48,8 +48,37 @@
 \end{proof}
 
 \begin{lemma}[Pr\'ekopa--Leindler inequality in $\mathbb{R}$]
-    The \Cref{eq:prekopa-leindler_cond} holds for $d=1$.
+    \Cref{thm:prekopa-leindler} holds for $d=1$. In other words,
+    if $f,g,h:\mathbb{R}\to\mathbb{R}$ are non-negative integrable functions which satisfy \Cref{eq:prekopa-leindler_cond},
+    then
+    \[\biggl( \int f(x) \diff x \biggr)^{\!1-t} \biggl( \int g(y) \diff y \biggr)^{\!t} \le (1-t)^{1-t} t^{t} \int h(x) \diff x\]
 \end{lemma}
 \begin{proof}
-    
+    Normalize $f$ and $g$ so that their sup norm becomes 1.
+    Then the \href{https://en.wikipedia.org/wiki/Level_set}{super-level sets} satisfy
+    \[\{\lambda<f\}+\{\lambda<g\}\subseteq\{\lambda<h\}\]
+    as $\lambda=\lambda^{1-t}\lambda^{t}<f(x)^{1-t}g(y)^{t}\leq h(x+y)$ by \Cref{eq:prekopa-leindler_cond}.
+    Also, \Cref{thm:one-dim} implies that $\mu(\{\lambda<f\})+\mu(\{\lambda<g\})\leq\mu(\{\lambda<h\})$ for every $\lambda\leq 1$.
+
+    By Fubini-Tonelli theorem,
+    \[\int\phi(x)\diff x=\int_{0}^{\infty}\mu(\{\lambda<\phi\})\diff \lambda\]
+    for $\phi\in\{f,g,h\}$.
+    We may thus obtain an inequality
+    \begin{equation}
+        \label{claim:int-ineq}
+        \int f(x)\diff x+\int g(x)\diff x\leq \int h(x)\diff x
+    \end{equation}
+
+    Finally, the weighted AM-GM inequality implies that
+    \begin{equation}
+        \label{claim:am-gm-coro}
+        \begin{split}
+            a+b
+            &=(1-t)\left(\frac{1}{1-t}a\right)+t\left(\frac{1}{t}b\right)\\
+            &\leq\left(\frac{1}{1-t}a\right)^{1-t}\left(\frac{1}{t}b\right)^{t}\\
+            &=\frac{1}{(1-t)^{1-t}t^{t}}a^{1-t}b^{t}
+        \end{split}
+    \end{equation}
+    for any non-negative $a$ and $b$.
+    Using \Cref{claim:int-ineq} and \Cref{claim:am-gm-coro} with $a=\int f(x)\diff x$ and $b=\int g(x)\diff x$, we get the desired inequality by transitivity of $\leq$.
 \end{proof}
