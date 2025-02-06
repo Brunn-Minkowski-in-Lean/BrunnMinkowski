@@ -55,9 +55,10 @@
 \end{lemma}
 \begin{proof}
     Normalize $f$ and $g$ so that their sup norm becomes 1.
+    \textit{(TODO: Check if this condition is required.)}
     Then the \href{https://en.wikipedia.org/wiki/Level_set}{super-level sets} satisfy
     \[\{\lambda<f\}+\{\lambda<g\}\subseteq\{\lambda<h\}\]
-    as $\lambda=\lambda^{1-t}\lambda^{t}<f(x)^{1-t}g(y)^{t}\leq h(x+y)$ by \Cref{eq:prekopa-leindler_cond}.
+    as $\lambda=\lambda^{1-t}\lambda^{t}<f(x)^{1-t}g(y)^{t}\leq h(x+y)$ by \Cref{eq:prekopa-leindler_cond} for every $x\in \{\lambda<f\}$ and $y\in\{\lambda<g\}$.
     Also, \Cref{thm:one-dim} implies that $\mu(\{\lambda<f\})+\mu(\{\lambda<g\})\leq\mu(\{\lambda<h\})$ for every $\lambda\leq 1$.
 
     By the Fubini--Tonelli theorem,
