@@ -77,8 +77,6 @@ def brunn_minkowski_multiplicative (A B : ConvexBody (ℝn n)):
           lhs
           rw [div_eq_inv_mul 1 (n : ℝ)]
 
-          #leansearch "x * 1 = x."
-
         exact cat
 
 
