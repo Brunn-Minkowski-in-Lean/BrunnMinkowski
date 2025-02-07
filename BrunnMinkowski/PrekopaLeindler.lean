@@ -13,36 +13,35 @@ open scoped Real Topology
 -- isomorhpism from any f.d. R-v.s. to R^d
 #check toEuclidean
 
-class IsEuclideanSpace
-    (𝕜 : Type*) [TopologicalSpace 𝕜] [DivisionRing 𝕜]
-    (α : Type*) [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
-    [Module 𝕜 α] [ContinuousSMul 𝕜 α] : Prop where
-  finite_dimensional : FiniteDimensional 𝕜 α
-
-namespace IsEuclideanSpace
-
-variable {𝕜 : Type*} [TopologicalSpace 𝕜] [DivisionRing 𝕜]
-variable {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
-variable [Module 𝕜 α] [ContinuousSMul 𝕜 α]
-
-instance {ι : Type*} [Fintype ι] : IsEuclideanSpace 𝕜 (EuclideanSpace 𝕜 ι) :=
-  ⟨inferInstance⟩
-
-instance {n : ℕ} : IsEuclideanSpace ℝ (EuclideanSpace ℝ (Fin n)) :=
-  ⟨inferInstance⟩
-
-end IsEuclideanSpace
-
-theorem EuclideanSpace.induction_on_dimension
-    {P : (α : Type) →
-      [AddCommGroup α] → [TopologicalSpace α] →  [TopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → Sort}
-    {base0 : P (EuclideanSpace ℝ (Fin 0))}
-    {base1 : P ℝ}
-    {induct : {α β : Type} →
-      [AddCommGroup α] → [TopologicalSpace α] →  [TopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] →
-      [AddCommGroup β] → [TopologicalSpace β] →  [TopologicalAddGroup β] → [T2Space β] → [Module ℝ β] → [ContinuousSMul ℝ β] → [FiniteDimensional ℝ β] →
-      P α → P β → P (α × β)} :
-  (α : Type) → [AddCommGroup α] → [TopologicalSpace α] →  [TopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → P α := by sorry
+theorem EuclideanSpace.induction_on_finrank.{u}
+    {P : (α : Type u) →
+      [AddCommGroup α] → [TopologicalSpace α] →  [TopologicalAddGroup α] → [T2Space α] →
+      [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → Prop}
+    {base0 : (α : Type u) → [AddCommGroup α] → [TopologicalSpace α] → [TopologicalAddGroup α] →
+      [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] →
+      Module.finrank ℝ α = 0 → P α}
+    {base1 : (α : Type u) → [AddCommGroup α] → [TopologicalSpace α] → [TopologicalAddGroup α] →
+      [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] →
+      Module.finrank ℝ α = 1 → P α}
+    {induct :
+      {α : Type u} → [AddCommGroup α] → [TopologicalSpace α] →  [TopologicalAddGroup α] →
+        [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] →
+      {β : Type u} → [AddCommGroup β] → [TopologicalSpace β] →  [TopologicalAddGroup β] →
+    [T2Space β] → [Module ℝ β] → [ContinuousSMul ℝ β] → [FiniteDimensional ℝ β] →
+    P α → P β → P (α × β)}
+    (α : Type u) 
+    [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
+    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] : P α := by
+  induction' h₀ : Module.finrank ℝ α using Nat.strong_induction_on generalizing α
+  case h n ih _ _ _ _ _ _ _ =>
+    match n with
+    | 0 => exact base0 _ h₀
+    | 1 => exact base1 _ h₀
+    | n + 2 =>
+      have h₁ : α ≃ₗ[ℝ] (EuclideanSpace ℝ (Fin (n + 1))) × (EuclideanSpace ℝ (Fin 1)) := by
+        sorry
+      -- TODO: Wrap `P` with an equivalence relation.
+      sorry
 
 theorem prekopa_leindler
     {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
