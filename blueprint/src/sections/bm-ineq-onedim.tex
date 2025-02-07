@@ -11,8 +11,9 @@
     Let \(A\) be a non-empty measurable set with finite measure. 
     Then for any \(\epsilon > 0\), there exists a non-empty compact subset \(K \subseteq A\) such that 
     \begin{equation*}
-        \mu(A \setminus K) < \epsilon
+        \mu(A \setminus K) < \epsilon.
     \end{equation*}
+    \label{lemma: exists_isCompact_Nonempty_diff_lt}
 \end{lemma}
 
 \begin{proof}
@@ -23,17 +24,17 @@
     by the inner regularity of measure for finite measure sets.
     \begin{enumerate}
         \item If \(\widetilde{K}\) is nonempty, then we've done by taking \(K = \widetilde{K}\).
-        \item Otherwise, we assume that \(\widetilde{K} = \emptyset\) and take \(K = {a}\), where \(a\) is an element of \(A\), which exists since \(A\) is non-empty. 
+        \item Otherwise, we assume that \(\widetilde{K} = \emptyset\) and take \(K = \{a\}\), where \(a\) is an element of \(A\), which exists since \(A\) is non-empty. 
         It is trivial that \(K\) is nonempty. It is easy to see that \(K\) is compact since a set consisting of a singleton is compact.
         Additionally, we have \(K \subseteq A\) since \(a \in A\). Finally, we need to show that 
         \begin{equation*}
-            \mu(A \setminus {a}) < \epsilon.
+            \mu(A \setminus \{a\}) < \epsilon.
         \end{equation*}
         First, we note that \(\mu(A)<\epsilon\) since \(\widetilde{K} = \emptyset\), which implies \(\mu(A\setminus \widetilde{K}) = \mu(A) < \epsilon\).
-        Moreover, we observe that \(\mu(A \setminus {a}) \leq \mu(A)\), since \(A\setminus {a} \subseteq A\) and by the monotonicity of the measure. 
+        Moreover, we observe that \(\mu(A \setminus \{a\}) \leq \mu(A)\), since \(A\setminus \{a\} \subseteq A\) and by the monotonicity of the measure. 
         Thus, we conclude that
         \begin{equation*}
-            \mu (A \setminus {a}) \leq \mu(A) < \epsilon.
+            \mu (A \setminus \{a\}) \leq \mu(A) < \epsilon.
         \end{equation*}
     \end{enumerate}
 \end{proof}
@@ -43,146 +44,195 @@
     \begin{equation*}
         \mu(A) + \mu(B) \leq \mu(C).
     \end{equation*}
+    Here, \(\mu\) is a Lebesgue measure.
 \end{theorem}
 
 \begin{proof}
     \begin{enumerate}
         \item We may assume that \(\mu(A)\) and \(\mu(B)\) are finite:
 
-        First, we observe that
-        \begin{eqnarray}
-            {\mu(A) \leq \mu(A+B)} \leq \mu(C), \label{eq: A <= A+B}\\
-            {\mu(B) \leq \mu(A+B)} \leq \mu(C) \label{eq: B <= A+B}
-        \end{eqnarray}
-        :\begin{enumerate}
-            \item Since \(B\) is a nonzero set, there is an element \(b \in B\).
-            \item \(\mu(A) =\mu(A+\{b\})\) -- \texttt{simp?}
-            \item Since \(\{b\} \subseteq B\), we note that \(A + \{b\} \subseteq A + B\).
-            \item Then \(\mu(A) = \mu(A + \{b\}) \leq \mu(A+B)\).
-        \end{enumerate}
-        since \(A\) and \(B\) are nonempty.
-        \begin{itemize}
-            \item (\textbf{Case I}: \(\mu(A)=\infty\))
-            \begin{itemize}
-                \item (\textbf{Case I-I}: \(\mu(B) = \infty\))
-                \begin{enumerate}
-                    \item From the assumptions, we see that \(\mu(A) + \mu(B) = {\infty + \infty = \infty}\) where the last equality holds from \texttt{top\_add\_top} in Mathlib4.
-                    \item From the equation (\ref{eq: A <= A+B}) or (\ref{eq: B <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumptions.
-                    \item To sum up,
-                    \begin{eqnarray*}
-                        \mu(A) + \mu (B) = \infty + \infty = \infty \leq \mu(C).
-                    \end{eqnarray*}
-                \end{enumerate}
-
-                \item (\textbf{Case I-II}: \(\mu(B) < \infty\))
-                \begin{enumerate}
-                    \item From the assumptions, we see that \(\mu(A) + \mu(B) = {\infty + \mu(B) = \infty}\) where the last equality holds from \texttt{coe\_add\_top} in Mathlib4.
-                    \item From the equation (\ref{eq: A <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumption on \(\mu(A)\).
-                    \item To sum up,
-                    \begin{eqnarray*}
-                        \mu(A) + \mu (B) = \infty + \mu(B) = \infty \leq \mu(C).
-                    \end{eqnarray*}
-                \end{enumerate}
-            \end{itemize}
-            \item (\textbf{Case II}: \(\mu(A) < \infty\))
-            \begin{itemize}
-                \item (\textbf{Case II-I}: \(\mu(B)=\infty\))
-                \begin{enumerate}
-                    \item From the assumptions, we see that \(\mu(B) + \mu(A) = {\infty + \mu(A) = \infty}\) where the last equality holds from \texttt{coe\_add\_top} in Mathlib4.
-                    \item From the equation (\ref{eq: B <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumption on \(\mu(B)\).
-                    \item To sum up,
-                    \begin{eqnarray*}
-                        \mu(A) + \mu (B) = \mu(B) + \mu(A) = \infty + \mu(A) = \infty \leq \mu(C).
-                    \end{eqnarray*}
-                \end{enumerate}
-            \end{itemize}
-        \end{itemize}
-
-
-        \item Since {the Lebesgue measure has inner regularity}, we may assume that \(A\) and \(B\) are compact:
-
         \begin{enumerate}
-            \item Let \(A\) and \(B\) be measurable sets. Then for any \(\epsilon>0\), there exist compact sets \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\) such that
-            \begin{equation}
-                \mu(A \setminus A_\epsilon)< \epsilon, \quad \text{and} \quad \mu(B \setminus B_\epsilon) < \epsilon.
-                \label{eq: inner regularity}
-            \end{equation}
-            by inner regularity of measurable sets (\texttt{MeasurableSet.exists\_isCompact\_diff\_lt} in Mathlib4).
+            \item Suppose \(\mu(A) = \infty\). Then it suffices to show that \(\mu(A) \leq \mu(C)\),
+            since adding any quantity to infinity is still results in infinity. 
+            We observe that \(\mu(A) \leq \mu(A+B)\) since \(B\) is non-empty.
+            Moreover, by the monotonicity of the Lebesgue measure, we have \(\mu (A+B) \leq \mu(C)\).
+            By transitivity of these inequalities, we conclude that \(\mu(A) \leq \mu(C)\) as required.
 
-            \item First, it is easy to see that for any \(\epsilon>0\),
-            \begin{equation*}
-                A_\epsilon + B_\epsilon \subseteq A + B \subset C.
-            \end{equation*}
-
-            \item It suffices to show that for any \(\epsilon>0\), given two compact and {\color{red}nonempty} sets \(A_\epsilon\) and \(B_\epsilon\) such that
-            {\color{red}
-            \(A_\epsilon + B_\epsilon \subset C\) satisfies
-            \begin{equation}
-                \mu(A_\epsilon) + \mu(B_\epsilon) \leq \mu(C).
-                \label{eq: STS}
-            \end{equation}
-            }
-
-            Indeed,
+            \item Now we may assume that \(\mu(A) < \infty\).
             \begin{enumerate}
-            \item
-              We first can see that the equation (\ref{eq: inner regularity}) can be written as
-              \begin{equation}
-                \mu(A)-\mu(A_\epsilon) < \epsilon, \quad \text{and} \quad \mu(B) - \mu(B_\epsilon) < \epsilon
-                \label{eq: inner regularity 2}
-              \end{equation}
-              since \(\mu(A\setminus A_\epsilon) = \mu(A)-\mu(A_\epsilon)\) holds from \texttt{MeasureTheory.measure\_diff} in Mathlib4.
-
-            \item Then we have \(\mu(A) + \mu(B) < \mu(C) + 2\epsilon\) by using (\ref{eq: STS}) and (\ref{eq: inner regularity 2}) from \texttt{linarith}.
-
-            \item Thus, we have \(\mu(A) + \mu(B) \leq \mu(C)\) by \texttt{le\_of\_forall\_pos\_lt\_add} in Mathlib4.
+                \item Suppose that \(\mu(B) = \infty\). 
+                Then, using exactly the same arguments as before, we obtain the desired result. 
+                \item Thus, we may assume that \(\mu(B) < \infty\).
             \end{enumerate}
         \end{enumerate}
 
+        % First, we observe that
+        % \begin{eqnarray}
+        %     {\mu(A) \leq \mu(A+B)} \leq \mu(C), \label{eq: A <= A+B}\\
+        %     {\mu(B) \leq \mu(A+B)} \leq \mu(C) \label{eq: B <= A+B}
+        % \end{eqnarray}
+        % :\begin{enumerate}
+        %     \item Since \(B\) is a nonzero set, there is an element \(b \in B\).
+        %     \item \(\mu(A) =\mu(A+\{b\})\) -- \texttt{simp?}
+        %     \item Since \(\{b\} \subseteq B\), we note that \(A + \{b\} \subseteq A + B\).
+        %     \item Then \(\mu(A) = \mu(A + \{b\}) \leq \mu(A+B)\).
+        % \end{enumerate}
+        % since \(A\) and \(B\) are nonempty.
+        % \begin{itemize}
+        %     \item (\textbf{Case I}: \(\mu(A)=\infty\))
+        %     \begin{itemize}
+        %         \item (\textbf{Case I-I}: \(\mu(B) = \infty\))
+        %         \begin{enumerate}
+        %             \item From the assumptions, we see that \(\mu(A) + \mu(B) = {\infty + \infty = \infty}\) where the last equality holds from \texttt{top\_add\_top} in Mathlib4.
+        %             \item From the equation (\ref{eq: A <= A+B}) or (\ref{eq: B <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumptions.
+        %             \item To sum up,
+        %             \begin{eqnarray*}
+        %                 \mu(A) + \mu (B) = \infty + \infty = \infty \leq \mu(C).
+        %             \end{eqnarray*}
+        %         \end{enumerate}
 
+        %         \item (\textbf{Case I-II}: \(\mu(B) < \infty\))
+        %         \begin{enumerate}
+        %             \item From the assumptions, we see that \(\mu(A) + \mu(B) = {\infty + \mu(B) = \infty}\) where the last equality holds from \texttt{coe\_add\_top} in Mathlib4.
+        %             \item From the equation (\ref{eq: A <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumption on \(\mu(A)\).
+        %             \item To sum up,
+        %             \begin{eqnarray*}
+        %                 \mu(A) + \mu (B) = \infty + \mu(B) = \infty \leq \mu(C).
+        %             \end{eqnarray*}
+        %         \end{enumerate}
+        %     \end{itemize}
+        %     \item (\textbf{Case II}: \(\mu(A) < \infty\))
+        %     \begin{itemize}
+        %         \item (\textbf{Case II-I}: \(\mu(B)=\infty\))
+        %         \begin{enumerate}
+        %             \item From the assumptions, we see that \(\mu(B) + \mu(A) = {\infty + \mu(A) = \infty}\) where the last equality holds from \texttt{coe\_add\_top} in Mathlib4.
+        %             \item From the equation (\ref{eq: B <= A+B}), we have \(\infty \leq \mu(C)\), together with the assumption on \(\mu(B)\).
+        %             \item To sum up,
+        %             \begin{eqnarray*}
+        %                 \mu(A) + \mu (B) = \mu(B) + \mu(A) = \infty + \mu(A) = \infty \leq \mu(C).
+        %             \end{eqnarray*}
+        %         \end{enumerate}
+        %     \end{itemize}
+        % \end{itemize}
 
+        \item Without loss of generality, we may assume that \(A\) and \(B\) are compact.
 
+        \begin{enumerate}
+            \item We first show that the result holds in the general setting if it has been established under the compact setting. 
 
+            Let \(A\) and \(B\) be non-empty measurable sets with finite measure. 
+            Fix \(\epsilon>0\).
+            
+            Then for \(\epsilon/2>0\), there exists a non-empty compact subsets \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\) such that 
+            \begin{equation}
+                \mu(A \setminus A_\epsilon) < \epsilon/2 \quad \text{and} \quad \mu(B \setminus B_\epsilon) < \epsilon/2
+                \label{eqn: diff with cpt is small}
+            \end{equation}
+            by Lemma~\ref{lemma: exists_isCompact_Nonempty_diff_lt}.
+            
+            Since \(A_\epsilon\) and \(B_\epsilon\) are compact, they are also measurable. 
+            It is easy to see that \(\mu(A_\epsilon)\) and  \(\mu(B_\epsilon)\) are finite by contradiction.
+            Indeed, suppose that \(\mu(A_\epsilon) = \infty\). 
+            Since \(A_\epsilon \subseteq A\), we have \(\mu(A_\epsilon) \leq \mu(A)\) by the monotonicity of the Lebesgue measure, 
+            which contradicts the assumption that \(\mu(A)<\infty\).
 
+            Now, we observe that 
+            \begin{equation}
+                \mu(A) = \mu(A_\epsilon) + \mu(A \setminus A_\epsilon) < \mu(A_\epsilon) + \epsilon/2.
+                \label{eqn: volA bdd by Ae}
+            \end{equation}
+            The equality holds since \(\mu(A) = \mu(A \cap A_\epsilon) + \mu(A \setminus A_\epsilon)\) and \(\mu(A \cap A_\epsilon) = \mu (A_\epsilon)\), 
+            and the inequlity follows from (\ref{eqn: diff with cpt is small}).
+            Similarly, we obtain 
+            \begin{equation}
+                \mu(B) < \mu(B_\epsilon) + \epsilon/2.
+                \label{eqn: volB bdd by Be}
+            \end{equation}
 
-        \item Since \(A\) and \(B\) are compact, { \(\sup A \in A\) and \(\inf B \in B\). Then} we see that each of the following translations of \(B\) and \(A\) is contained in~\(C\) as follows:
-        \begin{eqnarray*}
-            \sup A + B
-            % & \subseteq & \left[\sup A + \inf B, \sup A + \sup B\right]
-            {
-             \subseteq A + B} \subseteq C, \\
-            A + \inf B
-            % & \subseteq & \left[\inf A + \inf B, \sup A + \inf B\right]
-            {
-             \subseteq A + B} \subseteq C.
-        \end{eqnarray*}
-        \item As the only intersection point of \(\sup A + B\) and \(A + \inf B\) is \(\sup A + \inf B\), we see that
-        \begin{equation*}
-            (A + \inf B) \cup (\sup A + B) \subseteq C.
-        \end{equation*}
-        % As the only intersection point of \(\sup A + B\) and \(A + \inf B\) is \(\sup A + \inf B\), the above two intervals \(A + \inf B\) and \(\sup A + B\) are nonoverlapping.
-        {
-        \begin{lemma}
-            For measurable sets \(A\) and \(B\),
-            \(\mu(A \cup B) = \mu(A) + \mu(B) - \mu(A \cap B)\).
-        \end{lemma}
-        \begin{lemma}
-            For measurable set \(A\subset \mathbb{R}\) and \(x \in \mathbb{R}\), \(\mu(x+A) = \mu(A)\).
-        \end{lemma}
-        }
-        We first observe that
-        \begin{eqnarray*}
-            \mu\left((A+\inf B) \cup (\sup A + B)\right) & = & \mu(A+\inf B) + \mu(\sup A + B) - \mu(\sup A + \inf B)\\
-            & = & \mu(A) + \mu(B).
-        \end{eqnarray*}
-        {
-        \begin{lemma}
-            For measurable sets \(A\) and \(B\) satisfying \(A \subseteq B\), \(\mu(A) \leq \mu(B)\).
-        \end{lemma}
-        }
-        Thus, we see that
-        \begin{equation*}
-            \mu(A) + \mu(B) = \mu\left((A+\inf B) \cup (\sup A + B)\right) \leq \mu(C).
-        \end{equation*}
+            
+            Next, we show that 
+            \begin{equation*}
+                A_\epsilon + B_\epsilon \subseteq C.
+            \end{equation*}
+            First, we establish that \(A_\epsilon + B_\epsilon \subseteq A + B\).
+            Let \(x \in A_\epsilon + B_\epsilon\). Then, there exist \(a \in A_\epsilon\) and \(b \in B_\epsilon\) such that \(x = a + b\).
+            Since \(A_\epsilon \subseteq A\) and \(B_\epsilon \subseteq B\), it follows that \(a \in A\) and \(b \in B\), 
+            so \(x = a + b \in A + B\).
+            Thus by assumption \(A + B \subset C\), we have the desired inclusion.
+            
+            Finally, we obtain
+            \begin{equation}
+                \mu(A_\epsilon) + \mu(B_\epsilon) \leq \mu(C)
+                \label{eqn: BM for cpt}
+            \end{equation}
+            for non-empty measurable compact sets \(A_\epsilon\) and \(B_\epsilon\) with finite measure.
+
+            Therefore, we conclude that 
+            \begin{equation*}
+                \mu(A) + \mu(B) < \mu(A_\epsilon) + \mu(B_\epsilon) + \epsilon \leq \mu(C) + \epsilon
+            \end{equation*}
+            where the first inequality holds from (\ref{eqn: volA bdd by Ae}) and (\ref{eqn: volB bdd by Be}) and the second follows from (\ref{eqn: BM for cpt}).
+            Since this argument holds for any fixed \(\epsilon>0\), the proof is completed.
+
+            \item Now, we may assume that \(A\) and \(B\) are compact.
+            
+            Define the translated sets 
+            \begin{equation*}
+                A_t := \inf B + A \quad \text{and} \quad B_t := \sup A + B.
+            \end{equation*}
+            It is easy to see that 
+            \begin{equation*}
+                \mu(A_t) = \mu(A) \quad \text{and} \quad \mu(B_t) = \mu(B).
+            \end{equation*}
+
+            We first show that 
+            \begin{equation}
+                A_t \cup B_t \subseteq C.
+                \label{eqn: union At Bt included in C}
+            \end{equation}
+            We start by proving \(A_t = \inf B + A \subseteq C\). 
+            Since \(B\) is compact, we have \(\inf B \in B\), which implies that \(\{\inf B\} \subseteq B\).
+            Thus, 
+            \begin{equation*}
+                A_t = \inf B + A = \{\inf B\} + A \subseteq B + A = A + B
+            \end{equation*}
+            where the last eqality holds due to the commutativity of addition. 
+            By assumption, \(A + B \subseteq C\), so we conclude that \(A_t \subseteq C\).
+            Similarly, we obtain \(B_t = \sup A + B \subseteq C\).
+            Therefore, by using the above inclusions, we have the desired inclusion.
+            
+            Next, we show that 
+            \begin{equation*}
+                A_t \cap B_t = \{\sup A + \inf B\}.
+            \end{equation*}
+            We will first show that \(A_t \cap B_t \subseteq \{\sup A + \inf B\}\). 
+            Let \(x \in A_t \cap B_t\), which implies \(x \in A_t\) and \(x \in B_t\).
+            Then there exists \(a \in A\) such that \(x = \inf B + a\) since \(x \in A_t\). 
+            Similarly, there exists \(b \in B\) such that \(x = \sup A + b\) since \(x \in B_t\).
+            From this, we deduce \(x = \inf B + a \leq \inf B + \sup A\). 
+            Since \(A\) is compact, it is bounded by its supremum, which implies \(a \leq \sup A\).
+            Thus, we have established the required inequality. 
+            Similarly, we obtain that \(\sup A + \inf B \leq x\). 
+            These inequalities imply that \(x = \sup A + \inf B\) as required.
+
+            Conversely, let \(x = \sup A + \inf B\).
+            Since \(A\) is a non-empty compact set, we have \(\sup A \in A\).
+            Thus, \(x = \sup A + \inf B \in A + \inf B = A_t\).
+            Similarly, since \(\inf B \in B\), we have \(x = \sup A + \inf B \in \sup A + B = B_t\).
+            These prove that \(x \in A_t \cap B_t\).
+
+            Since \(A_t \cap B_t\) is a singleton set from the above argument, it has Lebesgue measure zero, 
+            i.e., \(\mu (At \cap Bt) = 0\).
+
+            Therefore, we see that 
+            \begin{eqnarray*}
+                \mu(A) + \mu(B) & = & \mu(A_t) + \mu(B_t)\\
+                & = & \mu(A_t) + \mu(B_t) - \mu(A_t \cap B_t)\\
+                & = & \mu(A_t \cup B_t)\\
+                & \leq & \mu (C)
+            \end{eqnarray*}
+            where the last inequlity follows from the monotonicity of the Lebesgue measure and~(\ref{eqn: union At Bt included in C}).
+            Thus, the proof is completed.
+        \end{enumerate}
     \end{enumerate}
 \end{proof}
