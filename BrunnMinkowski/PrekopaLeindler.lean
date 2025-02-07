@@ -13,6 +13,26 @@ open scoped Real Topology
 -- isomorhpism from any f.d. R-v.s. to R^d
 #check toEuclidean
 
+class IsEuclideanSpace
+    (𝕜 : Type*) [TopologicalSpace 𝕜] [DivisionRing 𝕜]
+    (α : Type*) [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
+    [Module 𝕜 α] [ContinuousSMul 𝕜 α] : Prop where
+  finite_dimensional : FiniteDimensional 𝕜 α
+
+namespace IsEuclideanSpace
+
+variable {𝕜 : Type*} [TopologicalSpace 𝕜] [DivisionRing 𝕜]
+variable {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
+variable [Module 𝕜 α] [ContinuousSMul 𝕜 α]
+
+instance {ι : Type*} [Fintype ι] : IsEuclideanSpace 𝕜 (EuclideanSpace 𝕜 ι) :=
+  ⟨inferInstance⟩
+
+instance {n : ℕ} : IsEuclideanSpace ℝ (EuclideanSpace ℝ (Fin n)) :=
+  ⟨inferInstance⟩
+
+end IsEuclideanSpace
+
 theorem EuclideanSpace.induction_on_dimension
     {P : (α : Type) →
       [AddCommGroup α] → [TopologicalSpace α] →  [TopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → Sort}
