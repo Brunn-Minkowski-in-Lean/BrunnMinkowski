@@ -27,20 +27,14 @@ lemma measurable_ray {c : ℝ} : MeasurableSet {y | c < y} :=
 lemma measurable_superlevel_set_of_measurable
     {f : ℝn n → ℝ} (hf_measurable : Measurable f)
     (c : ℝ) :
-    MeasurableSet (superlevel_set f c) := by
-  have measurable_ray_c : MeasurableSet {y | c < y} := measurable_ray
-  rw [superlevel_set]
-  -- 'measurability' can replace the below lines
-  simp_all only [measurableSet_setOf]
-  exact Measurable.comp' measurable_ray_c hf_measurable
+    MeasurableSet (superlevel_set f c) :=
+  measurableSet_lt measurable_const hf_measurable
 
 lemma nullmeasurable_superlevel_set_of_aemeasurable
     {f : ℝn n → ℝ} (hf_aemeasurable : AEMeasurable f)
     (c : ℝ) :
-    NullMeasurableSet (superlevel_set f c) := by
-  have measurable_ray_c : MeasurableSet {y | c < y} := measurable_ray
-  rw [superlevel_set]
-  sorry
+    NullMeasurableSet (superlevel_set f c) :=
+  nullMeasurableSet_lt aemeasurable_const hf_aemeasurable
 
 ---- essSup ----
 lemma nonneg_essSup_of_nonneg {α : Type*} [MeasurableSpace α]
