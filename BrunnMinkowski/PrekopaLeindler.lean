@@ -77,24 +77,76 @@ theorem Nat.induction_on_sum
   | 0 => exact hone
   | n + 1 => exact ind ih hone
 
-def condition (t : ℝ) {d : ℕ} (f g h : ℝn d → ℝ) : Prop :=
+set_option linter.unusedVariables false in
+def condition
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) {d : ℕ}
+    (f : ℝn d → ℝ) (hf : ∀ x, 0 ≤ f x)
+    (g : ℝn d → ℝ) (hg : ∀ x, 0 ≤ g x)
+    (h : ℝn d → ℝ) : Prop :=
   ∀ x y : ℝn d, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)
 
-def prekopa_leindler_statement (t : ℝ) {d : ℕ} (f g h : ℝn d → ℝ) : Prop :=
-  0 < t → t < 1 → condition t f g h →
+theorem condition_nonneg
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) {d : ℕ}
+    {f : ℝn d → ℝ} (hf : ∀ x, 0 ≤ f x)
+    {g : ℝn d → ℝ} (hg : ∀ x, 0 ≤ g x)
+    {h : ℝn d → ℝ} (h₀ : condition ht₁ ht₂ _ hf _ hg h) {x : ℝn d} :
+    0 ≤ h x := by
+  refine le_trans ?_ (add_zero x ▸ h₀ x 0)
+  have := hf x; have := hg 0; positivity
+
+def prekopa_leindler_statement
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) {d : ℕ}
+    (f : ℝn d → ℝ) (hf : ∀ x, 0 ≤ f x)
+    (g : ℝn d → ℝ) (hg : ∀ x, 0 ≤ g x)
+    (h : ℝn d → ℝ) : Prop :=
+  condition ht₁ ht₂ f hf g hg h →
   (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤ (1 - t) ^ (d * (1 - t)) * t ^ (d * t) * (∫ x, h x)
 
-theorem prekopa_leindler_dimension_sum (t : ℝ)
-    {d₁ : ℕ} (h₁ : ∀ f g h : ℝn d₁ → ℝ, prekopa_leindler_statement t f g h)
-    {d₂ : ℕ} (h₂ : ∀ f g h : ℝn d₂ → ℝ, prekopa_leindler_statement t f g h)
-    (f g h : ℝn (d₁ + d₂) → ℝ) :
-    prekopa_leindler_statement t f g h := by
-  intro h₃ h₄ h₅
+-- TODO: Check if this lemma is correct.
+@[simp]
+theorem volume_univ_zero_of_euclideanSpace_fin_zero :
+    volume (@Set.univ (ℝn 0)) = 0 := by
   sorry
 
-theorem prekopa_leindler {t : ℝ} {d : ℕ} (f g h : ℝn d → ℝ) :
-    prekopa_leindler_statement t f g h := by
+theorem prekopa_leindler_dim_zero
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
+    (f : ℝn 0 → ℝ) (hf : ∀ x, 0 ≤ f x)
+    (g : ℝn 0 → ℝ) (hg : ∀ x, 0 ≤ g x)
+    (h : ℝn 0 → ℝ) :
+    prekopa_leindler_statement ht₁ ht₂ f hf g hg h := by
+  intro h₁
+  simp_rw [CharP.cast_eq_zero, zero_mul, Real.rpow_zero, mul_one, one_mul]
+  simp only [integral_unique, smul_eq_mul]
+  have h₃ : (volume (@Set.univ (ℝn 0))).toReal = 0 :=
+    (toReal_eq_zero_iff (volume (@Set.univ (ℝn 0)))).mpr
+      (.inl volume_univ_zero_of_euclideanSpace_fin_zero)
+  simp only [h₃, zero_mul, Real.zero_rpow (Ne.symm (ne_of_lt ht₁)),
+    Real.zero_rpow (Ne.symm (ne_of_lt (sub_pos_of_lt ht₂))), le_rfl]
+
+theorem prekopa_leindler_dimension_sum
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
+    {d₁ : ℕ}
+    (h₁ : ∀ {f : ℝn d₁ → ℝ} (hf : ∀ x, 0 ≤ f x) {g : ℝn d₁ → ℝ} (hg : ∀ x, 0 ≤ g x) {h : ℝn d₁ → ℝ},
+      prekopa_leindler_statement ht₁ ht₂ f hf g hg h)
+    {d₂ : ℕ}
+    (h₂ : ∀ {f : ℝn d₂ → ℝ} (hf : ∀ x, 0 ≤ f x) {g : ℝn d₂ → ℝ} (hg : ∀ x, 0 ≤ g x) {h : ℝn d₂ → ℝ},
+      prekopa_leindler_statement ht₁ ht₂ f hf g hg h)
+    (f : ℝn (d₁ + d₂) → ℝ) (hf : ∀ x, 0 ≤ f x)
+    (g : ℝn (d₁ + d₂) → ℝ) (hg : ∀ x, 0 ≤ g x)
+    (h : ℝn (d₁ + d₂) → ℝ) :
+    prekopa_leindler_statement ht₁ ht₂ f hf g hg h := by
+  intro h₃
+  sorry
+
+theorem prekopa_leindler
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) {d : ℕ}
+    (f : ℝn d → ℝ) (hf : ∀ x, 0 ≤ f x)
+    (g : ℝn d → ℝ) (hg : ∀ x, 0 ≤ g x)
+    (h : ℝn d → ℝ) :
+    prekopa_leindler_statement ht₁ ht₂ f hf g hg h := by
   induction d using Nat.induction_on_sum
-  case hzero => sorry
+  case hzero => exact prekopa_leindler_dim_zero ht₁ ht₂ _ hf _ hg h
   case hone => sorry
-  case ind h₂ d ih => exact prekopa_leindler_dimension_sum t h₂ ih _ _ _
+  case ind h₂ d ih =>
+    exact prekopa_leindler_dimension_sum ht₁ ht₂ (fun {_} hf {_} hg {h} ↦ h₂ _ hf _ hg h)
+      (fun {_} hf {_} hg {h} ↦ ih _ hf _ hg h) f hf g hg h
