@@ -27,11 +27,20 @@ class EuclideanIsomorphismInvariant.{u}
       (h : α ≃L[ℝ] β) :
     P α ↔ P β
 
--- TODO: Remove sorry.
-def EuclideanSpace.finProdLinearEquiv (n₁ n₂ : ℕ) :
+noncomputable def EuclideanSpace.finProdLinearEquiv (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃L[ℝ]
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-  ⟨sorry, sorry, sorry⟩
+  ContinuousLinearEquiv.ofFinrankEq <| by
+  simp only [Module.finrank_prod, finrank_euclideanSpace, Fintype.card_fin]
+
+-- TODO: Remove `sorry`.
+open EuclideanSpace in
+@[simp]
+theorem EuclideanSpace.add_finProdLinearEquiv
+    {n₁ n₂ : ℕ} (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
+    (finProdLinearEquiv n₁ n₂) ⟨x₁ + x₂, x₃ + x₄⟩ =
+    (finProdLinearEquiv n₁ n₂) ⟨x₁, x₃⟩ + (finProdLinearEquiv n₁ n₂) ⟨x₂, x₄⟩ := by
+  sorry
 
 -- TODO: Consider higher order types if possible.
 theorem EuclideanSpace.induction_on_finrank
@@ -78,7 +87,7 @@ theorem Nat.induction_on_sum
   | n + 1 => exact ind ih hone
 
 set_option linter.unusedVariables false in
-def condition
+def Condition
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) {d : ℕ}
     (f : ℝn d → ℝ) (hf : ∀ x, 0 ≤ f x)
     (g : ℝn d → ℝ) (hg : ∀ x, 0 ≤ g x)
@@ -89,20 +98,20 @@ theorem condition_nonneg
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) {d : ℕ}
     {f : ℝn d → ℝ} (hf : ∀ x, 0 ≤ f x)
     {g : ℝn d → ℝ} (hg : ∀ x, 0 ≤ g x)
-    {h : ℝn d → ℝ} (h₀ : condition ht₁ ht₂ _ hf _ hg h) {x : ℝn d} :
+    {h : ℝn d → ℝ} (h₀ : Condition ht₁ ht₂ _ hf _ hg h) {x : ℝn d} :
     0 ≤ h x := by
-  refine le_trans ?_ (add_zero x ▸ h₀ x 0)
-  have := hf x; have := hg 0; positivity
+  refine le_trans ?_ (add_zero x ▸ h₀ x 0); have := hf x; have := hg 0; positivity
 
 def prekopa_leindler_statement
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) {d : ℕ}
     (f : ℝn d → ℝ) (hf : ∀ x, 0 ≤ f x)
     (g : ℝn d → ℝ) (hg : ∀ x, 0 ≤ g x)
     (h : ℝn d → ℝ) : Prop :=
-  condition ht₁ ht₂ f hf g hg h →
+  Condition ht₁ ht₂ f hf g hg h →
   (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤ (1 - t) ^ (d * (1 - t)) * t ^ (d * t) * (∫ x, h x)
 
 -- TODO: Check if this lemma is correct.
+-- TODO: Remove `sorry`.
 @[simp]
 theorem volume_univ_zero_of_euclideanSpace_fin_zero :
     volume (@Set.univ (ℝn 0)) = 0 := by
@@ -136,6 +145,25 @@ theorem prekopa_leindler_dimension_sum
     (h : ℝn (d₁ + d₂) → ℝ) :
     prekopa_leindler_statement ht₁ ht₂ f hf g hg h := by
   intro h₃
+  let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((EuclideanSpace.finProdLinearEquiv d₁ d₂) ⟨x₁, x₂⟩)
+  let G (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ g ((EuclideanSpace.finProdLinearEquiv d₁ d₂) ⟨x₁, x₂⟩)
+  let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((EuclideanSpace.finProdLinearEquiv d₁ d₂) ⟨x₁, x₂⟩)
+  have hF : ∀ {x₁} x₂, 0 ≤ F x₁ x₂ := fun _ ↦ hf _
+  have hG : ∀ {x₁} x₂, 0 ≤ G x₁ x₂ := fun _ ↦ hg _
+  have h₄ : ∀ x₁ y₁ : ℝn d₁, Condition ht₁ ht₂ (F x₁) hF (G y₁) hG (H (x₁ + y₁)) := by
+    intro x₁ y₁ x y
+    simp only [F, G, H, EuclideanSpace.add_finProdLinearEquiv]
+    exact h₃ _ _
+  have h₅ :
+      Condition ht₁ ht₂
+        (fun x ↦ ∫ x₂, F x x₂) (fun _ ↦ integral_nonneg hF)
+        (fun y ↦ ∫ y₂, G y y₂) (fun _ ↦ integral_nonneg hG)
+        (fun z ↦ (1 - t) ^ (d₂ * (1 - t)) * t ^ (d₂ * t) * ∫ z₂, H z z₂) := fun x₁ y₁ ↦
+    h₂ hF hG (h₄ x₁ y₁)
+  have h₆ := h₁ (fun _ ↦ integral_nonneg hF) (fun _ ↦ integral_nonneg hG) h₅
+  ring_nf 
+  simp [mul_add, integral_smul_const] at h₆ ⊢
+  ring_nf at h₆ ⊢
   sorry
 
 theorem prekopa_leindler
