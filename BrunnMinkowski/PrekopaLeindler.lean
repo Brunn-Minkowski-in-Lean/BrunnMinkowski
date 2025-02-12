@@ -64,12 +64,37 @@ theorem EuclideanSpace.induction_on_finrank
         (ih (n + 1) (by omega) _ finrank_euclideanSpace_fin)
         (ih 1 (by omega) _ finrank_euclideanSpace_fin))
 
-theorem prekopa_leindler
-    {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
-    {d : ℕ} (f g h : ℝn d → ℝ)
-    (hlb :
-      ∀ x y : ℝn d,
-      (f x)^(1 - t) * (g y)^t ≤ h (x + y)) :
-  (∫ x, f x)^(1-t) * (∫ y, g y)^t ≤
-  (1 - t)^(d * (1-t)) * t^(d*t) * (∫ x, h x)
-  := by sorry
+theorem Nat.induction_on_sum
+    {motive : ℕ → Prop}
+    (hzero : motive 0)
+    (hone : motive 1)
+    (ind : ∀ ⦃n₁ : ℕ⦄, motive n₁ → ∀ ⦃n₂ : ℕ⦄, motive n₂ → motive (n₁ + n₂))
+    (n : ℕ) :
+    motive n := by
+  induction n
+  case zero => exact hzero
+  case succ n ih => match n with
+  | 0 => exact hone
+  | n + 1 => exact ind ih hone
+
+def condition (t : ℝ) {d : ℕ} (f g h : ℝn d → ℝ) : Prop :=
+  ∀ x y : ℝn d, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)
+
+def prekopa_leindler_statement (t : ℝ) {d : ℕ} (f g h : ℝn d → ℝ) : Prop :=
+  0 < t → t < 1 → condition t f g h →
+  (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤ (1 - t) ^ (d * (1 - t)) * t ^ (d * t) * (∫ x, h x)
+
+theorem prekopa_leindler_dimension_sum (t : ℝ)
+    {d₁ : ℕ} (h₁ : ∀ f g h : ℝn d₁ → ℝ, prekopa_leindler_statement t f g h)
+    {d₂ : ℕ} (h₂ : ∀ f g h : ℝn d₂ → ℝ, prekopa_leindler_statement t f g h)
+    (f g h : ℝn (d₁ + d₂) → ℝ) :
+    prekopa_leindler_statement t f g h := by
+  intro h₃ h₄ h₅
+  sorry
+
+theorem prekopa_leindler {t : ℝ} {d : ℕ} (f g h : ℝn d → ℝ) :
+    prekopa_leindler_statement t f g h := by
+  induction d using Nat.induction_on_sum
+  case hzero => sorry
+  case hone => sorry
+  case ind h₂ d ih => exact prekopa_leindler_dimension_sum t h₂ ih _ _ _
