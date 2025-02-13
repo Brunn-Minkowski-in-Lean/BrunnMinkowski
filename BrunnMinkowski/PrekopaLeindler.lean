@@ -33,14 +33,12 @@ noncomputable def EuclideanSpace.finProdLinearEquiv (n₁ n₂ : ℕ) :
   ContinuousLinearEquiv.ofFinrankEq <| by
   simp only [Module.finrank_prod, finrank_euclideanSpace, Fintype.card_fin]
 
--- TODO: Remove `sorry`.
 open EuclideanSpace in
-@[simp]
 theorem EuclideanSpace.add_finProdLinearEquiv
     {n₁ n₂ : ℕ} (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
-    (finProdLinearEquiv n₁ n₂) ⟨x₁ + x₂, x₃ + x₄⟩ =
-    (finProdLinearEquiv n₁ n₂) ⟨x₁, x₃⟩ + (finProdLinearEquiv n₁ n₂) ⟨x₂, x₄⟩ := by
-  sorry
+    (finProdLinearEquiv n₁ n₂) (x₁, x₃) + (finProdLinearEquiv n₁ n₂) (x₂, x₄) =
+    (finProdLinearEquiv n₁ n₂) (x₁ + x₂, x₃ + x₄) :=
+  ((finProdLinearEquiv n₁ n₂).map_add (x₁, x₃) (x₂, x₄)).symm
 
 -- TODO: Consider not using it.
 -- TODO: Consider higher level types if possible.
@@ -112,9 +110,18 @@ def prekopa_leindler_statement
   (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤ (1 - t) ^ (d * (1 - t)) * t ^ (d * t) * (∫ x, h x)
 
 @[simp]
-theorem volume_univ_one_of_euclideanSpace_fin_zero :
+theorem volume_univ_one_of_pi_fin_zero :
     volume (@Set.univ (Fin 0 → ℝ)) = 1 := by
   simp only [MeasureTheory.volume_pi, Measure.pi_empty_univ]
+
+open EuclideanSpace in
+@[simp]
+theorem volume_univ_one_of_euclideanSpace_fin_zero :
+    volume (@Set.univ (EuclideanSpace ℝ (Fin 0))) = 1 :=
+  let eqv := EuclideanSpace.measurableEquiv (Fin 0)
+  have h₁ : volume (eqv ⁻¹' (@Set.univ (Fin 0 → ℝ))) = volume (@Set.univ (Fin 0 → ℝ)) :=
+    MeasurePreserving.measure_preimage_equiv (volume_preserving_measurableEquiv (Fin 0)) _
+  h₁ ▸ volume_univ_one_of_pi_fin_zero
 
 -- TODO: Remove `sorry`.
 theorem prekopa_leindler_dim_zero
@@ -125,10 +132,8 @@ theorem prekopa_leindler_dim_zero
     prekopa_leindler_statement ht₁ ht₂ f hf g hg h := by
   intro h₁
   simp_rw [CharP.cast_eq_zero, zero_mul, Real.rpow_zero, mul_one, one_mul]
-  have h₃ : (volume (@Set.univ (ℝn 0))).toReal = 1 := by
-    refine (ENNReal.toReal_eq_one_iff _).mpr ?_
-    -- have := EuclideanSpace.volume_preserving_measurableEquiv (Fin 0)
-    sorry
+  have h₃ : (volume (@Set.univ (ℝn 0))).toReal = 1 :=
+    (ENNReal.toReal_eq_one_iff _).mpr volume_univ_one_of_euclideanSpace_fin_zero
   have h₄ := h₁ 0 0
   simp only [integral_unique, h₃, smul_eq_mul, one_mul, ge_iff_le]
   rw [add_zero] at h₄
@@ -148,14 +153,14 @@ theorem prekopa_leindler_dimension_sum
     (h : ℝn (d₁ + d₂) → ℝ) :
     prekopa_leindler_statement ht₁ ht₂ f hf g hg h := by
   intro h₃
-  let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((EuclideanSpace.finProdLinearEquiv d₁ d₂) ⟨x₁, x₂⟩)
-  let G (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ g ((EuclideanSpace.finProdLinearEquiv d₁ d₂) ⟨x₁, x₂⟩)
-  let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((EuclideanSpace.finProdLinearEquiv d₁ d₂) ⟨x₁, x₂⟩)
+  let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((EuclideanSpace.finProdLinearEquiv d₁ d₂) (x₁, x₂))
+  let G (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ g ((EuclideanSpace.finProdLinearEquiv d₁ d₂) (x₁, x₂))
+  let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((EuclideanSpace.finProdLinearEquiv d₁ d₂) (x₁, x₂))
   have hF : ∀ {x₁} x₂, 0 ≤ F x₁ x₂ := fun _ ↦ hf _
   have hG : ∀ {x₁} x₂, 0 ≤ G x₁ x₂ := fun _ ↦ hg _
   have h₄ : ∀ x₁ y₁ : ℝn d₁, Condition ht₁ ht₂ (F x₁) hF (G y₁) hG (H (x₁ + y₁)) := by
-    intro x₁ y₁ x y
-    simp only [F, G, H, EuclideanSpace.add_finProdLinearEquiv]
+    intro _ _ _ _
+    simp only [F, G, H, ← EuclideanSpace.add_finProdLinearEquiv]
     exact h₃ _ _
   have h₅ :
       Condition ht₁ ht₂
@@ -164,6 +169,8 @@ theorem prekopa_leindler_dimension_sum
         (fun z ↦ (1 - t) ^ (d₂ * (1 - t)) * t ^ (d₂ * t) * ∫ z₂, H z z₂) := fun x₁ y₁ ↦
     h₂ hF hG (h₄ x₁ y₁)
   have h₆ := h₁ (fun _ ↦ integral_nonneg hF) (fun _ ↦ integral_nonneg hG) h₅
+  simp only [F, G, H] at h₆
+  ring_nf at h₆ ⊢
   sorry
 
 theorem prekopa_leindler
