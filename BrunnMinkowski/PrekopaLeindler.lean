@@ -123,7 +123,9 @@ theorem volume_univ_one_of_euclideanSpace_fin_zero :
     MeasurePreserving.measure_preimage_equiv (volume_preserving_measurableEquiv (Fin 0)) _
   h₁ ▸ volume_univ_one_of_pi_fin_zero
 
--- TODO: Remove `sorry`.
+instance EuclideanSpace.zeroUnique : Unique (EuclideanSpace ℝ (Fin 0)) :=
+  ⟨⟨0⟩, Subsingleton.eq_zero⟩
+
 theorem prekopa_leindler_dim_zero
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
     (f : ℝn 0 → ℝ) (hf : ∀ x, 0 ≤ f x)
@@ -134,10 +136,9 @@ theorem prekopa_leindler_dim_zero
   simp_rw [CharP.cast_eq_zero, zero_mul, Real.rpow_zero, mul_one, one_mul]
   have h₃ : (volume (@Set.univ (ℝn 0))).toReal = 1 :=
     (ENNReal.toReal_eq_one_iff _).mpr volume_univ_one_of_euclideanSpace_fin_zero
-  have h₄ := h₁ 0 0
-  simp only [integral_unique, h₃, smul_eq_mul, one_mul, ge_iff_le]
-  rw [add_zero] at h₄
-  sorry
+  simp_rw [@integral_unique (ℝn 0) ℝ _ _ _ _ volume EuclideanSpace.zeroUnique, h₃, smul_eq_mul,
+    one_mul, ge_iff_le]; simp only [default]
+  have h₄ := h₁ 0 0; simp only [add_zero] at h₄; exact h₄
 
 -- TODO: Remove `sorry`.
 theorem prekopa_leindler_dimension_sum
