@@ -29,23 +29,33 @@ theorem EuclideanSpace.induction_on_dimension
       P α → P β → P (α × β)} :
   (α : Type) → [AddCommGroup α] → [TopologicalSpace α] →  [TopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → P α := by sorry
 
+
+lemma one_dim_BMInequality_of_nullmeasurable (A B C : Set ℝ)
+    (hA_nonempty : A.Nonempty) (hB_nonempty : B.Nonempty)
+    (hA_nm : NullMeasurableSet A)
+    (hB_nm : NullMeasurableSet B)
+    (hABC : A + B ⊆ C)
+    : volume A + volume B ≤ volume C := by sorry
+
+lemma nonneg_integrable_integral_eq_integral_superlevel_set_meas
+    {f : ℝn n → ℝ} (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f) :
+    (∫ x, f x) = (∫ y, (fun l ↦ (volume (superlevel_set f l)).toReal) y) := by
+  sorry
+
+
+
 theorem prekopa_leindler
     {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
     {d : ℕ} (f g h : ℝn d → ℝ)
     (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f)
     (hf_nonneg : 0 ≤ g) (hg_integrable : Integrable g)
     (hf_nonneg : 0 ≤ h) (hh_integrable : Integrable h)
-    (hlb :
+    (hfgh_pow_le :
       ∀ x y : ℝn d,
       (f x)^(1 - t) * (g y)^t ≤ h (x + y)) :
   (∫ x, f x)^(1-t) * (∫ y, g y)^t ≤
   (1 - t)^(d * (1-t)) * t^(d*t) * (∫ x, h x)
   := by sorry
-
-lemma nonneg_integrable_integral_eq_integral_superlevel_set_meas
-    {f : ℝn n → ℝ} (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f) :
-    (∫ x, f x) = (∫ y, (fun l ↦ (volume (superlevel_set f l)).toReal) y) := by
-  sorry
 
 
 lemma prekopa_leindler_dim1
@@ -54,18 +64,18 @@ lemma prekopa_leindler_dim1
     (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f)
     (hg_nonneg : 0 ≤ g) (hg_integrable : Integrable g)
     (hh_nonneg : 0 ≤ h) (hh_integrable : Integrable h)
-    (hlb :
-      ∀ x y : ℝn 1,
+    (hfgh_pow_le : ∀ x y : ℝn 1,
       (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) :
     (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t
       ≤ (1 - t) ^ (1 - t) * t ^ t * (∫ x, h x) := by
 
+  -- abbreviations
   let prekopa_leindler_dim1_conclusion :=
     (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t
       ≤ (1 - t) ^ (1 - t) * t ^ t * (∫ x, h x)
 
-  let f_ess_bdd := IsBoundedUnder (fun (x1 x2 : ℝ) ↦ x1 ≤ x2) (ae volume) f
-  let g_ess_bdd := IsBoundedUnder (fun (x1 x2 : ℝ) ↦ x1 ≤ x2) (ae volume) g
+  let f_essBdd := IsEssBdd f volume
+  let g_essBdd := IsEssBdd g volume
 
   -- conditions on t
   have one_sub_t_pos : 0 < 1 - t := sub_pos.mpr ht1
@@ -76,9 +86,9 @@ lemma prekopa_leindler_dim1
   let g_essSup : ℝ := essSup g volume
   let h_essSup : ℝ := essSup h volume
 
-  have f_essSup_nonneg : f_essSup ≥ 0 := nonneg_essSup_of_nonneg hf_nonneg
-  have g_essSup_nonneg : g_essSup ≥ 0 := nonneg_essSup_of_nonneg hg_nonneg
-  have h_essSup_nonneg : h_essSup ≥ 0 := nonneg_essSup_of_nonneg hh_nonneg
+  have f_essSup_nonneg : 0 ≤ f_essSup := nonneg_essSup_of_nonneg hf_nonneg
+  have g_essSup_nonneg : 0 ≤ g_essSup := nonneg_essSup_of_nonneg hg_nonneg
+  have h_essSup_nonneg : 0 ≤ h_essSup := nonneg_essSup_of_nonneg hh_nonneg
 
   have superlevel_sets_subset {f g h : ℝn 1 → ℝ}
       {l : ℝ} (hl_pos : 0 < l)
@@ -94,38 +104,57 @@ lemma prekopa_leindler_dim1
       _ < (f x) ^ (1 - t) * (g y) ^ t := by gcongr
       _ ≤ h (x + y) := by exact hfgh_pow_le x y
 
-  -- The conclusion holds when f or g 'has zero essential supremum and is essentially bounded'
-  have prekopa_leindler_dim1_of_ess_bdd_essSup_zero
-      (hf_or_g_cond : (f_ess_bdd ∧ f_essSup = 0) ∨ (g_ess_bdd ∧ g_essSup = 0)) :
-      prekopa_leindler_dim1_conclusion := by
+  -- The conclusion holds when f or g is a.e. zero
+  by_cases hf_ae_zero : f =ᵐ[volume] 0
+  · -- Assume f is a.e. zero
+    have : (∫ x, f x) = 0 := integral_eq_zero_of_ae hf_ae_zero
+    rw [this, Real.zero_rpow (by positivity), zero_mul]
+    exact mul_nonneg (by positivity) (integral_nonneg hh_nonneg)
+  by_cases hg_ae_zero : g =ᵐ[volume] 0
+  · -- Assume g is a.e. zero
+    have : (∫ x, g x) = 0 := integral_eq_zero_of_ae hg_ae_zero
+    rw [this, Real.zero_rpow (by positivity), mul_zero]
+    exact mul_nonneg (by positivity) (integral_nonneg hh_nonneg)
 
-    unfold prekopa_leindler_dim1_conclusion
-    rcases hf_or_g_cond with hf_cond | hg_cond
-    · -- Assume f_ess_bdd and f_essSup = 0
-      have hf_integral_eq_zero : (∫ x, f x) = 0 :=
-        integral_eq_zero_of_ae
-          (ae_zero_of_nonneg_essSup_zero_ess_bdd
-            hf_nonneg hf_cond.1 hf_cond.2)
-      rw [hf_integral_eq_zero, Real.zero_rpow (by positivity), zero_mul]
-      exact mul_nonneg (by positivity) (integral_nonneg hh_nonneg)
-    · -- Assume g_ess_bdd and g_essSup = 0
-      have hg_integral_eq_zero : (∫ x, g x) = 0 :=
-        integral_eq_zero_of_ae
-          (ae_zero_of_nonneg_essSup_zero_ess_bdd
-            hg_nonneg hg_cond.1 hg_cond.2)
-      rw [hg_integral_eq_zero, Real.zero_rpow (by positivity), mul_zero]
-      exact mul_nonneg (by positivity) (integral_nonneg hh_nonneg)
+  have hf_not_ae_zero := ne_eq hf_ae_zero
+  have hg_not_ae_zero := ne_eq hg_ae_zero
 
-  -- (∫ x, f x) + (∫ x, g x) ≤ (∫ x, h x) holds if f and g are essentially bounded
-  have integral_sum_le_of_ess_bdd_essSup_nonzero
-      (hf_ess_bdd : f_ess_bdd) (hg_ess_bdd : g_ess_bdd)
-      (hf_essSup_nonzero : f_essSup ≠ 0) (hg_essSup_nonzero : g_essSup ≠ 0)
+  -- (∫ x, f x) + (∫ x, g x) ≤ (∫ x, h x) holds if f and g are essentially bounded and not a.e. zero
+  have integral_sum_le_of_essBdd_essSup_nonzero
+      (hf_essBdd : IsEssBdd f) (hg_essBdd : IsEssBdd g)
       : (∫ x, f x) + (∫ x, g x) ≤ (∫ x, h x) := by
+
+    have f_essSup_pos : 0 < f_essSup := by
+      by_contra hf_essSup_zero
+      apply eq_of_ge_of_not_gt f_essSup_nonneg at hf_essSup_zero
+      have := ae_zero_of_nonneg_essSup_zero_essBdd
+        hf_nonneg hf_essBdd hf_essSup_zero
+      contradiction
+    have g_essSup_pos : 0 < g_essSup := by
+      by_contra hg_essSup_zero
+      apply eq_of_ge_of_not_gt g_essSup_nonneg at hg_essSup_zero
+      have := ae_zero_of_nonneg_essSup_zero_essBdd
+        hg_nonneg hg_essBdd hg_essSup_zero
+      contradiction
 
     -- normalize the essential supremums
     let f_nor : ℝn 1 → ℝ := fun x ↦ (f x) / f_essSup
     let g_nor : ℝn 1 → ℝ := fun x ↦ (g x) / g_essSup
     let h_nor : ℝn 1 → ℝ := fun x ↦ (h x) / (f_essSup ^ (1 - t) * g_essSup ^ t)
+
+    have f_nor_nonneg : 0 ≤ f_nor := by
+      intro; exact div_nonneg (hf_nonneg _) f_essSup_nonneg
+    have g_nor_nonneg : 0 ≤ g_nor := by
+      intro; exact div_nonneg (hg_nonneg _) g_essSup_nonneg
+
+    have f_nor_essSup_eq_one : essSup f_nor volume = 1 := by
+      rw [← div_self (ne_of_gt f_essSup_pos)]
+      have  (x : ℝn 1) : 0 ≤ f x := hf_nonneg x
+      exact div_essSup_of_essBdd_lowerBdd _ hf_essBdd this f_essSup_pos
+    have g_nor_essSup_eq_one : essSup g_nor volume = 1 := by
+      rw [← div_self (ne_of_gt g_essSup_pos)]
+      have (x : ℝn 1) : 0 ≤ g x := hg_nonneg x
+      exact div_essSup_of_essBdd_lowerBdd _ hg_essBdd this g_essSup_pos
 
     have nor_superlevel_sets_subset {l : ℝ} (hl_pos : 0 < l) :
         superlevel_set f_nor l + superlevel_set g_nor l ⊆ superlevel_set h_nor l
@@ -137,9 +166,9 @@ lemma prekopa_leindler_dim1
         Real.div_rpow (hg_nonneg y) g_essSup_nonneg,
         div_mul_div_comm]
       gcongr
-      exact hlb x y
+      exact hfgh_pow_le x y
 
-    have {l : ℝ} (h0l : 0 < l) (hl1 : h < 1) :
+    have {l : ℝ} (h0l : 0 < l) (hl1 : l < 1) :
         volume (superlevel_set f_nor l) + volume (superlevel_set g_nor l)
           ≤ volume (superlevel_set h_nor l) := by
 
@@ -148,6 +177,8 @@ lemma prekopa_leindler_dim1
       let B : Set ℝ := ϕ ⁻¹' (superlevel_set g_nor l)
       let C : Set ℝ := ϕ ⁻¹' (superlevel_set h_nor l)
       -- use NullMeasurableSet.exists_measurable_subset_ae_eq and nullmeasurable_superlevel_set_of_aemeasurable to make measurable sets
+      -- Measurable.nullMeasurable
+
 
       have ϕ_preserves_volume {D : Set (ℝn 1)} :
           volume (ϕ ⁻¹' D) = volume D := by
@@ -159,121 +190,48 @@ lemma prekopa_leindler_dim1
           (ϕ ⁻¹' (D)).Nonempty := by
         sorry
 
-      have f_suplevset_nonempty : (superlevel_set f_nor l).Nonempty := by
-        sorry
-      have g_suplevset_nonempty : (superlevel_set g_nor l).Nonempty := by
-        sorry
-      have h_suplevset_nonempty : (superlevel_set h_nor l).Nonempty := by
-        sorry
+      have f_suplevelset_nonempty : (superlevel_set f_nor l).Nonempty :=
+        have h1 : ∀ x, 0 ≤ f_nor x := by intro; exact f_nor_nonneg _
+        have h2 : l < essSup f_nor volume := by rwa [f_nor_essSup_eq_one]
+        nonempty_of_superlevel_set_of_bddBelow _ h1 h2
+      have g_suplevelset_nonempty : (superlevel_set g_nor l).Nonempty :=
+        have h1 : ∀ x, 0 ≤ g_nor x := by intro; exact g_nor_nonneg _
+        have h2 : l < essSup g_nor volume := by rwa [g_nor_essSup_eq_one]
+        nonempty_of_superlevel_set_of_bddBelow _ h1 h2
 
-      have nA : A.Nonempty := ϕ_preimage_nonempty f_suplevset_nonempty
-      have nB : B.Nonempty := ϕ_preimage_nonempty g_suplevset_nonempty
-      have nC : C.Nonempty := ϕ_preimage_nonempty h_suplevset_nonempty
+      have A_nonempty : A.Nonempty := ϕ_preimage_nonempty f_suplevelset_nonempty
+      have B_nonempty : B.Nonempty := ϕ_preimage_nonempty g_suplevelset_nonempty
 
-      have mA : MeasurableSet A := by
+      have A_nm : NullMeasurableSet A := by
         unfold A
-        rw [MeasurableEquiv.measurableSet_preimage _]
-        refine measurable_superlevel_set_of_measurable ?_ _
+        -- rw [MeasurableEquiv.measurableSet_preimage _]
+        -- refine measurable_superlevel_set_of_measurable ?_ _
         sorry
+      have B_nm : NullMeasurableSet B := by
+        unfold B
+        sorry
+
+      have ABC : A + B ⊆ C := by
+        -- preimage_mono
+        sorry -- use superlevel_sets_subset
 
       calc
         volume (superlevel_set f_nor l) + volume (superlevel_set g_nor l)
           = volume A + volume B := by iterate 2 rw [ϕ_preserves_volume]
-        _ ≤ volume C := sorry
-          -- one_dim_BMInequality A B C nA nB nC _ _ _ _
+        _ ≤ volume C :=
+          one_dim_BMInequality_of_nullmeasurable A B C
+            A_nonempty B_nonempty A_nm B_nm ABC
         _ = volume (superlevel_set h_nor l) := ϕ_preserves_volume
 
+    -- use nonneg_integrable_integral_eq_integral_superlevel_set_meas
     sorry
 
-  -- (∫ x, f x) + (∫ x, g x) ≤ (∫ x, h x) holds for arbitrary f and g
+  -- (∫ x, f x) + (∫ x, g x) ≤ (∫ x, h x) holds if f and g are not a.e. zero
   have integral_sum_le : (∫ x, f x) + (∫ x, g x) ≤ (∫ x, h x) := by
     sorry
 
-  /-
-
-  rcases eq_or_ne f_essSup 0 with hf_essSup_zero | hf_essSup_ne0
-  · -- Assume f_essSup = 0
-    have hf_integral_eq_zero : (∫ x, f x) = 0 :=
-      sorry
-      -- integral_eq_zero_of_ae
-      --   (ae_zero_of_essSup_zero_nonneg hf_nonneg hf_integrable hf_essSup_zero)
-    rw [hf_integral_eq_zero, Real.zero_rpow (by positivity), zero_mul]
-    exact mul_nonneg (by positivity) (integral_nonneg hh_nonneg)
-  rcases eq_or_ne g_essSup 0 with hg_essSup_zero | hg_essSup_ne0
-  · -- Assume g_essSup = 0
-    have hg_integral_eq_zero : (∫ x, g x) = 0 :=
-      sorry
-      -- integral_eq_zero_of_ae
-      --   (ae_zero_of_essSup_zero_nonneg hg_nonneg hg_integrable hg_essSup_zero)
-    rw [hg_integral_eq_zero, Real.zero_rpow (by positivity), mul_zero]
-    exact mul_nonneg (by positivity) (integral_nonneg hh_nonneg)
-
-  have hh_essSup_pos : 0 < h_essSup := by
-    have hfgh_supp_rel : f.support + g.support ⊆ h.support := by
-      intros z hz
-      rw [Set.mem_add] at hz
-      choose x hx y hy hxyz using hz
-      rw [Function.mem_support] at *
-      have : 0 < f x := Ne.lt_of_le' hx (hf_nonneg x)
-      have : 0 < g y := Ne.lt_of_le' hy (hg_nonneg y)
-      rw [← hxyz]
-      exact (lt_of_lt_of_le (by positivity) (hlb x y)).ne'
-
-    have hh_supp_vol_pos : 0 < volume h.support :=
-      calc
-        0 < volume f.support :=
-          pos_meas_supp_of_essSup_ne0 hf_essSup_ne0
-        _ ≤ volume (f.support + g.support) :=
-          meas_le_meas_add_right _ _
-            (nonempty_of_measure_ne_zero
-              (pos_meas_supp_of_essSup_ne0 hg_essSup_ne0).ne')
-        _ ≤ volume h.support := measure_mono hfgh_supp_rel
-
-    let A := {y : (ℝn 1) | h_essSup < h y}
-
-    rcases lt_trichotomy h_essSup 0
-      with hh_essSup_neg | hh_essSup_0 | hh_essSup_pos
-    · have : A = univ := by sorry
-      have : volume A > 0 := by sorry
-      have : volume A = 0 := by
-        unfold A h_essSup
-        -- exact @meas_essSup_lt _ _ _ volume _ h _ _ _ (by isBoundedDefault)
-        sorry
-      sorry
-    · sorry
-    · exact hh_essSup_pos
-
-
-
-
-  have superlevel_sets_meas_rel (l : ℝ) (hl_pos : 0 < l) :
-    volume (superlevel_set f l) + volume (superlevel_set g l)
-      ≤ volume (superlevel_set h l)
-    := by
-    let ϕ : ℝn 1 → ℝ := (MeasurableEquiv.funUnique (Fin 1) ℝ).toFun
-    let A : Set ℝ := image ϕ (superlevel_set f l)
-    let B : Set ℝ := image ϕ (superlevel_set g l)
-    let C : Set ℝ := image ϕ (superlevel_set h l)
-
-    have h := one_dim_BMInequality A B C
-
-  -/
-
-
-
-
-    -- exact one_dim_BMInequality
-    --   (superlevel_set f l)
-
-  -- let ϕ : ℝ → ℝn 1 := (MeasurableEquiv.funUnique (Fin 1) ℝ).invFun
-  -- let f_iso : ℝ → ℝ := f ∘ ϕ
-  -- let g_iso : ℝ → ℝ := f ∘ ϕ
-  -- let h_iso : ℝ → ℝ := f ∘ ϕ
-
-
   have weighted_AM_GM_var (a b : ℝ) (ha_nonneg : 0 ≤ a) (hb_nonneg : 0 ≤ b) :
-    a ^ (1 - t) * b ^ t ≤ (1 - t) ^ (1 - t) * t ^ t * (a + b)
-    := by
+      a ^ (1 - t) * b ^ t ≤ (1 - t) ^ (1 - t) * t ^ t * (a + b) := by
     suffices a ^ (1 - t) * b ^ t / ((1 - t) ^ (1 - t) * t ^ t)
         ≤ a + b by
       apply (div_le_iff₀' ?_).mp this
