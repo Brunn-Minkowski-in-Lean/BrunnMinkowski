@@ -40,6 +40,21 @@ theorem EuclideanSpace.add_finProdLinearEquiv
     (finProdLinearEquiv n₁ n₂) (x₁ + x₂, x₃ + x₄) :=
   ((finProdLinearEquiv n₁ n₂).map_add (x₁, x₃) (x₂, x₄)).symm
 
+noncomputable def EuclideanSpace.split
+    (n₁ n₂ : ℕ) (x : EuclideanSpace ℝ (Fin (n₁ + n₂))) :
+    EuclideanSpace ℝ (Fin n₁) × EuclideanSpace ℝ (Fin n₂) :=
+  (EuclideanSpace.finProdLinearEquiv n₁ n₂).symm x
+
+noncomputable def EuclideanSpace.split.front
+    (n₁ n₂ : ℕ) (x : EuclideanSpace ℝ (Fin (n₁ + n₂))) :
+    EuclideanSpace ℝ (Fin n₁) :=
+  (EuclideanSpace.split n₁ n₂ x).1
+
+noncomputable def EuclideanSpace.split.back
+    (n₁ n₂ : ℕ) (x : EuclideanSpace ℝ (Fin (n₁ + n₂))) :
+    EuclideanSpace ℝ (Fin n₂) :=
+  (EuclideanSpace.split n₁ n₂ x).2
+
 -- TODO: Consider not using it.
 -- TODO: Consider higher level types if possible.
 theorem EuclideanSpace.induction_on_finrank
@@ -141,6 +156,21 @@ theorem prekopa_leindler_dim_zero
   have h₄ := h₁ 0 0; simp only [add_zero] at h₄; exact h₄
 
 -- TODO: Remove `sorry`.
+theorem integral_integral_euclideanSpace
+    {n₁ n₂ : ℕ} (f : EuclideanSpace ℝ (Fin n₁) → EuclideanSpace ℝ (Fin n₂) → ℝ) :
+    ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f x y ∂volume ∂volume =
+    ∫ (z : EuclideanSpace ℝ (Fin (n₁ + n₂))),
+      (let ⟨z₁, z₂⟩ := (EuclideanSpace.finProdLinearEquiv n₁ n₂).symm z; f z₁ z₂) ∂volume := by
+  sorry
+
+theorem integral_integral_euclideanSpace'
+    {n₁ n₂ : ℕ} (f : (EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂) → ℝ) :
+    ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f (x, y) ∂volume ∂volume =
+    ∫ (z : EuclideanSpace ℝ (Fin (n₁ + n₂))),
+      f ((EuclideanSpace.finProdLinearEquiv n₁ n₂).symm z) ∂volume :=
+  integral_integral_euclideanSpace (Function.curry f)
+
+-- TODO: Remove `sorry`.
 theorem prekopa_leindler_dimension_sum
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
     {d₁ : ℕ}
@@ -163,15 +193,12 @@ theorem prekopa_leindler_dimension_sum
     intro _ _ _ _
     simp only [F, G, H, ← EuclideanSpace.add_finProdLinearEquiv]
     exact h₃ _ _
-  have h₅ :
-      Condition ht₁ ht₂
-        (fun x ↦ ∫ x₂, F x x₂) (fun _ ↦ integral_nonneg hF)
-        (fun y ↦ ∫ y₂, G y y₂) (fun _ ↦ integral_nonneg hG)
-        (fun z ↦ (1 - t) ^ (d₂ * (1 - t)) * t ^ (d₂ * t) * ∫ z₂, H z z₂) := fun x₁ y₁ ↦
+  have h₅ : Condition ht₁ ht₂
+      (fun x ↦ ∫ x₂, F x x₂) (fun _ ↦ integral_nonneg hF)
+      (fun y ↦ ∫ y₂, G y y₂) (fun _ ↦ integral_nonneg hG)
+      (fun z ↦ (1 - t) ^ (d₂ * (1 - t)) * t ^ (d₂ * t) * ∫ z₂, H z z₂) := fun x₁ y₁ ↦
     h₂ hF hG (h₄ x₁ y₁)
   have h₆ := h₁ (fun _ ↦ integral_nonneg hF) (fun _ ↦ integral_nonneg hG) h₅
-  simp only [F, G, H] at h₆
-  ring_nf at h₆ ⊢
   sorry
 
 theorem prekopa_leindler
