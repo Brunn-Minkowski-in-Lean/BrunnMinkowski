@@ -42,7 +42,8 @@ theorem EuclideanSpace.add_finProdLinearEquiv
     (finProdLinearEquiv n₁ n₂) ⟨x₁, x₃⟩ + (finProdLinearEquiv n₁ n₂) ⟨x₂, x₄⟩ := by
   sorry
 
--- TODO: Consider higher order types if possible.
+-- TODO: Consider not using it.
+-- TODO: Consider higher level types if possible.
 theorem EuclideanSpace.induction_on_finrank
     {P : (α : Type) → [AddCommGroup α] → [TopologicalSpace α] → [TopologicalAddGroup α] →
       [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → Prop}
@@ -110,13 +111,12 @@ def prekopa_leindler_statement
   Condition ht₁ ht₂ f hf g hg h →
   (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤ (1 - t) ^ (d * (1 - t)) * t ^ (d * t) * (∫ x, h x)
 
--- TODO: Check if this lemma is correct.
--- TODO: Remove `sorry`.
 @[simp]
-theorem volume_univ_zero_of_euclideanSpace_fin_zero :
-    volume (@Set.univ (ℝn 0)) = 0 := by
-  sorry
+theorem volume_univ_one_of_euclideanSpace_fin_zero :
+    volume (@Set.univ (Fin 0 → ℝ)) = 1 := by
+  simp only [MeasureTheory.volume_pi, Measure.pi_empty_univ]
 
+-- TODO: Remove `sorry`.
 theorem prekopa_leindler_dim_zero
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
     (f : ℝn 0 → ℝ) (hf : ∀ x, 0 ≤ f x)
@@ -125,13 +125,16 @@ theorem prekopa_leindler_dim_zero
     prekopa_leindler_statement ht₁ ht₂ f hf g hg h := by
   intro h₁
   simp_rw [CharP.cast_eq_zero, zero_mul, Real.rpow_zero, mul_one, one_mul]
-  simp only [integral_unique, smul_eq_mul]
-  have h₃ : (volume (@Set.univ (ℝn 0))).toReal = 0 :=
-    (toReal_eq_zero_iff (volume (@Set.univ (ℝn 0)))).mpr
-      (.inl volume_univ_zero_of_euclideanSpace_fin_zero)
-  simp only [h₃, zero_mul, Real.zero_rpow (Ne.symm (ne_of_lt ht₁)),
-    Real.zero_rpow (Ne.symm (ne_of_lt (sub_pos_of_lt ht₂))), le_rfl]
+  have h₃ : (volume (@Set.univ (ℝn 0))).toReal = 1 := by
+    refine (ENNReal.toReal_eq_one_iff _).mpr ?_
+    -- have := EuclideanSpace.volume_preserving_measurableEquiv (Fin 0)
+    sorry
+  have h₄ := h₁ 0 0
+  simp only [integral_unique, h₃, smul_eq_mul, one_mul, ge_iff_le]
+  rw [add_zero] at h₄
+  sorry
 
+-- TODO: Remove `sorry`.
 theorem prekopa_leindler_dimension_sum
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
     {d₁ : ℕ}
@@ -161,9 +164,6 @@ theorem prekopa_leindler_dimension_sum
         (fun z ↦ (1 - t) ^ (d₂ * (1 - t)) * t ^ (d₂ * t) * ∫ z₂, H z z₂) := fun x₁ y₁ ↦
     h₂ hF hG (h₄ x₁ y₁)
   have h₆ := h₁ (fun _ ↦ integral_nonneg hF) (fun _ ↦ integral_nonneg hG) h₅
-  ring_nf 
-  simp [mul_add, integral_smul_const] at h₆ ⊢
-  ring_nf at h₆ ⊢
   sorry
 
 theorem prekopa_leindler
