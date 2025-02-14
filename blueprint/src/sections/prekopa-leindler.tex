@@ -1,0 +1,85 @@
+\section{Pr\'{e}kopa--Leindler thoerem}
+
+\begin{theorem}[Pr\'{e}kopa--Leindler]
+    \label{thm:prekopa-leindler}
+    \lean{prekopa_leindler}
+    Let \(0<t<1\) be real and \(d\) be a nonnegative integer. Let \(f,g,h\colon \RR^d\to \RR\) be nonnegative integrable functions such that for all \(x,y\in \RR^d\),
+    \begin{equation}\label{eq:prekopa-leindler_cond}
+        f(x)^{1-t} g(y)^{t} \le h(x+y).
+    \end{equation}
+    Then
+    \[
+        \biggl( \int f(x) \diff x \biggr)^{\!1-t} \biggl( \int g(y) \diff y \biggr)^{\!t} \le (1-t)^{d(1-t)} t^{dt} \int h(x) \diff x.
+    \]
+\end{theorem}
+
+\begin{lemma}
+    \label{lem:prekopa-leindler-dimension-sum}
+    If \Cref{thm:prekopa-leindler} holds for \(d=d_1\) and \(d_2\), then it also holds for \(d=d_1+d_2\).
+\end{lemma}
+\begin{proof}
+    Let \(f,g,h\colon \RR^{d_1+d_2}\to \RR\) be nonnegative integrable functions which satisfy \eqref{eq:prekopa-leindler_cond}. We may regard them as the functions whose domains are \(\RR^{d_1}\times \RR^{d_2}\). Then for any \(x_1,y_1\in \RR^{d_1}\), the functions \(f(x_1,\cdot)\), \(g(y_1,\cdot)\), and \(h(x_1+y_1,\cdot)\) satisfy \eqref{eq:prekopa-leindler_cond} in dimension \(d_2\). Applying \Cref{thm:prekopa-leindler} for \(d=d_2\) yields that
+    \begin{equation}\label{eq:FGH_cond}
+        F(x_1)^{1-t} G(y_1)^{t}
+        \le (1-t)^{d_2(1-t)} t^{d_2t} H(x_1+y_1),
+    \end{equation}
+    where
+    \[
+        F(x_1) \defeq \int f(x_1,\cdot) \diff x_2, \qquad
+        G(y_1) \defeq \int g(y_1,\cdot) \diff y_2, \qquad
+        H(z) \defeq \int h(z,\cdot) \diff z_2.
+    \]
+    Regarding \eqref{eq:FGH_cond} as the condition \eqref{eq:prekopa-leindler_cond} for \Cref{thm:prekopa-leindler}, we can apply the theorem for \(d=d_1\) using \(F\), \(G\), and \((1-t)^{d_2(1-t)} t^{d_2 t} H\). This gives
+    \[
+        \biggl( \int F(x) \diff x \biggr)^{\!1-t} \biggl( \int G(y) \diff y \biggr)^{\!t} 
+        \le (1-t)^{d_1(1-t)} t^{d_1t} \int (1-t)^{d_2(1-t)} t^{d_2 t} H(x) \diff x.
+    \]
+    Unfolding the definitions of \(F\), \(G\), and \(H\), and applying the Fubini--Tonelli theorem complete the proof.
+\end{proof}
+
+\begin{corollary}
+    If \Cref{thm:prekopa-leindler} holds for $d=1$, then it also holds for every $d\geq 1$.
+\end{corollary}
+\begin{proof}
+    We prove by induction on $d$.
+    The base case when $d=1$ is trivial, so suppose $d>1$.
+    By induction, we know that \Cref{thm:prekopa-leindler} holds for dimension $d-1$ and $1$.
+    Thus by \Cref{lem:prekopa-leindler-dimension-sum}, it becomes clear that \Cref{thm:prekopa-leindler} also holds for dimension $d$.
+\end{proof}
+
+\begin{lemma}[Pr\'ekopa--Leindler inequality in $\mathbb{R}$]
+    \Cref{thm:prekopa-leindler} holds for $d=1$. In other words,
+    if $f,g,h:\mathbb{R}\to\mathbb{R}$ are non-negative integrable functions which satisfy \Cref{eq:prekopa-leindler_cond},
+    then
+    \[\biggl( \int f(x) \diff x \biggr)^{\!1-t} \biggl( \int g(y) \diff y \biggr)^{\!t} \le (1-t)^{1-t} t^{t} \int h(x) \diff x\]
+\end{lemma}
+\begin{proof}
+    Normalize $f$ and $g$ so that their sup norm becomes 1.
+    \textit{(TODO: Check if this condition is required.)}
+    Then the \href{https://en.wikipedia.org/wiki/Level_set}{super-level sets} satisfy
+    \[\{\lambda<f\}+\{\lambda<g\}\subseteq\{\lambda<h\}\]
+    as $\lambda=\lambda^{1-t}\lambda^{t}<f(x)^{1-t}g(y)^{t}\leq h(x+y)$ by \Cref{eq:prekopa-leindler_cond} for every $x\in \{\lambda<f\}$ and $y\in\{\lambda<g\}$.
+    Also, \Cref{thm:one-dim} implies that $\mu(\{\lambda<f\})+\mu(\{\lambda<g\})\leq\mu(\{\lambda<h\})$ for every $\lambda\leq 1$.
+
+    By the Fubini--Tonelli theorem,
+    \[\int\phi(x)\diff x=\int_{0}^{\infty}\mu(\{\lambda<\phi\})\diff \lambda\]
+    for $\phi\in\{f,g,h\}$.
+    We thus obtain
+    \begin{equation}
+        \label{claim:int-ineq}
+        \int f(x)\diff x+\int g(x)\diff x\leq \int h(x)\diff x
+    \end{equation}
+
+    Finally, the weighted AM-GM inequality implies that
+    \begin{equation}
+        \label{claim:am-gm-coro}
+        \begin{split}
+            a+b
+            &=(1-t)\left(\frac{1}{1-t}a\right)+t\left(\frac{1}{t}b\right)\\
+            &\ge \left(\frac{1}{1-t}a\right)^{1-t}\left(\frac{1}{t}b\right)^{t}\\
+            &=\frac{1}{(1-t)^{1-t}t^{t}}a^{1-t}b^{t}
+        \end{split}
+    \end{equation}
+    for any non-negative $a$ and $b$.
+    Using \Cref{claim:int-ineq} and \Cref{claim:am-gm-coro} with $a=\int f(x)\diff x$ and $b=\int g(x)\diff x$, we get the desired inequality by transitivity of $\leq$.
+\end{proof}
