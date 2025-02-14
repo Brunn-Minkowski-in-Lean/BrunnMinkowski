@@ -59,6 +59,24 @@ noncomputable def finProdMeasurableEquiv (n₁ n₂ : ℕ) :
   let eqv₄ := (EuclideanSpace.measurableEquiv (Fin (n₁ + n₂))).symm
   eqv₁.trans (eqv₂.trans (eqv₃.trans eqv₄))
 
+theorem injective_finProdMeasurableEquiv {n₁ n₂ : ℕ} :
+    Function.Injective (finProdMeasurableEquiv n₁ n₂) := by
+  intro x y h;
+  simp_all only [EmbeddingLike.apply_eq_iff_eq]
+
+theorem finProdMeasurableEmbedding (n₁ n₂ : ℕ) :
+    MeasurableEmbedding (finProdMeasurableEquiv n₁ n₂) := by
+  constructor <;> simp [injective_finProdMeasurableEquiv, MeasurableEquiv.measurable]
+
+-- TODO: Remove `sorry`.
+theorem finProdMeasurePreserving (n₁ n₂ : ℕ) :
+    MeasurePreserving (finProdMeasurableEquiv n₁ n₂) := by
+  rcases MeasurableEquiv.measurePreserving_symm volume (finProdMeasurableEquiv n₁ n₂).symm
+    with ⟨h₁, -⟩
+  refine ⟨h₁, ?_⟩
+  simp only [MeasurableEquiv.symm_symm] at *
+  sorry
+
 end EuclideanSpace
 
 /- UNUSED
@@ -186,9 +204,12 @@ theorem integral_integral_euclideanSpace
     (hf : Integrable (Function.uncurry f) volume) :
     ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f x y ∂volume ∂volume =
     ∫ (z : EuclideanSpace ℝ (Fin (n₁ + n₂))),
-      (let ⟨z₁, z₂⟩ := (EuclideanSpace.finProdLinearEquiv n₁ n₂).symm z; f z₁ z₂) ∂volume := by
-  simp only [integral_integral hf, ContinuousLinearEquiv.symm, AddHom.toFun_eq_coe,
-    LinearMap.coe_toAddHom, LinearEquiv.coe_coe]
+      (let ⟨z₁, z₂⟩ := (EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm z; f z₁ z₂) ∂volume := by
+  rw [integral_integral hf]
+  have := @MeasureTheory.integral_map_equiv _ _ _ _ _ volume _ _
+    (EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm fun z ↦ f z.1 z.2
+  simp_rw [Equiv.toFun_as_coe, MeasurableEquiv.coe_toEquiv, ← this,
+    ← Measure.volume_eq_prod]
   sorry
 
 theorem integral_integral_euclideanSpace'
@@ -196,7 +217,7 @@ theorem integral_integral_euclideanSpace'
     (hf : Integrable f volume) :
     ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f (x, y) ∂volume ∂volume =
     ∫ (z : EuclideanSpace ℝ (Fin (n₁ + n₂))),
-      f ((EuclideanSpace.finProdLinearEquiv n₁ n₂).symm z) ∂volume :=
+      f ((EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm z) ∂volume :=
   integral_integral_euclideanSpace (Function.curry f) hf
 
 -- TODO: Remove `sorry`.
