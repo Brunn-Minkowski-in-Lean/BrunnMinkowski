@@ -33,19 +33,32 @@ class EuclideanIsomorphismInvariant.{u}
 
 namespace EuclideanSpace
 
+open ContinuousLinearEquiv MeasurableEquiv
+
 noncomputable def finProdLinearEquiv (n₁ n₂ : ℕ) :
-    ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃L[ℝ]
+    ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃ₗ[ℝ]
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-  ContinuousLinearEquiv.ofFinrankEq <| by
+  LinearEquiv.ofFinrankEq _ _ <| by
   simp only [Module.finrank_prod, finrank_euclideanSpace, Fintype.card_fin]
 
 theorem add_finProdLinearEquiv
     {n₁ n₂ : ℕ} (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
     (finProdLinearEquiv n₁ n₂) (x₁, x₃) + (finProdLinearEquiv n₁ n₂) (x₂, x₄) =
     (finProdLinearEquiv n₁ n₂) (x₁ + x₂, x₃ + x₄) :=
-  ((finProdLinearEquiv n₁ n₂).map_add (x₁, x₃) (x₂, x₄)).symm
+  ((finProdLinearEquiv n₁ n₂).map_add _ _).symm
 
-open MeasurableEquiv in
+noncomputable def finProdContinuousLinearEquiv (n₁ n₂ : ℕ) :
+    ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃L[ℝ]
+      EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
+  ContinuousLinearEquiv.ofFinrankEq <| by
+  simp only [Module.finrank_prod, finrank_euclideanSpace, Fintype.card_fin]
+
+theorem add_finProdContinuousLinearEquiv
+    {n₁ n₂ : ℕ} (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
+    (finProdContinuousLinearEquiv n₁ n₂) (x₁, x₃) + (finProdContinuousLinearEquiv n₁ n₂) (x₂, x₄) =
+    (finProdContinuousLinearEquiv n₁ n₂) (x₁ + x₂, x₃ + x₄) :=
+  ((finProdContinuousLinearEquiv n₁ n₂).map_add _ _).symm
+
 noncomputable def finProdMeasurableEquiv (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃ᵐ
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
@@ -59,23 +72,33 @@ noncomputable def finProdMeasurableEquiv (n₁ n₂ : ℕ) :
   let eqv₄ := (EuclideanSpace.measurableEquiv (Fin (n₁ + n₂))).symm
   eqv₁.trans (eqv₂.trans (eqv₃.trans eqv₄))
 
-theorem injective_finProdMeasurableEquiv {n₁ n₂ : ℕ} :
+theorem injective_finProdMeasurableEquiv (n₁ n₂ : ℕ) :
     Function.Injective (finProdMeasurableEquiv n₁ n₂) := by
-  intro x y h;
-  simp_all only [EmbeddingLike.apply_eq_iff_eq]
+  intro _ _ _; simp_all only [EmbeddingLike.apply_eq_iff_eq]
 
 theorem finProdMeasurableEmbedding (n₁ n₂ : ℕ) :
     MeasurableEmbedding (finProdMeasurableEquiv n₁ n₂) := by
   constructor <;> simp [injective_finProdMeasurableEquiv, MeasurableEquiv.measurable]
 
+-- Likely false.
+noncomputable def finProdLinearIsometryEquiv (n₁ n₂ : ℕ) :
+    ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃ₗᵢ[ℝ]
+      EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
+  LinearIsometryEquiv.mk (finProdLinearEquiv n₁ n₂) fun ⟨x₁, x₂⟩ ↦ by
+    sorry
+
 -- TODO: Remove `sorry`.
 theorem finProdMeasurePreserving (n₁ n₂ : ℕ) :
     MeasurePreserving (finProdMeasurableEquiv n₁ n₂) := by
-  rcases MeasurableEquiv.measurePreserving_symm volume (finProdMeasurableEquiv n₁ n₂).symm
-    with ⟨h₁, -⟩
-  refine ⟨h₁, ?_⟩
-  simp only [MeasurableEquiv.symm_symm] at *
+  -- rcases measurePreserving_symm volume (finProdMeasurableEquiv n₁ n₂).symm
+  --   with ⟨h₁, -⟩
+  -- refine ⟨h₁, ?_⟩
+  -- simp only [MeasurableEquiv.symm_symm] at *
   sorry
+
+theorem finProdMeasurePreserving_symm (n₁ n₂ : ℕ) :
+    MeasurePreserving (finProdMeasurableEquiv n₁ n₂).symm :=
+  (finProdMeasurePreserving n₁ n₂).symm _
 
 end EuclideanSpace
 
@@ -198,7 +221,6 @@ theorem prekopa_leindler_dim_zero
     one_mul, ge_iff_le]; simp only [default]
   have h₄ := h₁ 0 0; simp only [add_zero] at h₄; exact h₄
 
--- TODO: Remove `sorry`.
 theorem integral_integral_euclideanSpace
     {n₁ n₂ : ℕ} (f : EuclideanSpace ℝ (Fin n₁) → EuclideanSpace ℝ (Fin n₂) → ℝ)
     (hf : Integrable (Function.uncurry f) volume) :
@@ -210,7 +232,7 @@ theorem integral_integral_euclideanSpace
     (EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm fun z ↦ f z.1 z.2
   simp_rw [Equiv.toFun_as_coe, MeasurableEquiv.coe_toEquiv, ← this,
     ← Measure.volume_eq_prod]
-  sorry
+  congr; symm; exact (EuclideanSpace.finProdMeasurePreserving_symm n₁ n₂).2
 
 theorem integral_integral_euclideanSpace'
     {n₁ n₂ : ℕ} (f : (EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂) → ℝ)
@@ -235,14 +257,14 @@ theorem prekopa_leindler_dimension_sum
     (h : ℝn (d₁ + d₂) → ℝ) :
     prekopa_leindler_statement ht₁ ht₂ f hf g hg h := by
   intro h₃
-  let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((finProdLinearEquiv d₁ d₂) (x₁, x₂))
-  let G (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ g ((finProdLinearEquiv d₁ d₂) (x₁, x₂))
-  let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((finProdLinearEquiv d₁ d₂) (x₁, x₂))
+  let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((finProdContinuousLinearEquiv d₁ d₂) (x₁, x₂))
+  let G (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ g ((finProdContinuousLinearEquiv d₁ d₂) (x₁, x₂))
+  let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((finProdContinuousLinearEquiv d₁ d₂) (x₁, x₂))
   have hF : ∀ {x₁} x₂, 0 ≤ F x₁ x₂ := fun _ ↦ hf _
   have hG : ∀ {x₁} x₂, 0 ≤ G x₁ x₂ := fun _ ↦ hg _
   have h₄ : ∀ x₁ y₁ : ℝn d₁, Condition ht₁ ht₂ (F x₁) hF (G y₁) hG (H (x₁ + y₁)) := by
     intro _ _ _ _
-    simp only [F, G, H, ← add_finProdLinearEquiv]
+    simp only [F, G, H, ← add_finProdContinuousLinearEquiv]
     exact h₃ _ _
   have h₅ : Condition ht₁ ht₂
       (fun x ↦ ∫ x₂, F x x₂) (fun _ ↦ integral_nonneg hF)
