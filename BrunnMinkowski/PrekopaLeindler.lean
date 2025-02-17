@@ -27,25 +27,30 @@ class EuclideanIsomorphismInvariant.{u}
 
 namespace EuclideanSpace
 
+variable {n₁ n₂ : ℕ}
+
 open ContinuousLinearEquiv MeasurableEquiv
 
 noncomputable def finProdLinearEquiv (n₁ n₂ : ℕ) :
-    ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃ₗ[ℝ]
+    WithLp 2 ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃ₗ[ℝ]
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-  LinearEquiv.ofFinrankEq _ _ <| by
-  simp only [Module.finrank_prod, finrank_euclideanSpace, Fintype.card_fin]
+  LinearEquiv.ofFinrankEq _ _ <| by simp [LinearEquiv.finrank_eq (WithLp.linearEquiv 2 _ _)]
 
 theorem add_finProdLinearEquiv
-    {n₁ n₂ : ℕ} (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
+    (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
     (finProdLinearEquiv n₁ n₂) (x₁, x₃) + (finProdLinearEquiv n₁ n₂) (x₂, x₄) =
     (finProdLinearEquiv n₁ n₂) (x₁ + x₂, x₃ + x₄) :=
   ((finProdLinearEquiv n₁ n₂).map_add _ _).symm
 
+noncomputable instance :
+    T2Space (WithLp 2 ((EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂))) where
+  t2 x := by sorry
+
 noncomputable def finProdContinuousLinearEquiv (n₁ n₂ : ℕ) :
-    ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃L[ℝ]
+    WithLp 2 ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃L[ℝ]
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
   ContinuousLinearEquiv.ofFinrankEq <| by
-  simp only [Module.finrank_prod, finrank_euclideanSpace, Fintype.card_fin]
+  simp [LinearEquiv.finrank_eq (WithLp.linearEquiv 2 _ _)]
 
 theorem add_finProdContinuousLinearEquiv
     {n₁ n₂ : ℕ} (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
