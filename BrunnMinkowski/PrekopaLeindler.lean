@@ -180,6 +180,12 @@ theorem add_eq : x + y = ⟨x.fst + y.fst, x.snd + y.snd⟩ :=
 theorem add_eq' : EuclideanProd.mk a₁ b₁ + EuclideanProd.mk a₂ b₂ = ⟨a₁ + a₂, b₁ + b₂⟩ :=
   rfl
 
+theorem add_fst : (x + y).fst = x.fst + y.fst :=
+  rfl
+
+theorem add_snd : (x + y).snd = x.snd + y.snd :=
+  rfl
+
 end Add
 
 instance : Sub (α ×ₑ β) :=
@@ -195,6 +201,12 @@ theorem sub_eq : x - y = ⟨x.fst - y.fst, x.snd - y.snd⟩ :=
 
 @[simp]
 theorem sub_eq' : EuclideanProd.mk a₁ b₁ - EuclideanProd.mk a₂ b₂ = ⟨a₁ - a₂, b₁ - b₂⟩ :=
+  rfl
+
+theorem sub_fst : (x - y).fst = x.fst - y.fst :=
+  rfl
+
+theorem sub_snd : (x - y).snd = x.snd - y.snd :=
   rfl
 
 end Sub
@@ -220,6 +232,17 @@ noncomputable instance : Norm (α ×ₑ β) :=
   ⟨fun x ↦ √ ((Euclidean.dist 0 x.fst) ^ 2 + (Euclidean.dist 0 x.snd) ^ 2)⟩
 
 section Norm
+
+variable {x : α ×ₑ β}
+variable {a : α} {b : β}
+
+theorem norm_eq : ‖x‖ = √ ((Euclidean.dist 0 x.fst) ^ 2 + (Euclidean.dist 0 x.snd) ^ 2) :=
+  rfl
+
+@[simp]
+theorem norm_eq' :
+    ‖EuclideanProd.mk a b‖ = √ ((Euclidean.dist 0 a) ^ 2 + (Euclidean.dist 0 b) ^ 2) :=
+  rfl
 
 end Norm
 
@@ -248,12 +271,12 @@ section Dist
 variable {x y : α ×ₑ β}
 variable {a₁ a₂ : α} {b₁ b₂ : β}
 
-theorem dist_eq :
+theorem dist_def :
     dist x y = √ ((Euclidean.dist x.fst y.fst) ^ 2 + (Euclidean.dist x.snd y.snd) ^ 2) :=
   rfl
 
 @[simp]
-theorem dist_eq' :
+theorem dist_def' :
     dist (EuclideanProd.mk a₁ b₁) (EuclideanProd.mk a₂ b₂) =
     √ ((Euclidean.dist a₁ a₂) ^ 2 + (Euclidean.dist b₁ b₂) ^ 2) :=
   rfl
@@ -307,12 +330,12 @@ instance : Module ℝ (α ×ₑ β) where
   zero_smul _ := by simp only [sMul_eq, zero_smul, zero_def]
 
 noncomputable instance : PseudoMetricSpace (α ×ₑ β) where
-  dist_self x := by simp [dist_eq, Euclidean.dist, dist_self]
+  dist_self x := by simp [dist_def, Euclidean.dist, dist_self]
   dist_comm x y := by
-    simp only [dist_eq, Euclidean.dist]
+    simp only [dist_def, Euclidean.dist]
     rw [dist_comm (toEuclidean x.fst), dist_comm (toEuclidean x.snd)]
   dist_triangle x y z := by
-    simp only [dist_eq, Euclidean.dist]
+    simp only [dist_def, Euclidean.dist]
     rw [Real.sqrt_le_left (by positivity), add_sq', Real.sq_sqrt (by positivity),
       Real.sq_sqrt (by positivity)]
     have h₁ := dist_triangle (toEuclidean x.fst) (toEuclidean y.fst) (toEuclidean z.fst)
@@ -332,7 +355,10 @@ noncomputable instance : PseudoMetricSpace (α ×ₑ β) where
     ring
 
 noncomputable instance : SeminormedAddCommGroup (α ×ₑ β) where
-  dist_eq x y := sorry
+  dist_eq x y := by
+    simp only [dist_def, ‖·‖]; unfold Euclidean.dist
+    simp_rw [SeminormedAddCommGroup.dist_eq]
+    simp only [map_zero, map_sub, zero_sub, sub_fst, sub_snd, norm_neg]
 
 noncomputable instance : NormedSpace ℝ (α ×ₑ β) where
   norm_smul_le r x := sorry
