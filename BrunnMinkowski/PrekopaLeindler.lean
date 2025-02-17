@@ -308,8 +308,28 @@ instance : Module ℝ (α ×ₑ β) where
 
 noncomputable instance : PseudoMetricSpace (α ×ₑ β) where
   dist_self x := by simp [dist_eq, Euclidean.dist, dist_self]
-  dist_comm x y := sorry
-  dist_triangle x y z := sorry
+  dist_comm x y := by
+    simp only [dist_eq, Euclidean.dist]
+    rw [dist_comm (toEuclidean x.fst), dist_comm (toEuclidean x.snd)]
+  dist_triangle x y z := by
+    simp only [dist_eq, Euclidean.dist]
+    rw [Real.sqrt_le_left (by positivity), add_sq', Real.sq_sqrt (by positivity),
+      Real.sq_sqrt (by positivity)]
+    have h₁ := dist_triangle (toEuclidean x.fst) (toEuclidean y.fst) (toEuclidean z.fst)
+    have h₂ := dist_triangle (toEuclidean x.snd) (toEuclidean y.snd) (toEuclidean z.snd)
+    have h₃ := add_le_add (sq_le_sq' (by rw [neg_le_iff_add_nonneg]; positivity) h₁)
+      (sq_le_sq' (by rw [neg_le_iff_add_nonneg]; positivity) h₂)
+    apply le_trans h₃
+    simp only [add_sq', ← sub_nonneg, sub_zero]; ring_nf
+    apply ((@div_nonneg_iff ℝ _ _ 2).mp _).elim (fun h ↦ h.1) fun h ↦ False.elim (by norm_num at h)
+    ring_nf
+    rw [← neg_le_iff_add_nonneg', ← sq_le_sq₀ (by simp; positivity) (by positivity), mul_pow,
+      Real.sq_sqrt (by positivity), Real.sq_sqrt (by positivity), mul_add, add_mul, add_mul]
+    rw [← sub_nonneg]; ring_nf; simp only [← mul_pow]
+    refine le_trans (sq_nonneg (dist (toEuclidean x.fst) (toEuclidean y.fst) *
+      dist (toEuclidean y.snd) (toEuclidean z.snd) - dist (toEuclidean y.fst) (toEuclidean z.fst) *
+      dist (toEuclidean x.snd) (toEuclidean y.snd))) (le_of_eq ?_)
+    ring
 
 noncomputable instance : SeminormedAddCommGroup (α ×ₑ β) where
   dist_eq x y := sorry
