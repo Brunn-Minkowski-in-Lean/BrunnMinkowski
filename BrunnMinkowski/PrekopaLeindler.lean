@@ -1,9 +1,3 @@
-import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.Analysis.InnerProductSpace.PiL2
-import Mathlib.MeasureTheory.Integral.Lebesgue
-import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
-import Mathlib.Analysis.InnerProductSpace.EuclideanDist
-import Mathlib.Analysis.RCLike.Basic
 import BrunnMinkowski.EuclideanSpace
 import Mathlib
 
@@ -148,9 +142,9 @@ instance : Zero (α ×ₑ β) :=
   ⟨0, 0⟩
 
 instance : Add (α ×ₑ β) :=
-  ⟨fun x y ↦ ⟨x.1 + y.1, x.2 + y.2⟩⟩
+  ⟨fun x y ↦ ⟨x.fst + y.fst, x.snd + y.snd⟩⟩
 
-protected theorem ext (x y : α ×ₑ β) (h₁ : x.1 = y.1) (h₂ : x.2 = y.2) : x = y := by
+protected theorem ext (x y : α ×ₑ β) (h₁ : x.fst = y.fst) (h₂ : x.snd = y.snd) : x = y := by
   rcases x with ⟨x₁, x₂⟩; rcases y with ⟨y₁, y₂⟩; congr
 
 instance : Zero (α ×ₑ β) :=
@@ -329,11 +323,26 @@ instance : TopologicalSpace (α ×ₑ β) where
   isOpen_inter := sorry
   isOpen_sUnion := sorry
 
+noncomputable def finProdLinearEquiv
+    (α : Type*) [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
+    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α]
+    (β : Type*) [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
+    [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β] :
+    (α ×ₑ β) ≃ₗ[ℝ] EuclideanSpace ℝ (Fin (Module.finrank ℝ α + Module.finrank ℝ β)) :=
+  ⟨IsLinearMap.mk' (fun ⟨a, b⟩ x ↦ if h : x < Module.finrank ℝ α
+    then (toEuclidean a) (@Fin.ofNat' (Module.finrank ℝ α) (NeZero.of_gt h) x)
+    else (toEuclidean b) (@Fin.ofNat' (Module.finrank ℝ β) (by
+      rw [not_lt] at h
+      have : x < Module.finrank ℝ α + Module.finrank ℝ β := Fin.is_lt _
+      apply @NeZero.of_gt _ _ 0; omega) (x - Module.finrank ℝ α)))
+   (IsLinearMap.mk
+    (fun ⟨a₁, b₁⟩ ⟨a₂, b₂⟩ ↦ sorry)
+    (fun r ⟨a₂, b₂⟩ ↦ sorry)), sorry, sorry, sorry⟩
 
-noncomputable def finProdLinearEquiv (n₁ n₂ : ℕ) :
+def finProdLinearEquiv' (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ₗ[ℝ]
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-    sorry
+  ⟨sorry, sorry, sorry, sorry⟩
 
 end EuclideanProd
 
