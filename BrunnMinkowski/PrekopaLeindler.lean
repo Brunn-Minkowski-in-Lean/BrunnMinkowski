@@ -254,11 +254,11 @@ section SMul
 variable {r : ℝ} {x : α ×ₑ β}
 variable {a : α} {b : β}
 
-theorem sMul_eq : r • x = ⟨r • x.fst, r • x.snd⟩ :=
+theorem smul_eq : r • x = ⟨r • x.fst, r • x.snd⟩ :=
   rfl
 
 @[simp]
-theorem sMul_eq' : r • EuclideanProd.mk a b = ⟨r • a, r • b⟩ :=
+theorem smul_eq' : r • EuclideanProd.mk a b = ⟨r • a, r • b⟩ :=
   rfl
 
 end SMul
@@ -318,16 +318,16 @@ instance : AddCommGroup (α ×ₑ β) where
   add_comm _ _ := by simp only [add_eq, add_comm]
 
 instance : MulAction ℝ (α ×ₑ β) where
-  one_smul _ := by simp only [sMul_eq, one_smul]
-  mul_smul _ _ _ := by simp only [sMul_eq, mul_smul]
+  one_smul _ := by simp only [smul_eq, one_smul]
+  mul_smul _ _ _ := by simp only [smul_eq, mul_smul]
 
 instance : DistribMulAction ℝ (α ×ₑ β) where
-  smul_zero _ := by simp only [sMul_eq, zero_def, smul_zero]
-  smul_add _ _ _ := by simp only [sMul_eq, smul_add, add_eq]
+  smul_zero _ := by simp only [smul_eq, zero_def, smul_zero]
+  smul_add _ _ _ := by simp only [smul_eq, smul_add, add_eq]
 
 instance : Module ℝ (α ×ₑ β) where
-  add_smul _ _ _ := by simp only [sMul_eq, add_smul, add_eq]
-  zero_smul _ := by simp only [sMul_eq, zero_smul, zero_def]
+  add_smul _ _ _ := by simp only [smul_eq, add_smul, add_eq]
+  zero_smul _ := by simp only [smul_eq, zero_smul, zero_def]
 
 noncomputable instance : PseudoMetricSpace (α ×ₑ β) where
   dist_self x := by simp [dist_def, Euclidean.dist, dist_self]
