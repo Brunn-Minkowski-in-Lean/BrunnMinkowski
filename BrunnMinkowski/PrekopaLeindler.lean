@@ -25,6 +25,17 @@ class EuclideanIsomorphismInvariant.{u}
 
 -/
 
+/-- A product dedicated for Euclidean space. -/
+abbrev EuclideanProd
+    (α : Type*) [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
+    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α]
+    (β : Type*) [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
+    [Module ℝ β] [ContinuousSMul ℝ α] [FiniteDimensional ℝ β] :=
+  WithLp 2 (α × β)
+
+@[inherit_doc]
+infixl:35 " ×ₑ " => EuclideanProd
+
 namespace EuclideanSpace
 
 variable {n₁ n₂ : ℕ}
@@ -32,7 +43,7 @@ variable {n₁ n₂ : ℕ}
 open ContinuousLinearEquiv MeasurableEquiv
 
 noncomputable def finProdLinearEquiv (n₁ n₂ : ℕ) :
-    WithLp 2 ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃ₗ[ℝ]
+    ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ₗ[ℝ]
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
   LinearEquiv.ofFinrankEq _ _ <| by simp [LinearEquiv.finrank_eq (WithLp.linearEquiv 2 _ _)]
 
@@ -43,11 +54,14 @@ theorem add_finProdLinearEquiv
   ((finProdLinearEquiv n₁ n₂).map_add _ _).symm
 
 noncomputable instance :
-    T2Space (WithLp 2 ((EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂))) where
-  t2 x := by sorry
+    T2Space ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) where
+  t2 x y h := by
+    use Metric.ball x (dist x y / 2), Metric.ball y (dist x y / 2)
+    simp only [Metric.isOpen_ball, Metric.mem_ball_self, true_and, dist_pos.mpr h]
+    simp [h, Metric.ball_disjoint_ball]
 
 noncomputable def finProdContinuousLinearEquiv (n₁ n₂ : ℕ) :
-    WithLp 2 ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃L[ℝ]
+    ((EuclideanSpace ℝ (Fin n₁)) ×ₑ (EuclideanSpace ℝ (Fin n₂))) ≃L[ℝ]
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
   ContinuousLinearEquiv.ofFinrankEq <| by
   simp [LinearEquiv.finrank_eq (WithLp.linearEquiv 2 _ _)]
@@ -58,10 +72,21 @@ theorem add_finProdContinuousLinearEquiv
     (finProdContinuousLinearEquiv n₁ n₂) (x₁ + x₂, x₃ + x₄) :=
   ((finProdContinuousLinearEquiv n₁ n₂).map_add _ _).symm
 
+instance : MeasurableSpace ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) where
+  MeasurableSet' s := MeasurableSet ((finProdLinearEquiv n₁ n₂) '' s)
+  measurableSet_empty := by simp only [Set.image_empty, MeasurableSet.empty]
+  measurableSet_compl s h := by
+    have h₁ := Equiv.image_compl (finProdLinearEquiv n₁ n₂).toEquiv sᶜ
+    simp at h₁; exact MeasurableSet.compl_iff.mp (h₁ ▸ h)
+  measurableSet_iUnion f h := by simp only [Set.image_iUnion] at h ⊢; exact MeasurableSet.iUnion h
+
 noncomputable def finProdMeasurableEquiv (n₁ n₂ : ℕ) :
-    ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃ᵐ
+    ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ᵐ
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-  let eqv₁ : ((EuclideanSpace ℝ (Fin n₁)) × (EuclideanSpace ℝ (Fin n₂))) ≃ᵐ
+  let eqv₀ : ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ᵐ
+      ((EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂)) :=
+    ⟨(WithLp.linearEquiv 2 ℝ _).toEquiv, by simp; sorry, sorry⟩
+  let eqv₁ : ((EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂)) ≃ᵐ
       (Fin n₁ → ℝ) × (Fin n₂ → ℝ) :=
     prodCongr (EuclideanSpace.measurableEquiv _) (EuclideanSpace.measurableEquiv _)
   let eqv₂ : ((Fin n₁ → ℝ) × (Fin n₂ → ℝ)) ≃ᵐ ((Fin n₁ ⊕ Fin n₂) → ℝ) :=
@@ -69,7 +94,7 @@ noncomputable def finProdMeasurableEquiv (n₁ n₂ : ℕ) :
   let eqv₃ : (((Fin n₁) ⊕ (Fin n₂)) → ℝ) ≃ᵐ ((Fin (n₁ + n₂)) → ℝ) :=
     piCongrLeft (fun _ ↦ ℝ) finSumFinEquiv
   let eqv₄ := (EuclideanSpace.measurableEquiv (Fin (n₁ + n₂))).symm
-  eqv₁.trans (eqv₂.trans (eqv₃.trans eqv₄))
+  eqv₀.trans (eqv₁.trans (eqv₂.trans (eqv₃.trans eqv₄)))
 
 theorem injective_finProdMeasurableEquiv (n₁ n₂ : ℕ) :
     Function.Injective (finProdMeasurableEquiv n₁ n₂) := by
@@ -121,281 +146,6 @@ theorem finProdMeasurableEmbedding (n₁ n₂ : ℕ) :
 --   (finProdMeasurePreserving n₁ n₂).symm _
 
 end EuclideanSpace
-
-/-- A product dedicated for `EuclideanSpace`. -/
-structure EuclideanProd
-    (α : Type*) [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
-    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α]
-    (β : Type*) [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
-    [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β] where
-  fst : α
-  snd : β
-
-@[inherit_doc]
-infixr:35 " ×ₑ " => EuclideanProd
-
-namespace EuclideanProd
-
-open EuclideanSpace
-
-variable {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
-variable [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α]
-variable {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
-variable [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β]
-
-instance : Zero (α ×ₑ β) :=
-  ⟨0, 0⟩
-
-instance : Add (α ×ₑ β) :=
-  ⟨fun x y ↦ ⟨x.fst + y.fst, x.snd + y.snd⟩⟩
-
-protected theorem ext (x y : α ×ₑ β) (h₁ : x.fst = y.fst) (h₂ : x.snd = y.snd) : x = y := by
-  rcases x with ⟨x₁, x₂⟩; rcases y with ⟨y₁, y₂⟩; congr
-
-instance : Zero (α ×ₑ β) :=
-  ⟨0, 0⟩
-
-section Zero
-
-theorem zero_def : (0 : α ×ₑ β) = ⟨0, 0⟩ :=
-  rfl
-
-@[simp]
-theorem zero_fst : (0 : α ×ₑ β).fst = 0 :=
-  rfl
-
-@[simp]
-theorem zero_snd : (0 : α ×ₑ β).snd = 0 :=
-  rfl
-
-end Zero
-
-instance : Add (α ×ₑ β) :=
-  ⟨fun x y ↦ ⟨x.fst + y.fst, x.snd + y.snd⟩⟩
-
-section Add
-
-variable {x y : α ×ₑ β}
-variable {a₁ a₂ : α} {b₁ b₂ : β}
-
-theorem add_eq : x + y = ⟨x.fst + y.fst, x.snd + y.snd⟩ :=
-  rfl
-
-@[simp]
-theorem add_eq' : EuclideanProd.mk a₁ b₁ + EuclideanProd.mk a₂ b₂ = ⟨a₁ + a₂, b₁ + b₂⟩ :=
-  rfl
-
-theorem add_fst : (x + y).fst = x.fst + y.fst :=
-  rfl
-
-theorem add_snd : (x + y).snd = x.snd + y.snd :=
-  rfl
-
-end Add
-
-instance : Sub (α ×ₑ β) :=
-  ⟨fun x y ↦ ⟨x.fst - y.fst, x.snd - y.snd⟩⟩
-
-section Sub
-
-variable {x y : α ×ₑ β}
-variable {a₁ a₂ : α} {b₁ b₂ : β}
-
-theorem sub_eq : x - y = ⟨x.fst - y.fst, x.snd - y.snd⟩ :=
-  rfl
-
-@[simp]
-theorem sub_eq' : EuclideanProd.mk a₁ b₁ - EuclideanProd.mk a₂ b₂ = ⟨a₁ - a₂, b₁ - b₂⟩ :=
-  rfl
-
-theorem sub_fst : (x - y).fst = x.fst - y.fst :=
-  rfl
-
-theorem sub_snd : (x - y).snd = x.snd - y.snd :=
-  rfl
-
-end Sub
-
-instance : Neg (α ×ₑ β) :=
-  ⟨fun x ↦ ⟨-x.fst, -x.snd⟩⟩
-
-section Neg
-
-variable {x y : α ×ₑ β}
-variable {a : α} {b : β}
-
-theorem neg_eq : -x = ⟨-x.fst, -x.snd⟩ :=
-  rfl
-
-@[simp]
-theorem neg_eq' : - EuclideanProd.mk a b = ⟨-a, -b⟩ :=
-  rfl
-
-end Neg
-
-noncomputable instance : Norm (α ×ₑ β) :=
-  ⟨fun x ↦ √ ((Euclidean.dist 0 x.fst) ^ 2 + (Euclidean.dist 0 x.snd) ^ 2)⟩
-
-section Norm
-
-variable {x : α ×ₑ β}
-variable {a : α} {b : β}
-
-theorem norm_eq : ‖x‖ = √ ((Euclidean.dist 0 x.fst) ^ 2 + (Euclidean.dist 0 x.snd) ^ 2) :=
-  rfl
-
-@[simp]
-theorem norm_eq' :
-    ‖EuclideanProd.mk a b‖ = √ ((Euclidean.dist 0 a) ^ 2 + (Euclidean.dist 0 b) ^ 2) :=
-  rfl
-
-end Norm
-
-instance : SMul ℝ (α ×ₑ β) :=
-  ⟨fun r x ↦ ⟨r • x.fst, r • x.snd⟩⟩
-
-section SMul
-
-variable {r : ℝ} {x : α ×ₑ β}
-variable {a : α} {b : β}
-
-theorem smul_eq : r • x = ⟨r • x.fst, r • x.snd⟩ :=
-  rfl
-
-@[simp]
-theorem smul_eq' : r • EuclideanProd.mk a b = ⟨r • a, r • b⟩ :=
-  rfl
-
-end SMul
-
-noncomputable instance : Dist (α ×ₑ β) :=
-  ⟨fun x y ↦ √ ((Euclidean.dist x.fst y.fst) ^ 2 + (Euclidean.dist x.snd y.snd) ^ 2)⟩
-
-section Dist
-
-variable {x y : α ×ₑ β}
-variable {a₁ a₂ : α} {b₁ b₂ : β}
-
-theorem dist_def :
-    dist x y = √ ((Euclidean.dist x.fst y.fst) ^ 2 + (Euclidean.dist x.snd y.snd) ^ 2) :=
-  rfl
-
-@[simp]
-theorem dist_def' :
-    dist (EuclideanProd.mk a₁ b₁) (EuclideanProd.mk a₂ b₂) =
-    √ ((Euclidean.dist a₁ a₂) ^ 2 + (Euclidean.dist b₁ b₂) ^ 2) :=
-  rfl
-
-end Dist
-
-instance : AddZeroClass (α ×ₑ β) where
-  zero_add _ := by simp only [zero_def, add_eq, zero_add]
-  add_zero _ := by simp only [zero_def, add_eq, add_zero]
-
-instance : AddSemigroup (α ×ₑ β) where
-  add_assoc _ _ _ := by simp only [add_eq, add_assoc]
-
-instance : AddMonoid (α ×ₑ β) where
-  zero_add := zero_add
-  add_zero := add_zero
-  nsmul := nsmulRec
-
-instance : SubNegMonoid (α ×ₑ β) where
-  sub_eq_add_neg _ _ := by simp only [sub_eq, neg_eq, add_eq, sub_eq_add_neg]
-  zsmul z x := match z with
-  | Int.ofNat n => AddMonoid.nsmul n x
-  | Int.negSucc n => - AddMonoid.nsmul n.succ x
-
-instance : AddGroup (α ×ₑ β) where
-  neg_add_cancel _ := by
-    simp only [add_eq, mk.injEq, zero_def, ← eq_neg_iff_add_eq_zero]; constructor <;> rfl
-
-instance : AddCommMagma (α ×ₑ β) where
-  add_comm _ _ := by simp only [add_eq, add_comm]
-
-instance : AddCommSemigroup (α ×ₑ β) where
-  add_comm _ _ := by simp only [add_eq, add_comm]
-
-instance : AddCommMonoid (α ×ₑ β) where
-  add_comm _ _ := by simp only [add_eq, add_comm]
-
-instance : AddCommGroup (α ×ₑ β) where
-  add_comm _ _ := by simp only [add_eq, add_comm]
-
-instance : MulAction ℝ (α ×ₑ β) where
-  one_smul _ := by simp only [smul_eq, one_smul]
-  mul_smul _ _ _ := by simp only [smul_eq, mul_smul]
-
-instance : DistribMulAction ℝ (α ×ₑ β) where
-  smul_zero _ := by simp only [smul_eq, zero_def, smul_zero]
-  smul_add _ _ _ := by simp only [smul_eq, smul_add, add_eq]
-
-instance : Module ℝ (α ×ₑ β) where
-  add_smul _ _ _ := by simp only [smul_eq, add_smul, add_eq]
-  zero_smul _ := by simp only [smul_eq, zero_smul, zero_def]
-
-noncomputable instance : PseudoMetricSpace (α ×ₑ β) where
-  dist_self x := by simp [dist_def, Euclidean.dist, dist_self]
-  dist_comm x y := by
-    simp only [dist_def, Euclidean.dist]
-    rw [dist_comm (toEuclidean x.fst), dist_comm (toEuclidean x.snd)]
-  dist_triangle x y z := by
-    simp only [dist_def, Euclidean.dist]
-    rw [Real.sqrt_le_left (by positivity), add_sq', Real.sq_sqrt (by positivity),
-      Real.sq_sqrt (by positivity)]
-    have h₁ := dist_triangle (toEuclidean x.fst) (toEuclidean y.fst) (toEuclidean z.fst)
-    have h₂ := dist_triangle (toEuclidean x.snd) (toEuclidean y.snd) (toEuclidean z.snd)
-    have h₃ := add_le_add (sq_le_sq' (by rw [neg_le_iff_add_nonneg]; positivity) h₁)
-      (sq_le_sq' (by rw [neg_le_iff_add_nonneg]; positivity) h₂)
-    apply le_trans h₃
-    simp only [add_sq', ← sub_nonneg, sub_zero]; ring_nf
-    apply ((@div_nonneg_iff ℝ _ _ 2).mp _).elim (fun h ↦ h.1) fun h ↦ False.elim (by norm_num at h)
-    ring_nf
-    rw [← neg_le_iff_add_nonneg', ← sq_le_sq₀ (by simp; positivity) (by positivity), mul_pow,
-      Real.sq_sqrt (by positivity), Real.sq_sqrt (by positivity), mul_add, add_mul, add_mul]
-    rw [← sub_nonneg]; ring_nf; simp only [← mul_pow]
-    refine le_trans (sq_nonneg (dist (toEuclidean x.fst) (toEuclidean y.fst) *
-      dist (toEuclidean y.snd) (toEuclidean z.snd) - dist (toEuclidean y.fst) (toEuclidean z.fst) *
-      dist (toEuclidean x.snd) (toEuclidean y.snd))) (le_of_eq ?_)
-    ring
-
-noncomputable instance : SeminormedAddCommGroup (α ×ₑ β) where
-  dist_eq x y := by
-    simp only [dist_def, ‖·‖]; unfold Euclidean.dist
-    simp_rw [SeminormedAddCommGroup.dist_eq]
-    simp only [map_zero, map_sub, zero_sub, sub_fst, sub_snd, norm_neg]
-
-noncomputable instance : NormedSpace ℝ (α ×ₑ β) where
-  norm_smul_le r x := sorry
-
-instance : TopologicalSpace (α ×ₑ β) where
-  IsOpen s := sorry
-  isOpen_univ := sorry
-  isOpen_inter := sorry
-  isOpen_sUnion := sorry
-
-noncomputable def finProdLinearEquiv
-    (α : Type*) [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
-    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α]
-    (β : Type*) [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
-    [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β] :
-    (α ×ₑ β) ≃ₗ[ℝ] EuclideanSpace ℝ (Fin (Module.finrank ℝ α + Module.finrank ℝ β)) :=
-  ⟨IsLinearMap.mk' (fun ⟨a, b⟩ x ↦ if h : x < Module.finrank ℝ α
-    then (toEuclidean a) (@Fin.ofNat' (Module.finrank ℝ α) (NeZero.of_gt h) x)
-    else (toEuclidean b) (@Fin.ofNat' (Module.finrank ℝ β) (by
-      rw [not_lt] at h
-      have : x < Module.finrank ℝ α + Module.finrank ℝ β := Fin.is_lt _
-      apply @NeZero.of_gt _ _ 0; omega) (x - Module.finrank ℝ α)))
-   (IsLinearMap.mk
-    (fun ⟨a₁, b₁⟩ ⟨a₂, b₂⟩ ↦ sorry)
-    (fun r ⟨a₂, b₂⟩ ↦ sorry)), sorry, sorry, sorry⟩
-
-def finProdLinearEquiv' (n₁ n₂ : ℕ) :
-    ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ₗ[ℝ]
-      EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-  ⟨sorry, sorry, sorry, sorry⟩
-
-end EuclideanProd
 
 /- UNUSED
 
