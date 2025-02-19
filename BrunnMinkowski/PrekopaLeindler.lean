@@ -42,10 +42,30 @@ variable {n₁ n₂ : ℕ}
 
 open ContinuousLinearEquiv MeasurableEquiv
 
-noncomputable def finProdLinearEquiv (n₁ n₂ : ℕ) :
+def finProdLinearEquiv (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ₗ[ℝ]
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-  LinearEquiv.ofFinrankEq _ _ <| by simp [LinearEquiv.finrank_eq (WithLp.linearEquiv 2 _ _)]
+  .mk ⟨⟨fun ⟨a, b⟩ x ↦ if h : x < n₁
+      then a (@Fin.ofNat' n₁ ⟨by omega⟩ x) else b (@Fin.ofNat' n₂ ⟨by omega⟩ (x - n₁)),
+    fun ⟨_, _⟩ ⟨_, _⟩ ↦ by ext x; simp; by_cases h : x < n₁ <;> simp [h]⟩,
+    fun r ⟨a, b⟩ ↦ by ext x; simp⟩
+    (fun x ↦ (fun x₁ ↦ x (@Fin.ofNat' (n₁ + n₂)
+      ⟨match n₁ with | 0 => False.elim (Fin.isEmpty.false x₁) | _ + 1 => by omega⟩ x₁),
+    fun x₂ ↦ x (@Fin.ofNat' (n₁ + n₂)
+      ⟨match n₂ with | 0 => False.elim (Fin.isEmpty.false x₂) | _ + 1 => by omega⟩ (x₂ + n₁)))) (by
+    rintro ⟨a, b⟩; simp; rw [Prod.mk.injEq]; constructor <;> ext x
+    · rw [dite_cond_eq_true]
+      · congr
+        sorry
+      · rw [eq_iff_iff, iff_true]
+        sorry
+    · rw [dite_cond_eq_false]
+      · congr
+        sorry
+      · rw [eq_iff_iff, iff_false]
+        sorry)
+    sorry
+--   LinearEquiv.ofFinrankEq _ _ <| by simp [LinearEquiv.finrank_eq (WithLp.linearEquiv 2 _ _)]
 
 theorem add_finProdLinearEquiv
     (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
@@ -80,12 +100,24 @@ instance : MeasurableSpace ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace
     simp at h₁; exact MeasurableSet.compl_iff.mp (h₁ ▸ h)
   measurableSet_iUnion f h := by simp only [Set.image_iUnion] at h ⊢; exact MeasurableSet.iUnion h
 
+theorem measurable_finProdLinearEquiv {n₁ n₂ : ℕ} : Measurable (finProdLinearEquiv n₁ n₂) := by
+  sorry
+
+theorem measurable_finProdContinuousLinearEquiv
+    {n₁ n₂ : ℕ} :
+    Measurable (finProdContinuousLinearEquiv n₁ n₂) :=
+  measurable_finProdLinearEquiv
+
+noncomputable def finProdMeasurableEquiv' (n₁ n₂ : ℕ) :
+    (EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂) ≃ᵐ
+      ((EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂)) :=
+  ⟨Equiv.refl _, sorry, sorry⟩
+  
+
 noncomputable def finProdMeasurableEquiv (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ᵐ
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-  let eqv₀ : ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ᵐ
-      ((EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂)) :=
-    ⟨(WithLp.linearEquiv 2 ℝ _).toEquiv, by simp; sorry, sorry⟩
+  let eqv₀ := finProdMeasurableEquiv' n₁ n₂
   let eqv₁ : ((EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂)) ≃ᵐ
       (Fin n₁ → ℝ) × (Fin n₂ → ℝ) :=
     prodCongr (EuclideanSpace.measurableEquiv _) (EuclideanSpace.measurableEquiv _)
