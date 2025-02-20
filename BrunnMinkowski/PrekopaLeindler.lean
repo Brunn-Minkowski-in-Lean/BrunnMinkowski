@@ -1,10 +1,10 @@
 import BrunnMinkowski.EuclideanSpace
 import Mathlib
 
-open NNReal ENNReal MeasureTheory Finset
-open Real Set MeasureTheory Filter Asymptotics
+--open NNReal ENNReal MeasureTheory Finset
+--open Real Set MeasureTheory Filter Asymptotics
 
-open scoped Real Topology
+--open scoped Real Topology
 
 -- isomorhpism from any f.d. R-v.s. to R^d
 #check toEuclidean
@@ -40,6 +40,7 @@ namespace EuclideanSpace
 
 variable {n₁ n₂ : ℕ}
 
+open Nat Fin Metric
 open ContinuousLinearEquiv MeasurableEquiv
 
 def finProdLinearEquiv (n₁ n₂ : ℕ) :
@@ -47,25 +48,30 @@ def finProdLinearEquiv (n₁ n₂ : ℕ) :
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
   .mk ⟨⟨fun ⟨a, b⟩ x ↦ if h : x < n₁
       then a (@Fin.ofNat' n₁ ⟨by omega⟩ x) else b (@Fin.ofNat' n₂ ⟨by omega⟩ (x - n₁)),
-    fun ⟨_, _⟩ ⟨_, _⟩ ↦ by ext x; simp; by_cases h : x < n₁ <;> simp [h]⟩,
-    fun r ⟨a, b⟩ ↦ by ext x; simp⟩
+    fun ⟨_, _⟩ ⟨_, _⟩ ↦ by
+      ext x; simp only [ofNat'_eq_cast, PiLp.add_apply]
+      by_cases h : x < n₁ <;> simp only [h, ↓reduceDIte]⟩,
+    fun r ⟨a, b⟩ ↦ by
+      ext; simp only [ofNat'_eq_cast, PiLp.smul_apply, smul_eq_mul, RingHom.id_apply, mul_dite]⟩
     (fun x ↦ (fun x₁ ↦ x (@Fin.ofNat' (n₁ + n₂)
-      ⟨match n₁ with | 0 => False.elim (Fin.isEmpty.false x₁) | _ + 1 => by omega⟩ x₁),
+      ⟨match n₁ with | 0 => (isEmpty.false x₁).elim | _ + 1 => by omega⟩ x₁),
     fun x₂ ↦ x (@Fin.ofNat' (n₁ + n₂)
-      ⟨match n₂ with | 0 => False.elim (Fin.isEmpty.false x₂) | _ + 1 => by omega⟩ (x₂ + n₁)))) (by
-    rintro ⟨a, b⟩; simp; rw [Prod.mk.injEq]; constructor <;> ext x
+      ⟨match n₂ with | 0 => (isEmpty.false x₂).elim | _ + 1 => by omega⟩ (x₂ + n₁)))) (by
+    rintro ⟨a, b⟩; simp only [ofNat'_eq_cast, val_natCast]; rw [Prod.mk.injEq]
+    constructor <;> ext x
     · rw [dite_cond_eq_true]
-      · congr
-        sorry
-      · rw [eq_iff_iff, iff_true]
-        sorry
-    · rw [dite_cond_eq_false]
-      · congr
-        sorry
-      · rw [eq_iff_iff, iff_false]
-        sorry)
-    sorry
---   LinearEquiv.ofFinrankEq _ _ <| by simp [LinearEquiv.finrank_eq (WithLp.linearEquiv 2 _ _)]
+      · congr; simp_rw [mod_eq_of_lt (lt_of_lt_of_le x.isLt (le_add_right _ n₂)), cast_val_eq_self]
+      · simp only [mod_eq_of_lt (lt_of_lt_of_le x.isLt (le_add_right _ n₂)), x.isLt]
+    · have h : x + n₁ < n₁ + n₂ := by omega
+      rw [dite_cond_eq_false]
+      · congr; simp_rw [mod_eq_of_lt h, Nat.add_sub_cancel, cast_val_eq_self]
+      · rw [eq_iff_iff, iff_false, mod_eq_of_lt h]; omega) (by
+      intro; ext x; simp only [ofNat'_eq_cast, val_natCast]
+      by_cases h : x < n₁ <;> simp only [h, ↓reduceDIte] <;> congr
+      · simp only [mod_eq_of_lt h, cast_val_eq_self]
+      · have h₁ : x - n₁ < n₂ := by omega
+        have h₂ : n₁ ≤ x := by omega
+        simp_rw [mod_eq_of_lt h₁, Nat.sub_add_cancel h₂, cast_val_eq_self])
 
 theorem add_finProdLinearEquiv
     (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
@@ -73,18 +79,19 @@ theorem add_finProdLinearEquiv
     (finProdLinearEquiv n₁ n₂) (x₁ + x₂, x₃ + x₄) :=
   ((finProdLinearEquiv n₁ n₂).map_add _ _).symm
 
-noncomputable instance :
-    T2Space ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) where
+instance : T2Space ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) where
   t2 x y h := by
-    use Metric.ball x (dist x y / 2), Metric.ball y (dist x y / 2)
-    simp only [Metric.isOpen_ball, Metric.mem_ball_self, true_and, dist_pos.mpr h]
-    simp [h, Metric.ball_disjoint_ball]
+    use ball x (dist x y / 2), ball y (dist x y / 2)
+    simp only [isOpen_ball, dist_pos.mpr h, mem_ball, dist_self x, dist_self y, le_refl, and_true,
+      div_pos_iff_of_pos_left, ofNat_pos, add_halves, ball_disjoint_ball]
 
-noncomputable def finProdContinuousLinearEquiv (n₁ n₂ : ℕ) :
+def finProdContinuousLinearEquiv (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) ×ₑ (EuclideanSpace ℝ (Fin n₂))) ≃L[ℝ]
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-  ContinuousLinearEquiv.ofFinrankEq <| by
-  simp [LinearEquiv.finrank_eq (WithLp.linearEquiv 2 _ _)]
+  ⟨finProdLinearEquiv n₁ n₂, ⟨by
+    intro s h; simp; apply?
+    sorry⟩ , sorry⟩
+--  ContinuousLinearEquiv.ofFinrankEq <| by simp [LinearEquiv.finrank_eq (WithLp.linearEquiv 2 _ _)]
 
 theorem add_finProdContinuousLinearEquiv
     {n₁ n₂ : ℕ} (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
@@ -269,16 +276,16 @@ def prekopa_leindler_statement
 
 @[simp]
 theorem volume_univ_one_of_pi_fin_zero :
-    volume (@Set.univ (Fin 0 → ℝ)) = 1 := by
-  simp only [MeasureTheory.volume_pi, Measure.pi_empty_univ]
+    MeasureTheory.MeasureSpace.volume (@Set.univ (Fin 0 → ℝ)) = 1 := by
+  simp only [MeasureTheory.volume_pi, MeasureTheory.Measure.pi_empty_univ]
 
 open EuclideanSpace in
 @[simp]
 theorem volume_univ_one_of_euclideanSpace_fin_zero :
-    volume (@Set.univ (EuclideanSpace ℝ (Fin 0))) = 1 :=
+    MeasureTheory.MeasureSpace.volume (@Set.univ (EuclideanSpace ℝ (Fin 0))) = 1 :=
   let eqv := EuclideanSpace.measurableEquiv (Fin 0)
-  have h₁ : volume (eqv ⁻¹' (@Set.univ (Fin 0 → ℝ))) = volume (@Set.univ (Fin 0 → ℝ)) :=
-    MeasurePreserving.measure_preimage_equiv (volume_preserving_measurableEquiv (Fin 0)) _
+  have h₁ : MeasureTheory.MeasureSpace.volume (eqv ⁻¹' (@Set.univ (Fin 0 → ℝ))) = MeasureTheory.MeasureSpace.volume (@Set.univ (Fin 0 → ℝ)) :=
+    MeasureTheory.MeasurePreserving.measure_preimage_equiv (volume_preserving_measurableEquiv (Fin 0)) _
   h₁ ▸ volume_univ_one_of_pi_fin_zero
 
 instance EuclideanSpace.zeroUnique : Unique (EuclideanSpace ℝ (Fin 0)) :=
@@ -292,31 +299,35 @@ theorem prekopa_leindler_dim_zero
     prekopa_leindler_statement ht₁ ht₂ f hf g hg h := by
   intro h₁
   simp_rw [CharP.cast_eq_zero, zero_mul, Real.rpow_zero, mul_one, one_mul]
-  have h₃ : (volume (@Set.univ (ℝn 0))).toReal = 1 :=
+  have h₃ : (MeasureTheory.MeasureSpace.volume (@Set.univ (ℝn 0))).toReal = 1 :=
     (ENNReal.toReal_eq_one_iff _).mpr volume_univ_one_of_euclideanSpace_fin_zero
-  simp_rw [@integral_unique (ℝn 0) ℝ _ _ _ _ volume EuclideanSpace.zeroUnique, h₃, smul_eq_mul,
+  simp_rw [@MeasureTheory.integral_unique (ℝn 0) ℝ _ _ _ _ MeasureTheory.MeasureSpace.volume EuclideanSpace.zeroUnique, h₃, smul_eq_mul,
     one_mul, ge_iff_le]; simp only [default]
   have h₄ := h₁ 0 0; simp only [add_zero] at h₄; exact h₄
 
+--open NNReal ENNReal MeasureTheory Finset
+--open Real Set MeasureTheory Filter Asymptotics
+
 theorem integral_integral_euclideanSpace
     {n₁ n₂ : ℕ} (f : EuclideanSpace ℝ (Fin n₁) → EuclideanSpace ℝ (Fin n₂) → ℝ)
-    (hf : Integrable (Function.uncurry f) volume) :
-    ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f x y ∂volume ∂volume =
+    (hf : MeasureTheory.Integrable (Function.uncurry f) MeasureTheory.MeasureSpace.volume) :
+    ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f x y ∂MeasureTheory.MeasureSpace.volume ∂MeasureTheory.MeasureSpace.volume =
     ∫ (z : EuclideanSpace ℝ (Fin (n₁ + n₂))),
-      (let ⟨z₁, z₂⟩ := (EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm z; f z₁ z₂) ∂volume := by
-  rw [integral_integral hf]
-  have := @MeasureTheory.integral_map_equiv _ _ _ _ _ volume _ _
+      (let ⟨z₁, z₂⟩ := (EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm z; f z₁ z₂) ∂MeasureTheory.MeasureSpace.volume := by
+  rw [MeasureTheory.integral_integral hf]
+  have := @MeasureTheory.integral_map_equiv _ _ _ _ _ MeasureTheory.MeasureSpace.volume _ _
     (EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm fun z ↦ f z.1 z.2
-  simp_rw [Equiv.toFun_as_coe, MeasurableEquiv.coe_toEquiv, ← this,
-    ← Measure.volume_eq_prod]
-  congr; symm; exact (EuclideanSpace.finProdMeasurePreserving_symm n₁ n₂).2
+  --simp_rw [Equiv.toFun_as_coe, MeasurableEquiv.coe_toEquiv, ← this,
+  --  ← MeasureTheory.Measure.volume_eq_prod]
+  --congr; symm; exact (EuclideanSpace.finProdMeasurePreserving_symm n₁ n₂).2
+  sorry
 
 theorem integral_integral_euclideanSpace'
     {n₁ n₂ : ℕ} (f : (EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂) → ℝ)
-    (hf : Integrable f volume) :
-    ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f (x, y) ∂volume ∂volume =
+    (hf : MeasureTheory.Integrable f MeasureTheory.MeasureSpace.volume) :
+    ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f (x, y) ∂MeasureTheory.MeasureSpace.volume ∂MeasureTheory.MeasureSpace.volume =
     ∫ (z : EuclideanSpace ℝ (Fin (n₁ + n₂))),
-      f ((EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm z) ∂volume :=
+      f ((EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm z) ∂MeasureTheory.MeasureSpace.volume :=
   integral_integral_euclideanSpace (Function.curry f) hf
 
 -- TODO: Remove `sorry`.
@@ -344,11 +355,11 @@ theorem prekopa_leindler_dimension_sum
     simp only [F, G, H, ← add_finProdContinuousLinearEquiv]
     exact h₃ _ _
   have h₅ : Condition ht₁ ht₂
-      (fun x ↦ ∫ x₂, F x x₂) (fun _ ↦ integral_nonneg hF)
-      (fun y ↦ ∫ y₂, G y y₂) (fun _ ↦ integral_nonneg hG)
+      (fun x ↦ ∫ x₂, F x x₂) (fun _ ↦ MeasureTheory.integral_nonneg hF)
+      (fun y ↦ ∫ y₂, G y y₂) (fun _ ↦ MeasureTheory.integral_nonneg hG)
       (fun z ↦ (1 - t) ^ (d₂ * (1 - t)) * t ^ (d₂ * t) * ∫ z₂, H z z₂) := fun x₁ y₁ ↦
     h₂ hF hG (h₄ x₁ y₁)
-  have h₆ := h₁ (fun _ ↦ integral_nonneg hF) (fun _ ↦ integral_nonneg hG) h₅
+  have h₆ := h₁ (fun _ ↦ MeasureTheory.integral_nonneg hF) (fun _ ↦ MeasureTheory.integral_nonneg hG) h₅
   sorry
 
 theorem prekopa_leindler
