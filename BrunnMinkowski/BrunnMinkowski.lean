@@ -4,17 +4,15 @@ import Mathlib.MeasureTheory.Measure.Haar.OfBasis
 import Mathlib.Order.CompletePartialOrder
 import Mathlib.Analysis.MeanInequalitiesPow
 import BrunnMinkowski.EuclideanSpace
+import Aesop
 
 import LeanSearchClient
-
-#leansearch "exponential is convex."
-#leansearch "Jansen's inequality two variable form."
 
 #check NNReal.rpow_add_le_add_rpow
 
 open scoped Pointwise NNReal
 
-variable {I : Type} [Fintype I] {n : ℕ} {ngz : n ≠ 0} {l : Set.Icc (0 : ℝ) (1 : ℝ)}
+variable {I : Type} [Fintype I] {n : ℕ} {ngz : n ≠ 0} {l : NNReal} {l_le_one : l ≤ 1}
 
 noncomputable def ConvexBody.volume (A : ConvexBody (ℝI I)) : NNReal :=
   (MeasureTheory.volume (A : Set (ℝI I))).toNNReal
@@ -38,15 +36,15 @@ lemma lemma_inequality (x y : ℝ≥0) (l : Set.Icc (0 : ℝ) (1 : ℝ)):
 lemma power_cancel (a : NNReal) (n : ℕ) (h : n ≠ (0 : ℕ)) : (a ^ (n⁻¹ : ℝ)) ^ (n : ℝ) = a :=
   by rw [← NNReal.rpow_mul a (n⁻¹ : ℝ), inv_mul_cancel₀ (Nat.cast_ne_zero.mpr h), NNReal.rpow_one a]
 
-theorem help (x y : NNReal) (n : ℕ) (hn : 1 < n) :
+theorem help (x y : NNReal) (hn : 1 < n) :
     x + y ≤ (x^(1/n : ℝ) + y^(1/n : ℝ))^(n : ℝ) := by
-  let m := 1/n
-  let mn : m = 1/n := by exact rfl
+  let m : ℝ := 1/n
+  let mn : m = 1/n := rfl
   let hm : 1 < m := by sorry
-  let f := fun t : ℝ => t^(m : ℝ)
+  let f := fun t : ℝ => t^m
 
-  have h_convex : ConvexOn ℝ (Set.Ioi 0) f :=
-    (StrictConvexOn.subset (strictConvexOn_rpow (Nat.one_lt_cast.mpr hm)) Set.Ioi_subset_Ici_self sorry).convexOn
+  have foo := (strictConvexOn_rpow hm)
+  have h_convex : ConvexOn ℝ (Set.Ioi 0) f := (StrictConvexOn.subset (strictConvexOn_rpow hm) Set.Ioi_subset_Ici_self sorry).convexOn
 
  -- Define the points and weights for Jensen's Inequality
   let a : Fin 2 → ℝ≥0 := ![x, y]
@@ -69,89 +67,58 @@ theorem help (x y : NNReal) (n : ℕ) (hn : 1 < n) :
   norm_num at h_jensen
 
   repeat rw [Real.rpow_inv_rpow] at h_jensen
-
   repeat rw [← Distrib.left_distrib] at h_jensen
 
-  have bbb : 0 < ((2 : ℝ) ^ m)  := by positivity
+  have zero_gt_two_pow_m : 0 < ((2 : ℝ) ^ m)  := by positivity
 
-  rw [← mul_le_mul_left bbb, ← mul_pow] at h_jensen
-  simp [mul_assoc] at h_jensen
-  rw [mn] at h_jensen
-  rw []
+  rw [← mul_le_mul_left zero_gt_two_pow_m, ← Real.mul_rpow] at h_jensen
+  simp at h_jensen
 
-  have h_mul : 0 < (2 : ℝ≥0) ^ n := sorry
+  rw [← mul_assoc] at h_jensen
+  rw [← Real.rpow_neg_one 2, ← Real.rpow_add] at h_jensen
+  have eee : m + -1 = m - 1 := by exact rfl
+  rw [eee] at h_jensen
 
-  have : ∀ {x y : ℝ≥0} {z : ℝ}, 0 < z → (x ^ z ≤ y ^ z ↔ x ≤ y) := NNReal.rpow_le_rpow_iff
+  have bar : 0 ≤ x := by exact zero_le x
+  have foo (a : ℝ) (anz : 0≤a) : 2 ^ (1/n - 1 : ℝ) * a ≤ a := by
+    cases eq_or_gt_of_le anz with
+    | inl h_eq_zero =>
+      rw [h_eq_zero, mul_zero]
+    | inr h_gt_zero =>
+      have : (1/n : ℝ) - 1 ≤ 0 := by
+        rw [sub_nonpos]
+        apply div_le_one_of_le₀
+        . exact Nat.one_le_cast.mpr (Nat.pos_of_ne_zero (Nat.not_eq_zero_of_lt hn))
+        . exact Nat.cast_nonneg' n
 
-  #check Real.rpow_le_rpow_iff
+      rw [mul_comm, mul_le_iff_le_one_right]
+      apply Real.rpow_le_one_of_one_le_of_nonpos
+      . norm_cast
+      . exact this
+      . exact h_gt_zero
 
-
-
-  #check mul_le_mul_left
-
-
+  have aaaaaa: (x + y : ℝ)^m ≤ (x:ℝ)^m + (y:ℝ)^m:= by
+    calc
+      (↑x + ↑y) ^ m ≤ (2 : ℝ) ^ (m - 1) * (↑x ^ m + ↑y ^ m) := h_jensen
+      _ ≤ ↑x ^ m + ↑y ^ m := foo (↑x ^ m + ↑y ^ m) (by positivity)
 
 -- μ(A)^λ μ(B)^(1-λ) ≤ μ(λA + (1-λ)B)
 def brunn_minkowski_multiplicative (A B : ConvexBody (ℝn n)):
   A.volume^l.1 • B.volume^(1-l.1)
   ≤ (l.1 • A + (1 - l.1) • B).volume
   := by
---  have foo : (l.1 • A).volume = l.1 * A.volume := by exact?
-
-  -- (μ(λA)^(n⁻¹) + μ((1-λ)B)^(n⁻¹))^n ≤ μ(λA + (1-λ)B)
-  have right_side:
-      ((l.1 • A).volume ^ (n⁻¹ : ℝ) + ((1 - l.1) • B).volume ^ (n⁻¹ : ℝ)) ^ (n : ℝ)
-      ≤ (l.1 • A + (1 - l.1) • B).volume
-       := by
-          rw [← power_cancel ((l.1 • A + (1 - l.1) • B).volume) n ngz]
-          apply NNReal.rpow_le_rpow (@brunn_minkowski n (l.1 • A) ((1 - l.1) • B)) (Nat.cast_nonneg' n)
-
   calc
     -- μ(A)^λ μ(B)^(1-λ) ≤ λμ(A) + (1-λ)μ(B)
     A.volume^l.1 • B.volume^(1-l.1) ≤ l.1 * A.volume + (1 - l.1) • B.volume := lemma_inequality A.volume B.volume l
 
     -- λμ(A) + (1-λ)μ(B) ≤ {λμ(A)^(n⁻¹) + (1-λ)μ(B)^(n⁻¹)}^n
-    _ ≤ ((l.1 * A.volume) ^ (n⁻¹ : ℝ) + ((1 - l.1) * B.volume) ^ (n⁻¹ : ℝ))^(n : ℝ) := by sorry
+    _ ≤ ((l.1 * A.volume) ^ (n⁻¹ : ℝ) + ((1 - l.1) * B.volume) ^ (n⁻¹ : ℝ))^(n : ℝ) := by
+      have bar : 1 < n := sorry
+      have foo := help (l * A.volume) ((1 - l) * B.volume) bar
+      sorry
 
     _ = ((l.1 • A).volume ^ (n⁻¹ : ℝ) + ((1 - l.1) • B).volume ^ (n⁻¹ : ℝ))^(n : ℝ) := by sorry
 
     _ ≤ (l.1 • A + (1 - l.1) • B).volume := by
       rw [← power_cancel ((l.1 • A + (1 - l.1) • B).volume) n ngz]
       apply NNReal.rpow_le_rpow (@brunn_minkowski n (l.1 • A) ((1 - l.1) • B)) (Nat.cast_nonneg' n)
-
-
-
-/-
-  -- μ(λA)^(n⁻¹) + μ((1-λ)B)^(n⁻¹) ≤ (μ(λA)^(n⁻¹) + μ((1-λ)B)^(n⁻¹))^n
-
--- (μ(λA)^(n⁻¹) + μ((1-λ)B)^(n⁻¹))^n ≥ μ(A)^λ μ(B)^(1-λ)
-  have left_side:
-      ((l.1 • A).volume ^ (n⁻¹ : ℝ) + ((1 - l.1) • B).volume ^ (n⁻¹ : ℝ))^(n : ℝ)
-      ≥ A.volume ^ l.1 • B.volume ^ (1 - l.1)
-       := sorry
-
-  -- λμ(A) + (1-λ)μ(B) ≥ μ(A)^λ * μ(B)^(1-λ)
-  have foo : l.1 * A.volume + (1 - l.1) • B.volume ≥ A.volume ^ (l : ℝ) * B.volume ^ (1 - l.1):= lemma_inequality A.volume B.volume l
-
-
-  /-have ccc :
-    (((A.volume ^ (l : ℝ)) ^ ↑n) ^ (n⁻¹ : ℝ) + ((B.volume ^ (1 - l : ℝ)) ^ ↑n) ^ (n⁻¹ : ℝ)) ^ (n : ℝ)
-    ≥ ((A.volume ^ (l : ℝ) + B.volume ^ (1 - l : ℝ)) ^ ↑n)
-    := by
-      have ddd := @NNReal.rpow_le_rpow_iff (((A.volume ^ (l : ℝ)) ^ ↑n) ^ (n⁻¹ : ℝ) + ((B.volume ^ (1 - l : ℝ)) ^ ↑n) ^ (n⁻¹ : ℝ)) ((A.volume ^ (l : ℝ) + B.volume ^ (1 - l : ℝ)) ^ ↑n) n (Nat.cast_pos'.mpr (Nat.pos_of_ne_zero ngz))
-      have eee := bbb
-      sorry
-
-    #check NNReal.rpow_le_rpow_iff-/
-
-
-
-  have bar :
-    ((l.1 • A).volume ^ (n⁻¹ : ℝ) + ((1 - l.1) • B).volume ^ (n⁻¹ : ℝ))^(n : ℝ)
-    ≥ l.1 * A.volume + (1 - l.1) • B.volume := by sorry
-
-
-
-  calc
-    right_side
--/
