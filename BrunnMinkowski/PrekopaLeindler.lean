@@ -40,8 +40,8 @@ namespace EuclideanSpace
 
 variable {n₁ n₂ : ℕ}
 
-open Nat Fin Metric
-open ContinuousLinearEquiv MeasurableEquiv
+open Fin Metric Nat Real
+open ContinuousLinearEquiv MeasurableEquiv Topology
 
 def finProdLinearEquiv (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ₗ[ℝ]
@@ -85,16 +85,29 @@ instance : T2Space ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fi
     simp only [isOpen_ball, dist_pos.mpr h, mem_ball, dist_self x, dist_self y, le_refl, and_true,
       div_pos_iff_of_pos_left, ofNat_pos, add_halves, ball_disjoint_ball]
 
+def finProdLinearEquivIsOpenEmbedding
+    (n₁ n₂ : ℕ) :
+    IsOpenEmbedding (finProdLinearEquiv n₁ n₂) where
+  eq_induced := sorry
+  injective := sorry
+  isOpen_range := sorry
+
+def continuousFinProdLinearEquiv (n₁ n₂ : ℕ) : Continuous (finProdLinearEquiv n₁ n₂) where
+  isOpen_preimage s h := by
+    have := Set.preimage_equiv_eq_image_symm s (finProdLinearEquiv n₁ n₂).toEquiv
+    simp only [LinearEquiv.coe_toEquiv, LinearEquiv.coe_toEquiv_symm, EquivLike.coe_coe] at this
+    rw [this]
+    sorry
+
 def finProdContinuousLinearEquiv (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) ×ₑ (EuclideanSpace ℝ (Fin n₂))) ≃L[ℝ]
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-  ⟨finProdLinearEquiv n₁ n₂, ⟨by
-    intro s h; simp; apply?
-    sorry⟩ , sorry⟩
+  LinearEquiv.toContinuousLinearEquivOfContinuous (finProdLinearEquiv n₁ n₂)
+    (continuousFinProdLinearEquiv n₁ n₂)
 --  ContinuousLinearEquiv.ofFinrankEq <| by simp [LinearEquiv.finrank_eq (WithLp.linearEquiv 2 _ _)]
 
 theorem add_finProdContinuousLinearEquiv
-    {n₁ n₂ : ℕ} (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
+    (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
     (finProdContinuousLinearEquiv n₁ n₂) (x₁, x₃) + (finProdContinuousLinearEquiv n₁ n₂) (x₂, x₄) =
     (finProdContinuousLinearEquiv n₁ n₂) (x₁ + x₂, x₃ + x₄) :=
   ((finProdContinuousLinearEquiv n₁ n₂).map_add _ _).symm
