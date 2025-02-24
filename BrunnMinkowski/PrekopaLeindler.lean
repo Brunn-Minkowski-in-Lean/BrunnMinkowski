@@ -43,6 +43,9 @@ variable {n₁ n₂ : ℕ}
 open Fin Metric Nat Real
 open ContinuousLinearEquiv MeasurableEquiv Topology
 
+instance zeroUnique : Unique (EuclideanSpace ℝ (Fin 0)) :=
+  ⟨⟨0⟩, Subsingleton.eq_zero⟩
+
 def finProdLinearEquiv (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ₗ[ℝ]
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
@@ -128,16 +131,15 @@ theorem measurable_finProdContinuousLinearEquiv
     Measurable (finProdContinuousLinearEquiv n₁ n₂) :=
   measurable_finProdLinearEquiv
 
-noncomputable def finProdMeasurableEquiv' (n₁ n₂ : ℕ) :
+noncomputable def finProdMeasurableEquiv'' (n₁ n₂ : ℕ) :
     (EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂) ≃ᵐ
       ((EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂)) :=
   ⟨Equiv.refl _, sorry, sorry⟩
   
 
-noncomputable def finProdMeasurableEquiv (n₁ n₂ : ℕ) :
-    ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ᵐ
+noncomputable def finProdMeasurableEquiv' (n₁ n₂ : ℕ) :
+    ((EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂)) ≃ᵐ
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-  let eqv₀ := finProdMeasurableEquiv' n₁ n₂
   let eqv₁ : ((EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂)) ≃ᵐ
       (Fin n₁ → ℝ) × (Fin n₂ → ℝ) :=
     prodCongr (EuclideanSpace.measurableEquiv _) (EuclideanSpace.measurableEquiv _)
@@ -146,15 +148,15 @@ noncomputable def finProdMeasurableEquiv (n₁ n₂ : ℕ) :
   let eqv₃ : (((Fin n₁) ⊕ (Fin n₂)) → ℝ) ≃ᵐ ((Fin (n₁ + n₂)) → ℝ) :=
     piCongrLeft (fun _ ↦ ℝ) finSumFinEquiv
   let eqv₄ := (EuclideanSpace.measurableEquiv (Fin (n₁ + n₂))).symm
-  eqv₀.trans (eqv₁.trans (eqv₂.trans (eqv₃.trans eqv₄)))
+  eqv₁.trans (eqv₂.trans (eqv₃.trans eqv₄))
 
-theorem injective_finProdMeasurableEquiv (n₁ n₂ : ℕ) :
-    Function.Injective (finProdMeasurableEquiv n₁ n₂) := by
+theorem injective_finProdMeasurableEquiv' (n₁ n₂ : ℕ) :
+    Function.Injective (finProdMeasurableEquiv' n₁ n₂) := by
   intro _ _ _; simp_all only [EmbeddingLike.apply_eq_iff_eq]
 
 theorem finProdMeasurableEmbedding (n₁ n₂ : ℕ) :
-    MeasurableEmbedding (finProdMeasurableEquiv n₁ n₂) := by
-  constructor <;> simp [injective_finProdMeasurableEquiv, MeasurableEquiv.measurable]
+    MeasurableEmbedding (finProdMeasurableEquiv' n₁ n₂) := by
+  constructor <;> simp [injective_finProdMeasurableEquiv', MeasurableEquiv.measurable]
 
 -- -- Likely false.
 -- noncomputable def finProdLinearIsometryEquiv (n₁ n₂ : ℕ) :
@@ -289,20 +291,16 @@ def prekopa_leindler_statement
 
 @[simp]
 theorem volume_univ_one_of_pi_fin_zero :
-    MeasureTheory.MeasureSpace.volume (@Set.univ (Fin 0 → ℝ)) = 1 := by
+    MeasureTheory.volume (@Set.univ (Fin 0 → ℝ)) = 1 := by
   simp only [MeasureTheory.volume_pi, MeasureTheory.Measure.pi_empty_univ]
 
-open EuclideanSpace in
 @[simp]
 theorem volume_univ_one_of_euclideanSpace_fin_zero :
-    MeasureTheory.MeasureSpace.volume (@Set.univ (EuclideanSpace ℝ (Fin 0))) = 1 :=
+    MeasureTheory.volume (@Set.univ (EuclideanSpace ℝ (Fin 0))) = 1 :=
   let eqv := EuclideanSpace.measurableEquiv (Fin 0)
-  have h₁ : MeasureTheory.MeasureSpace.volume (eqv ⁻¹' (@Set.univ (Fin 0 → ℝ))) = MeasureTheory.MeasureSpace.volume (@Set.univ (Fin 0 → ℝ)) :=
-    MeasureTheory.MeasurePreserving.measure_preimage_equiv (volume_preserving_measurableEquiv (Fin 0)) _
+  have h₁ : MeasureTheory.volume (eqv ⁻¹' (@Set.univ (Fin 0 → ℝ))) = MeasureTheory.volume (@Set.univ (Fin 0 → ℝ)) :=
+    MeasureTheory.MeasurePreserving.measure_preimage_equiv (EuclideanSpace.volume_preserving_measurableEquiv (Fin 0)) _
   h₁ ▸ volume_univ_one_of_pi_fin_zero
-
-instance EuclideanSpace.zeroUnique : Unique (EuclideanSpace ℝ (Fin 0)) :=
-  ⟨⟨0⟩, Subsingleton.eq_zero⟩
 
 theorem prekopa_leindler_dim_zero
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
@@ -312,9 +310,9 @@ theorem prekopa_leindler_dim_zero
     prekopa_leindler_statement ht₁ ht₂ f hf g hg h := by
   intro h₁
   simp_rw [CharP.cast_eq_zero, zero_mul, Real.rpow_zero, mul_one, one_mul]
-  have h₃ : (MeasureTheory.MeasureSpace.volume (@Set.univ (ℝn 0))).toReal = 1 :=
+  have h₃ : (MeasureTheory.volume (@Set.univ (ℝn 0))).toReal = 1 :=
     (ENNReal.toReal_eq_one_iff _).mpr volume_univ_one_of_euclideanSpace_fin_zero
-  simp_rw [@MeasureTheory.integral_unique (ℝn 0) ℝ _ _ _ _ MeasureTheory.MeasureSpace.volume EuclideanSpace.zeroUnique, h₃, smul_eq_mul,
+  simp_rw [@MeasureTheory.integral_unique (ℝn 0) ℝ _ _ _ _ MeasureTheory.volume EuclideanSpace.zeroUnique, h₃, smul_eq_mul,
     one_mul, ge_iff_le]; simp only [default]
   have h₄ := h₁ 0 0; simp only [add_zero] at h₄; exact h₄
 
@@ -323,24 +321,24 @@ theorem prekopa_leindler_dim_zero
 
 theorem integral_integral_euclideanSpace
     {n₁ n₂ : ℕ} (f : EuclideanSpace ℝ (Fin n₁) → EuclideanSpace ℝ (Fin n₂) → ℝ)
-    (hf : MeasureTheory.Integrable (Function.uncurry f) MeasureTheory.MeasureSpace.volume) :
-    ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f x y ∂MeasureTheory.MeasureSpace.volume ∂MeasureTheory.MeasureSpace.volume =
+    (hf : MeasureTheory.Integrable (Function.uncurry f) MeasureTheory.volume) :
+    ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f x y ∂MeasureTheory.volume ∂MeasureTheory.volume =
     ∫ (z : EuclideanSpace ℝ (Fin (n₁ + n₂))),
-      (let ⟨z₁, z₂⟩ := (EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm z; f z₁ z₂) ∂MeasureTheory.MeasureSpace.volume := by
+      (let ⟨z₁, z₂⟩ := (EuclideanSpace.finProdMeasurableEquiv' n₁ n₂).symm z; f z₁ z₂) ∂MeasureTheory.volume := by
   rw [MeasureTheory.integral_integral hf]
-  have := @MeasureTheory.integral_map_equiv _ _ _ _ _ MeasureTheory.MeasureSpace.volume _ _
-    (EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm fun z ↦ f z.1 z.2
-  --simp_rw [Equiv.toFun_as_coe, MeasurableEquiv.coe_toEquiv, ← this,
-  --  ← MeasureTheory.Measure.volume_eq_prod]
-  --congr; symm; exact (EuclideanSpace.finProdMeasurePreserving_symm n₁ n₂).2
+  have := @MeasureTheory.integral_map_equiv _ _ _ _ _ MeasureTheory.volume _ _
+    (EuclideanSpace.finProdMeasurableEquiv' n₁ n₂).symm fun z ↦ f z.1 z.2
+  simp_rw [Equiv.toFun_as_coe, MeasurableEquiv.coe_toEquiv, ← this,
+    ← MeasureTheory.Measure.volume_eq_prod]
+  congr; symm
   sorry
 
 theorem integral_integral_euclideanSpace'
     {n₁ n₂ : ℕ} (f : (EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂) → ℝ)
-    (hf : MeasureTheory.Integrable f MeasureTheory.MeasureSpace.volume) :
-    ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f (x, y) ∂MeasureTheory.MeasureSpace.volume ∂MeasureTheory.MeasureSpace.volume =
+    (hf : MeasureTheory.Integrable f MeasureTheory.volume) :
+    ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f (x, y) ∂MeasureTheory.volume ∂MeasureTheory.volume =
     ∫ (z : EuclideanSpace ℝ (Fin (n₁ + n₂))),
-      f ((EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm z) ∂MeasureTheory.MeasureSpace.volume :=
+      f ((EuclideanSpace.finProdMeasurableEquiv' n₁ n₂).symm z) ∂MeasureTheory.volume :=
   integral_integral_euclideanSpace (Function.curry f) hf
 
 -- TODO: Remove `sorry`.
@@ -373,6 +371,11 @@ theorem prekopa_leindler_dimension_sum
       (fun z ↦ (1 - t) ^ (d₂ * (1 - t)) * t ^ (d₂ * t) * ∫ z₂, H z z₂) := fun x₁ y₁ ↦
     h₂ hF hG (h₄ x₁ y₁)
   have h₆ := h₁ (fun _ ↦ MeasureTheory.integral_nonneg hF) (fun _ ↦ MeasureTheory.integral_nonneg hG) h₅
+  simp only [F, G, H] at h₆ ⊢
+  simp_rw [mul_comm] at h₆
+  simp only [← smul_eq_mul, integral_smul_const] at h₆
+  simp only [smul_eq_mul] at h₆
+
   sorry
 
 theorem prekopa_leindler
