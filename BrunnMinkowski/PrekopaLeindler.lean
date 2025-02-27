@@ -351,18 +351,18 @@ theorem integral_integral_euclideanSpace'
   integral_integral_euclideanSpace (Function.curry f) hf
 
 -- TODO: Prove THIS.
-theorem two_variable_integral_finProdLinearEquiv_eq
-    {d₁ d₂ : ℕ} {f : ℝn (d₁ + d₂) → ℝ} (hf : MeasureTheory.Integrable f) :
-    ∫ (x : ℝn d₁) (y : ℝn d₂), f ((EuclideanSpace.finProdLinearEquiv d₁ d₂) (x, y)) =
-    ∫ (z : ℝn (d₁ + d₂)), f z := by
-  simp [EuclideanSpace.finProdLinearEquiv]
-  sorry
-
 theorem two_variable_integral_finProdContinuousLinearEquiv_eq
     {d₁ d₂ : ℕ} {f : ℝn (d₁ + d₂) → ℝ} (hf : MeasureTheory.Integrable f) :
     ∫ (x : ℝn d₁) (y : ℝn d₂), f ((EuclideanSpace.finProdContinuousLinearEquiv d₁ d₂) (x, y)) =
-    ∫ (z : ℝn (d₁ + d₂)), f z :=
-  two_variable_integral_finProdLinearEquiv_eq hf
+    ∫ (z : ℝn (d₁ + d₂)), f z := by
+  rw [MeasureTheory.integral_integral]
+  · simp only [Prod.mk.eta]
+    sorry
+  apply MeasureTheory.Integrable.comp_measurable
+  · simp only [Prod.mk.eta]
+    rw [← MeasureTheory.Measure.volume_eq_prod]
+    sorry
+  sorry
 
 -- TODO: Remove `sorry`.
 open EuclideanSpace in
@@ -379,14 +379,14 @@ theorem prekopa_leindler_dimension_sum
     (h : ℝn (d₁ + d₂) → ℝ) :
     prekopa_leindler_statement ht₁ ht₂ f hf g hg h := by
   intro h₃
-  let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((finProdLinearEquiv d₁ d₂) (x₁, x₂))
-  let G (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ g ((finProdLinearEquiv d₁ d₂) (x₁, x₂))
-  let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((finProdLinearEquiv d₁ d₂) (x₁, x₂))
+  let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((finProdContinuousLinearEquiv d₁ d₂) (x₁, x₂))
+  let G (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ g ((finProdContinuousLinearEquiv d₁ d₂) (x₁, x₂))
+  let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((finProdContinuousLinearEquiv d₁ d₂) (x₁, x₂))
   have hF : ∀ {x₁} x₂, 0 ≤ F x₁ x₂ := fun _ ↦ hf _
   have hG : ∀ {x₁} x₂, 0 ≤ G x₁ x₂ := fun _ ↦ hg _
   have h₄ : ∀ x₁ y₁ : ℝn d₁, Condition ht₁ ht₂ (F x₁) hF (G y₁) hG (H (x₁ + y₁)) := by
     intro _ _ _ _
-    simp only [F, G, H, ← add_finProdLinearEquiv]
+    simp only [F, G, H, ← add_finProdContinuousLinearEquiv]
     exact h₃ _ _
   have h₅ : Condition ht₁ ht₂
       (fun x ↦ ∫ x₂, F x x₂) (fun _ ↦ MeasureTheory.integral_nonneg hF)
@@ -407,7 +407,7 @@ theorem prekopa_leindler_dimension_sum
       ∫ (x : ℝn d₁) (z₂ : ℝn d₂), h ((finProdContinuousLinearEquiv d₁ d₂) (x, z₂)) = ∫ x, h x :=
     two_variable_integral_finProdContinuousLinearEquiv_eq
   apply le_trans (le_of_eq _) (h₇ ▸ h₆)
-  simp only [F, G, H, two_variable_integral_finProdLinearEquiv_eq]
+  simp only [F, G, H, two_variable_integral_finProdContinuousLinearEquiv_eq]
 
 theorem prekopa_leindler
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) {d : ℕ}
