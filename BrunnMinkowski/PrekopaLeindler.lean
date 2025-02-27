@@ -108,6 +108,10 @@ theorem prekopa_leindler
   := by sorry
 
 
+-- write claims in the form of lemmas
+-- show that if PL holds for a fixed f and any essentially bounded g,
+-- then it holds for f and every g
+
 lemma prekopa_leindler_dim1
     {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
     {f g h : ℝn 1 → ℝ}
