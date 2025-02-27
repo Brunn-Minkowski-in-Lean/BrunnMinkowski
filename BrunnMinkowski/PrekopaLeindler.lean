@@ -35,7 +35,57 @@ lemma one_dim_BMInequality_of_nullmeasurable (A B C : Set ℝ)
     (hA_nm : NullMeasurableSet A)
     (hB_nm : NullMeasurableSet B)
     (hABC : A + B ⊆ C)
-    : volume A + volume B ≤ volume C := by sorry
+    : volume A + volume B ≤ volume C := by
+
+  obtain ⟨Am, hAm_subset_A, hAm_m, hAm_ae_eq⟩ :=
+    NullMeasurableSet.exists_measurable_subset_ae_eq hA_nm
+  obtain ⟨Bm, hBm_subset_B, hBm_m, hBm_ae_eq⟩ :=
+    NullMeasurableSet.exists_measurable_subset_ae_eq hB_nm
+  let Cm := toMeasurable volume C
+
+  have hAm_vol_eq := measure_congr hAm_ae_eq
+  have hBm_vol_eq := measure_congr hBm_ae_eq
+
+  have hAvol_nonneg := le_iff_eq_or_lt.1 (Measure.zero_le volume A)
+  have hBvol_nonneg := le_iff_eq_or_lt.1 (Measure.zero_le volume B)
+  simp only [Measure.coe_zero, Pi.zero_apply] at hAvol_nonneg hBvol_nonneg
+
+  rcases eq_or_ne (volume A) 0 with hA_vol_zero | hA_vol_nonzero
+  · -- Assume volume A = 0
+    rw [hA_vol_zero, zero_add]
+    calc
+      volume B
+      _ ≤ volume (A + B) := volume_le_volume_add_left hA_nonempty
+      _ ≤ volume C := measure_mono hABC
+  rcases eq_or_ne (volume B) 0 with hB_vol_zero | hB_vol_nonzero
+  · -- Assume volume B = 0
+    rw [hB_vol_zero, add_zero]
+    calc
+      volume A
+      _ ≤ volume (A + B) := volume_le_volume_add_right hB_nonempty
+      _ ≤ volume C := measure_mono hABC
+
+  have AmBmCm : Am + Bm ⊆ Cm :=
+    calc
+      Am + Bm
+        ⊆ A + B := Set.add_subset_add hAm_subset_A hBm_subset_B
+      _ ⊆ C := hABC
+      _ ⊆ Cm := subset_toMeasurable volume C
+
+  have Am_nonempty :=
+    nonempty_of_measure_ne_zero (Eq.trans_ne hAm_vol_eq hA_vol_nonzero)
+  have Bm_nonempty :=
+    nonempty_of_measure_ne_zero (Eq.trans_ne hBm_vol_eq hB_vol_nonzero)
+
+  have hAmBmCm_vol : volume Am + volume Bm ≤ volume Cm := by
+    refine one_dim_BMInequality Am Bm Cm
+      Am_nonempty Bm_nonempty ?_
+      hAm_m hBm_m (measurableSet_toMeasurable volume C)
+      AmBmCm
+    · exact Set.Nonempty.mono AmBmCm (Set.Nonempty.add Am_nonempty Bm_nonempty)
+
+  rw [hAm_vol_eq, hBm_vol_eq, measure_toMeasurable C] at hAmBmCm_vol
+  exact hAmBmCm_vol
 
 lemma nonneg_integrable_integral_eq_integral_superlevel_set_meas
     {f : ℝn n → ℝ} (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f) :
