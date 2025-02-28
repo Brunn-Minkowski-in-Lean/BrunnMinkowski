@@ -114,8 +114,7 @@ def continuousFinProdLinearEquiv (n₁ n₂ : ℕ) : Continuous (finProdLinearEq
 def finProdContinuousLinearEquiv (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) ×ₑ (EuclideanSpace ℝ (Fin n₂))) ≃L[ℝ]
       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-  LinearEquiv.toContinuousLinearEquivOfContinuous (finProdLinearEquiv n₁ n₂)
-    (continuousFinProdLinearEquiv n₁ n₂)
+  (WithLp.prodContinuousLinearEquiv 2 ℝ _ _).trans (by sorry)
 --  ContinuousLinearEquiv.ofFinrankEq <| by simp [LinearEquiv.finrank_eq (WithLp.linearEquiv 2 _ _)]
 
 theorem add_finProdContinuousLinearEquiv
@@ -131,6 +130,39 @@ instance : MeasurableSpace ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace
     have h₁ := Equiv.image_compl (finProdLinearEquiv n₁ n₂).toEquiv sᶜ
     simp at h₁; exact MeasurableSet.compl_iff.mp (h₁ ▸ h)
   measurableSet_iUnion f h := by simp only [Set.image_iUnion] at h ⊢; exact MeasurableSet.iUnion h
+
+noncomputable instance : MetricSpace ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) :=
+  inferInstance
+
+def finProdLinearIsometryEquiv (n₁ n₂ : ℕ) :
+    ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ₗᵢ[ℝ]
+      EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
+  ⟨finProdLinearEquiv n₁ n₂, fun x ↦ by
+    simp only [finProdLinearEquiv, ofNat'_eq_cast, LinearEquiv.coe_mk, norm_eq, norm_eq_abs,
+      sq_abs, cast_ofNat, WithLp.prod_norm_eq_of_nat 2 _ x, one_div]
+    repeat rw [sq_sqrt (by positivity)]
+    simp only [Real.sqrt_eq_rpow, one_div]; congr
+    let s₁ : Finset (Fin (n₁ + n₂)) :=
+      Finset.image (fun x : Fin n₁ ↦ @Fin.ofNat' _ ⟨by have := x.isLt; omega⟩ x.val) Finset.univ
+    let s₂ := Finset.univ \ s₁
+    have h₁ : Disjoint s₁ s₂ := Finset.disjoint_sdiff
+    have h₂ : Finset.univ = s₁ ∪ s₂ := by
+      rw [Finset.union_comm, ← Finset.sdiff_union_inter Finset.univ s₁]
+      congr; exact Finset.univ_inter _
+    rw [h₂, Finset.sum_union h₁]
+    have h₃ {a b c d : ℝ} : a = c → b = d → a + b = c + d :=
+      fun h₁ h₂ ↦ h₁ ▸ h₂ ▸ rfl
+    refine h₃ ?_ ?_
+    · simp [s₁]
+      rw [Finset.sum_image]
+      · congr; ext a; 
+        have h₄ := Nat.mod_eq_of_lt (lt_of_lt_of_le a.isLt
+          (@_root_.le_add_right ℕ _ _ _ n₂ (le_refl n₁)))
+        simp [h₄]; congr; rcases x; simp; congr; simp [h₄]
+      rintro a - b - h; simp at h
+      sorry
+    · sorry⟩
+
 
 theorem measurable_finProdLinearEquiv {n₁ n₂ : ℕ} : Measurable (finProdLinearEquiv n₁ n₂) := by
   sorry
@@ -166,6 +198,17 @@ theorem injective_finProdMeasurableEquiv' (n₁ n₂ : ℕ) :
 theorem finProdMeasurableEmbedding (n₁ n₂ : ℕ) :
     MeasurableEmbedding (finProdMeasurableEquiv' n₁ n₂) := by
   constructor <;> simp [injective_finProdMeasurableEquiv', MeasurableEquiv.measurable]
+
+def finProdMeasurableEquiv (n₁ n₂ : ℕ) :
+    ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ᵐ
+      EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
+  ⟨finProdLinearEquiv n₁ n₂, by
+    simp
+    have : (finProdLinearEquiv n₁ n₂) = fun x ↦ (finProdLinearEquiv n₁ n₂) x :=
+      rfl
+    rw [this]
+    
+    sorry, sorry⟩
 
 -- -- Likely false.
 -- noncomputable def finProdLinearIsometryEquiv (n₁ n₂ : ℕ) :
@@ -350,6 +393,30 @@ theorem integral_integral_euclideanSpace'
       f ((EuclideanSpace.finProdMeasurableEquiv' n₁ n₂).symm z) ∂MeasureTheory.volume :=
   integral_integral_euclideanSpace (Function.curry f) hf
 
+example {d₁ d₂ : ℕ} {f : (EuclideanSpace ℝ (Fin (d₁ + d₂))) → ℝ} (hf : MeasureTheory.Integrable f) :
+    ∫ (x : EuclideanSpace ℝ (Fin d₁)), ∫ (y : EuclideanSpace ℝ (Fin d₂)), f (fun z ↦ if h : z < d₁ then x (@Fin.ofNat' d₁ ⟨by omega⟩ z) else y ((@Fin.ofNat' d₂ ⟨by omega⟩ (z.val - d₁)))) =
+    ∫ (z : EuclideanSpace ℝ (Fin (d₁ + d₂))), f z := by
+  sorry
+
+theorem EuclideanSpace.finProdLinearEquiv.aemeasurable
+    {n₁ n₂ : ℕ} :
+    AEMeasurable (EuclideanSpace.finProdLinearEquiv n₁ n₂) (by sorry) := by
+  sorry
+
+theorem two_variable_integral_finProdLinearEquiv_eq
+    {d₁ d₂ : ℕ} {f : ℝn (d₁ + d₂) → ℝ} (hf : MeasureTheory.Integrable f) :
+    ∫ (x : ℝn d₁), ∫ (y : ℝn d₂), f ((EuclideanSpace.finProdLinearEquiv d₁ d₂) (x, y)) =
+    ∫ (z : ℝn (d₁ + d₂)), f z := by
+  rw [MeasureTheory.integral_integral]
+  · simp only [Prod.mk.eta]
+    nth_rw 1 [← MeasureTheory.integral_map]
+    · sorry
+    · sorry
+    sorry
+  apply MeasureTheory.Integrable.comp_measurable
+  · sorry
+  sorry
+
 -- TODO: Prove THIS.
 theorem two_variable_integral_finProdContinuousLinearEquiv_eq
     {d₁ d₂ : ℕ} {f : ℝn (d₁ + d₂) → ℝ} (hf : MeasureTheory.Integrable f) :
@@ -357,6 +424,9 @@ theorem two_variable_integral_finProdContinuousLinearEquiv_eq
     ∫ (z : ℝn (d₁ + d₂)), f z := by
   rw [MeasureTheory.integral_integral]
   · simp only [Prod.mk.eta]
+    rw [← MeasureTheory.Measure.volume_eq_prod]
+    simp [EuclideanSpace.finProdContinuousLinearEquiv, EuclideanSpace.finProdLinearEquiv]
+    
     sorry
   apply MeasureTheory.Integrable.comp_measurable
   · simp only [Prod.mk.eta]
