@@ -41,13 +41,31 @@ namespace WithLp
 variable {α β : Type*} {p : ENNReal}
 
 instance [AddGroup α] [AddGroup β] : AddGroup (WithLp p (α × β)) :=
-  ‹AddGroup (α × β)›
+  @Prod.instAddGroup α β _ _
+
+instance [TopologicalSpace α] [TopologicalSpace β] : TopologicalSpace (WithLp p (α × β)) :=
+  inferInstance
+
+instance
+    [AddGroup α] [TopologicalSpace α] [TopologicalAddGroup α]
+    [AddGroup β] [TopologicalSpace β] [TopologicalAddGroup β] :
+    TopologicalAddGroup (WithLp p (α × β)) :=
+  instTopologicalAddGroupSum
 
 instance
     [AddGroup α] [TopologicalSpace α] [TopologicalAddGroup α]
     [AddGroup β] [TopologicalSpace β] [TopologicalAddGroup β] :
     TopologicalAddGroup (WithLp p (α × β)) :=
   inferInstance
+
+instance
+    [TopologicalSpace α] [T2Space α] [TopologicalSpace β] [T2Space β] :
+    T2Space (WithLp p (α × β)) :=
+  Prod.t2Space
+
+noncomputable instance [MeasureTheory.MeasureSpace α] [MeasureTheory.MeasureSpace β] :
+    MeasureTheory.MeasureSpace (WithLp p (α × β)) :=
+  MeasureTheory.Measure.prod.measureSpace
 
 end WithLp
 
@@ -69,20 +87,11 @@ instance zeroUnique : Unique (EuclideanSpace ℝ (Fin 0)) :=
 instance finrankZeroUnique (h : Module.finrank ℝ α = 0) : Unique α :=
   ⟨⟨0⟩, @Subsingleton.eq_zero _ _ (Module.finrank_zero_iff.mp h)⟩
 
-instance : AddCommGroup (α ×ₑ β) where
-  add_comm a b := by rcases a; rcases b; simp only [add_comm]
-
-instance : TopologicalSpace (α ×ₑ β) :=
-  inferInstance
-
-instance : TopologicalAddGroup (α ×ₑ β) where
-  continuous_add := sorry
-  continuous_neg := sorry
-
-instance : T2Space (α ×ₑ β) where
+instance {n : ℕ} : T2Space (EuclideanSpace ℝ (Fin n)) where
   t2 x y h := by
-    use Euclidean.ball x (Euclidean.dist x y / 2)
-    sorry
+    use ball x (dist x y / 2), ball y (dist x y / 2)
+    simp only [Metric.isOpen_ball, true_and]; simp [Metric.mem_ball_self, h]
+    apply Metric.ball_disjoint_ball; simp
 
 def finProdLinearEquiv (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ₗ[ℝ]
@@ -119,12 +128,6 @@ theorem add_finProdLinearEquiv
     (finProdLinearEquiv n₁ n₂) (x₁, x₃) + (finProdLinearEquiv n₁ n₂) (x₂, x₄) =
     (finProdLinearEquiv n₁ n₂) (x₁ + x₂, x₃ + x₄) :=
   ((finProdLinearEquiv n₁ n₂).map_add _ _).symm
-
-instance : T2Space ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) where
-  t2 x y h := by
-    use ball x (dist x y / 2), ball y (dist x y / 2)
-    simp only [isOpen_ball, dist_pos.mpr h, mem_ball, dist_self x, dist_self y, le_refl, and_true,
-      div_pos_iff_of_pos_left, ofNat_pos, add_halves, ball_disjoint_ball]
 
 noncomputable def finProdContinuousLinearEquiv (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) ×ₑ (EuclideanSpace ℝ (Fin n₂))) ≃L[ℝ]
@@ -441,11 +444,12 @@ theorem two_variable_integral_finProdContinuousLinearEquiv_eq
 
 theorem asdf_left
     {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
-    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] [MeasurableSpace α]
+    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] [MeasureTheory.MeasureSpace α]
     {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
-    [Module ℝ β] [ContinuousSMul ℝ α] [FiniteDimensional ℝ β] [MeasurableSpace β]
+    [Module ℝ β] [ContinuousSMul ℝ α] [FiniteDimensional ℝ β] [MeasureTheory.MeasureSpace β]
     (f : α ×ₑ β → ℝ) (hf : MeasureTheory.Integrable f) {a : α} :
-    MeasureTheory.Integrable fun b ↦ f a b := by
+    MeasureTheory.Integrable fun b ↦ f (a, b) := by
+  
   sorry
 
 -- TODO: Remove `sorry`.
