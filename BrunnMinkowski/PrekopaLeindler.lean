@@ -36,7 +36,27 @@ abbrev EuclideanProd
 @[inherit_doc]
 infixl:35 " ×ₑ " => EuclideanProd
 
+namespace WithLp
+
+variable {α β : Type*} {p : ENNReal}
+
+instance [AddGroup α] [AddGroup β] : AddGroup (WithLp p (α × β)) :=
+  ‹AddGroup (α × β)›
+
+instance
+    [AddGroup α] [TopologicalSpace α] [TopologicalAddGroup α]
+    [AddGroup β] [TopologicalSpace β] [TopologicalAddGroup β] :
+    TopologicalAddGroup (WithLp p (α × β)) :=
+  inferInstance
+
+end WithLp
+
 namespace EuclideanSpace
+
+variable {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
+variable [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α]
+variable {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
+variable [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β]
 
 variable {n₁ n₂ : ℕ}
 
@@ -45,6 +65,24 @@ open ContinuousLinearEquiv MeasurableEquiv MeasureTheory Topology
 
 instance zeroUnique : Unique (EuclideanSpace ℝ (Fin 0)) :=
   ⟨⟨0⟩, Subsingleton.eq_zero⟩
+
+instance finrankZeroUnique (h : Module.finrank ℝ α = 0) : Unique α :=
+  ⟨⟨0⟩, @Subsingleton.eq_zero _ _ (Module.finrank_zero_iff.mp h)⟩
+
+instance : AddCommGroup (α ×ₑ β) where
+  add_comm a b := by rcases a; rcases b; simp only [add_comm]
+
+instance : TopologicalSpace (α ×ₑ β) :=
+  inferInstance
+
+instance : TopologicalAddGroup (α ×ₑ β) where
+  continuous_add := sorry
+  continuous_neg := sorry
+
+instance : T2Space (α ×ₑ β) where
+  t2 x y h := by
+    use Euclidean.ball x (Euclidean.dist x y / 2)
+    sorry
 
 def finProdLinearEquiv (n₁ n₂ : ℕ) :
     ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ₗ[ℝ]
@@ -401,6 +439,15 @@ theorem two_variable_integral_finProdContinuousLinearEquiv_eq
     sorry
   sorry
 
+theorem asdf_left
+    {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
+    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] [MeasurableSpace α]
+    {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
+    [Module ℝ β] [ContinuousSMul ℝ α] [FiniteDimensional ℝ β] [MeasurableSpace β]
+    (f : α ×ₑ β → ℝ) (hf : MeasureTheory.Integrable f) {a : α} :
+    MeasureTheory.Integrable fun b ↦ f a b := by
+  sorry
+
 -- TODO: Remove `sorry`.
 set_option maxHeartbeats 1000000000 in
 open EuclideanSpace in
@@ -424,7 +471,11 @@ theorem prekopa_leindler_dimension_sum
   let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
   let G (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ g ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
   let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
-  have hF₁ : ∀ {x₁}, MeasureTheory.Integrable (F x₁) := sorry
+  have hF₁ : ∀ {x₁}, MeasureTheory.Integrable (F x₁) := by
+    intro x₁; simp [F]; apply MeasureTheory.Integrable.comp_measurable
+    · 
+      sorry
+    sorry
   have hG₁ : ∀ {x₁}, MeasureTheory.Integrable (G x₁) := sorry
   have hH : ∀ {x₁}, MeasureTheory.Integrable (H x₁) := sorry
   have hF₂ : ∀ {x₁} x₂, 0 ≤ F x₁ x₂ := fun _ ↦ hf₂ _
