@@ -477,7 +477,7 @@ theorem prekopa_leindler_dimension_sum
   let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
   have hF₁ : ∀ {x₁}, MeasureTheory.Integrable (F x₁) := by
     intro x₁; simp [F]; apply MeasureTheory.Integrable.comp_measurable
-    · 
+    · -- ???
       sorry
     sorry
   have hG₁ : ∀ {x₁}, MeasureTheory.Integrable (G x₁) := sorry
@@ -509,6 +509,7 @@ theorem prekopa_leindler_dimension_sum
   apply le_trans (le_of_eq _) (h₇ ▸ h₆)
   simp [F, G, H]
   sorry
+
 
 theorem prekopa_leindler
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) {d : ℕ}
