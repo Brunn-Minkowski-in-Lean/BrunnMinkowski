@@ -53,19 +53,21 @@ instance
   instTopologicalAddGroupSum
 
 instance
-    [AddGroup α] [TopologicalSpace α] [TopologicalAddGroup α]
-    [AddGroup β] [TopologicalSpace β] [TopologicalAddGroup β] :
-    TopologicalAddGroup (WithLp p (α × β)) :=
-  inferInstance
-
-instance
     [TopologicalSpace α] [T2Space α] [TopologicalSpace β] [T2Space β] :
     T2Space (WithLp p (α × β)) :=
   Prod.t2Space
 
+instance [TopologicalSpace α] [MeasurableSpace α] [TopologicalSpace β] [MeasurableSpace β] :
+    MeasurableSpace (WithLp p (α × β)) :=
+  Prod.instMeasurableSpace
+
 noncomputable instance [MeasureTheory.MeasureSpace α] [MeasureTheory.MeasureSpace β] :
     MeasureTheory.MeasureSpace (WithLp p (α × β)) :=
   MeasureTheory.Measure.prod.measureSpace
+
+theorem measurable_withlp {γ : Type*} [MeasurableSpace γ] :
+    Measurable fun c : γ ↦ (c : WithLp p γ) :=
+  fun ⦃_⦄ a ↦ a
 
 end WithLp
 
@@ -212,7 +214,6 @@ theorem add_finProdLinearIsometryEquiv
     (finProdLinearIsometryEquiv n₁ n₂) (x₁, x₃) + (finProdLinearIsometryEquiv n₁ n₂) (x₂, x₄) =
     (finProdLinearIsometryEquiv n₁ n₂) (x₁ + x₂, x₃ + x₄) :=
   ((finProdLinearIsometryEquiv n₁ n₂).map_add _ _).symm
-
 
 instance : MeasurableSpace ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) :=
   borel ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂))
@@ -442,15 +443,23 @@ theorem two_variable_integral_finProdContinuousLinearEquiv_eq
     sorry
   sorry
 
-theorem asdf_left
+theorem measurable_slice_left
     {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
     [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] [MeasureTheory.MeasureSpace α]
     {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
-    [Module ℝ β] [ContinuousSMul ℝ α] [FiniteDimensional ℝ β] [MeasureTheory.MeasureSpace β]
-    (f : α ×ₑ β → ℝ) (hf : MeasureTheory.Integrable f) {a : α} :
-    MeasureTheory.Integrable fun b ↦ f (a, b) := by
-  
-  sorry
+    [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β] [MeasureTheory.MeasureSpace β]
+    (f : α ×ₑ β → ℝ) (hf : Measurable f) {a : α} :
+    Measurable fun b ↦ f (a, b) :=
+  Measurable.comp hf measurable_prod_mk_left
+
+theorem measurable_slice_right
+    {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
+    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] [MeasureTheory.MeasureSpace α]
+    {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
+    [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β] [MeasureTheory.MeasureSpace β]
+    (f : α ×ₑ β → ℝ) (hf : Measurable f) {b : β} :
+    Measurable fun a ↦ f (a, b) :=
+  Measurable.comp hf measurable_prod_mk_right
 
 -- TODO: Remove `sorry`.
 set_option maxHeartbeats 1000000000 in
@@ -475,10 +484,10 @@ theorem prekopa_leindler_dimension_sum
   let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
   let G (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ g ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
   let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
+  let sF : Set (ℝn d₁) := {x | MeasureTheory.Integrable (F x)}
+  let sG : Set (ℝn d₁) := {x | MeasureTheory.Integrable (G x)}
+  let sH : Set (ℝn d₁) := {x | MeasureTheory.Integrable (H x)}
   have hF₁ : ∀ {x₁}, MeasureTheory.Integrable (F x₁) := by
-    intro x₁; simp [F]; apply MeasureTheory.Integrable.comp_measurable
-    · -- ???
-      sorry
     sorry
   have hG₁ : ∀ {x₁}, MeasureTheory.Integrable (G x₁) := sorry
   have hH : ∀ {x₁}, MeasureTheory.Integrable (H x₁) := sorry
