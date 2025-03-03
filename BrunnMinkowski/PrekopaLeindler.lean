@@ -452,6 +452,15 @@ theorem measurable_slice_left
     Measurable fun b ↦ f (a, b) :=
   Measurable.comp hf measurable_prod_mk_left
 
+theorem measurable_slice_left_uncurry
+    {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
+    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] [MeasureTheory.MeasureSpace α]
+    {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
+    [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β] [MeasureTheory.MeasureSpace β]
+    (f : α → β → ℝ) (hf : Measurable fun ((a, b) : α ×ₑ β) ↦ f a b) {a : α} :
+    Measurable fun b ↦ f a b :=
+  Measurable.of_uncurry_left hf
+
 theorem measurable_slice_right
     {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
     [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] [MeasureTheory.MeasureSpace α]
@@ -460,6 +469,15 @@ theorem measurable_slice_right
     (f : α ×ₑ β → ℝ) (hf : Measurable f) {b : β} :
     Measurable fun a ↦ f (a, b) :=
   Measurable.comp hf measurable_prod_mk_right
+
+theorem measurable_slice_right_uncurry
+    {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
+    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] [MeasureTheory.MeasureSpace α]
+    {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
+    [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β] [MeasureTheory.MeasureSpace β]
+    (f : α → β → ℝ) (hf : Measurable fun ((a, b) : α ×ₑ β) ↦ f a b) {b : β} :
+    Measurable fun a ↦ f a b :=
+  Measurable.of_uncurry_right hf
 
 -- TODO: Remove `sorry`.
 set_option maxHeartbeats 1000000000 in
@@ -484,6 +502,8 @@ theorem prekopa_leindler_dimension_sum
   let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
   let G (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ g ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
   let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
+  have hF_measurable : ∀ {x₁}, Measurable (F x₁) := fun _ ↦ measurable_slice_left sorry sorry
+
   let sF : Set (ℝn d₁) := {x | MeasureTheory.Integrable (F x)}
   let sG : Set (ℝn d₁) := {x | MeasureTheory.Integrable (G x)}
   let sH : Set (ℝn d₁) := {x | MeasureTheory.Integrable (H x)}
