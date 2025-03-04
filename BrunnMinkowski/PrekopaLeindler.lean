@@ -30,7 +30,7 @@ abbrev EuclideanProd
     (α : Type*) [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
     [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α]
     (β : Type*) [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
-    [Module ℝ β] [ContinuousSMul ℝ α] [FiniteDimensional ℝ β] :=
+    [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β] :=
   WithLp 2 (α × β)
 
 @[inherit_doc]
@@ -485,30 +485,29 @@ open EuclideanSpace in
 theorem prekopa_leindler_dimension_sum
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
     {d₁ : ℕ}
-    (h₁ : ∀ {f : ℝn d₁ → ℝ} (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
-            {g : ℝn d₁ → ℝ} (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
-            {h : ℝn d₁ → ℝ} (hh : MeasureTheory.Integrable h),
-      prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh)
+    (h₁ : ∀ {f : ℝn d₁ → ℝ} (hf₀ : Measurable f) (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
+            {g : ℝn d₁ → ℝ} (hg₀ : Measurable g) (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
+            {h : ℝn d₁ → ℝ} (hh₀ : Measurable h) (hh₁ : MeasureTheory.Integrable h),
+      prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh₁)
     {d₂ : ℕ}
-    (h₂ : ∀ {f : ℝn d₂ → ℝ} (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
-            {g : ℝn d₂ → ℝ} (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
-            {h : ℝn d₂ → ℝ} (hh : MeasureTheory.Integrable h),
-      prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh)
-    (f : ℝn (d₁ + d₂) → ℝ) (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
-    (g : ℝn (d₁ + d₂) → ℝ) (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
-    (h : ℝn (d₁ + d₂) → ℝ) (hh : MeasureTheory.Integrable h) :
-    prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh := by
+    (h₂ : ∀ {f : ℝn d₂ → ℝ} (hf₀ : Measurable f) (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
+            {g : ℝn d₂ → ℝ} (hg₀ : Measurable g) (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
+            {h : ℝn d₂ → ℝ} (hh₀ : Measurable h) (hh₁ : MeasureTheory.Integrable h),
+      prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh₁)
+    (f : ℝn (d₁ + d₂) → ℝ) (hf₀ : Measurable f) (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
+    (g : ℝn (d₁ + d₂) → ℝ) (hg₀ : Measurable g) (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
+    (h : ℝn (d₁ + d₂) → ℝ) (hh₀ : Measurable h) (hh₁ : MeasureTheory.Integrable h) :
+    prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh₁ := by
   intro h₃
   let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
   let G (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ g ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
   let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
-  have hF_measurable : ∀ {x₁}, Measurable (F x₁) := fun _ ↦ measurable_slice_left sorry sorry
-
+  have := measurable_slice_left_uncurry F
+  simp [F, hf₀] at this
   let sF : Set (ℝn d₁) := {x | MeasureTheory.Integrable (F x)}
   let sG : Set (ℝn d₁) := {x | MeasureTheory.Integrable (G x)}
   let sH : Set (ℝn d₁) := {x | MeasureTheory.Integrable (H x)}
-  have hF₁ : ∀ {x₁}, MeasureTheory.Integrable (F x₁) := by
-    sorry
+  have hF₁ : ∀ {x₁}, MeasureTheory.Integrable (F x₁) := sorry
   have hG₁ : ∀ {x₁}, MeasureTheory.Integrable (G x₁) := sorry
   have hH : ∀ {x₁}, MeasureTheory.Integrable (H x₁) := sorry
   have hF₂ : ∀ {x₁} x₂, 0 ≤ F x₁ x₂ := fun _ ↦ hf₂ _
