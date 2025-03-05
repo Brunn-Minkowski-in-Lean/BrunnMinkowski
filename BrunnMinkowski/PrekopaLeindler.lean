@@ -443,41 +443,59 @@ theorem two_variable_integral_finProdContinuousLinearEquiv_eq
     sorry
   sorry
 
+section
+
+open MeasureTheory
+
+variable {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
+variable [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α]
+variable {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
+variable [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β]
+
 theorem measurable_slice_left
-    {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
-    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] [MeasureTheory.MeasureSpace α]
-    {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
-    [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β] [MeasureTheory.MeasureSpace β]
+    [MeasureSpace α] [MeasureSpace β]
     (f : α ×ₑ β → ℝ) (hf : Measurable f) {a : α} :
     Measurable fun b ↦ f (a, b) :=
   Measurable.comp hf measurable_prod_mk_left
 
-theorem measurable_slice_left_uncurry
-    {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
-    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] [MeasureTheory.MeasureSpace α]
-    {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
-    [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β] [MeasureTheory.MeasureSpace β]
-    (f : α → β → ℝ) (hf : Measurable fun ((a, b) : α ×ₑ β) ↦ f a b) {a : α} :
-    Measurable fun b ↦ f a b :=
-  Measurable.of_uncurry_left hf
+-- theorem measurable_slice_left_uncurry
+--    [MeasureTheory.MeasureSpace α] [MeasureTheory.MeasureSpace β]
+--    (f : α → β → ℝ) (hf : Measurable fun ((a, b) : α ×ₑ β) ↦ f a b) {a : α} :
+--    Measurable fun b ↦ f a b :=
+--  Measurable.of_uncurry_left hf
+
+theorem aestronglyMeasurable_slice_left
+    [MeasureSpace α] [MeasureSpace β] [SFinite ‹MeasureSpace β›.volume]
+    (f : α ×ₑ β → ℝ) (hf : AEStronglyMeasurable f) :
+    ∀ᵐ (a : α), AEStronglyMeasurable fun b ↦ f (a, b) :=
+  AEStronglyMeasurable.prod_mk_left hf
 
 theorem measurable_slice_right
-    {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
-    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] [MeasureTheory.MeasureSpace α]
-    {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
-    [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β] [MeasureTheory.MeasureSpace β]
+    [MeasureSpace α] [MeasureSpace β]
     (f : α ×ₑ β → ℝ) (hf : Measurable f) {b : β} :
     Measurable fun a ↦ f (a, b) :=
   Measurable.comp hf measurable_prod_mk_right
 
-theorem measurable_slice_right_uncurry
-    {α : Type*} [AddCommGroup α] [TopologicalSpace α] [TopologicalAddGroup α] [T2Space α]
-    [Module ℝ α] [ContinuousSMul ℝ α] [FiniteDimensional ℝ α] [MeasureTheory.MeasureSpace α]
-    {β : Type*} [AddCommGroup β] [TopologicalSpace β] [TopologicalAddGroup β] [T2Space β]
-    [Module ℝ β] [ContinuousSMul ℝ β] [FiniteDimensional ℝ β] [MeasureTheory.MeasureSpace β]
-    (f : α → β → ℝ) (hf : Measurable fun ((a, b) : α ×ₑ β) ↦ f a b) {b : β} :
-    Measurable fun a ↦ f a b :=
-  Measurable.of_uncurry_right hf
+-- theorem measurable_slice_right_uncurry
+--     [MeasureTheory.MeasureSpace α] [MeasureTheory.MeasureSpace β]
+--     (f : α → β → ℝ) (hf : Measurable fun ((a, b) : α ×ₑ β) ↦ f a b) {b : β} :
+--     Measurable fun a ↦ f a b :=
+--   Measurable.of_uncurry_right hf
+
+theorem aestronglyMeasurable_slice_right
+    [MeasureSpace α] [MeasureSpace β] [SFinite ‹MeasureSpace α›.volume]
+    (f : α ×ₑ β → ℝ) (hf : AEStronglyMeasurable f) :
+    ∀ᵐ (b : β), AEStronglyMeasurable fun a ↦ f (a, b) := by
+  rw [Measure.volume_eq_prod] at hf
+  filter_upwards with b 
+  refine ⟨fun a ↦ hf.mk f (a, b),
+    hf.stronglyMeasurable_mk.comp_measurable (Measurable.of_uncurry_right fun ⦃_⦄ ↦ id), ?_⟩
+  sorry
+
+theorem integrable_aestronglyMeasurable_slice_left
+    [MeasureSpace α] [MeasureSpace β]
+
+end section
 
 -- TODO: Remove `sorry`.
 set_option maxHeartbeats 1000000000 in
@@ -485,58 +503,65 @@ open EuclideanSpace in
 theorem prekopa_leindler_dimension_sum
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
     {d₁ : ℕ}
-    (h₁ : ∀ {f : ℝn d₁ → ℝ} (hf₀ : Measurable f) (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
-            {g : ℝn d₁ → ℝ} (hg₀ : Measurable g) (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
-            {h : ℝn d₁ → ℝ} (hh₀ : Measurable h) (hh₁ : MeasureTheory.Integrable h),
+    (h₁ : ∀ {f : ℝn d₁ → ℝ} (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
+            {g : ℝn d₁ → ℝ} (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
+            {h : ℝn d₁ → ℝ} (hh₁ : MeasureTheory.Integrable h),
       prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh₁)
     {d₂ : ℕ}
-    (h₂ : ∀ {f : ℝn d₂ → ℝ} (hf₀ : Measurable f) (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
-            {g : ℝn d₂ → ℝ} (hg₀ : Measurable g) (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
-            {h : ℝn d₂ → ℝ} (hh₀ : Measurable h) (hh₁ : MeasureTheory.Integrable h),
+    (h₂ : ∀ {f : ℝn d₂ → ℝ} (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
+            {g : ℝn d₂ → ℝ} (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
+            {h : ℝn d₂ → ℝ} (hh₁ : MeasureTheory.Integrable h),
       prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh₁)
-    (f : ℝn (d₁ + d₂) → ℝ) (hf₀ : Measurable f) (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
-    (g : ℝn (d₁ + d₂) → ℝ) (hg₀ : Measurable g) (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
-    (h : ℝn (d₁ + d₂) → ℝ) (hh₀ : Measurable h) (hh₁ : MeasureTheory.Integrable h) :
+    (f : ℝn (d₁ + d₂) → ℝ) (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
+    (g : ℝn (d₁ + d₂) → ℝ) (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
+    (h : ℝn (d₁ + d₂) → ℝ) (hh₁ : MeasureTheory.Integrable h) :
     prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh₁ := by
   intro h₃
   let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
-  let G (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ g ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
-  let H (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ h ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
-  have := measurable_slice_left_uncurry F
-  simp [F, hf₀] at this
-  let sF : Set (ℝn d₁) := {x | MeasureTheory.Integrable (F x)}
-  let sG : Set (ℝn d₁) := {x | MeasureTheory.Integrable (G x)}
-  let sH : Set (ℝn d₁) := {x | MeasureTheory.Integrable (H x)}
-  have hF₁ : ∀ {x₁}, MeasureTheory.Integrable (F x₁) := sorry
-  have hG₁ : ∀ {x₁}, MeasureTheory.Integrable (G x₁) := sorry
-  have hH : ∀ {x₁}, MeasureTheory.Integrable (H x₁) := sorry
-  have hF₂ : ∀ {x₁} x₂, 0 ≤ F x₁ x₂ := fun _ ↦ hf₂ _
-  have hG₂ : ∀ {x₁} x₂, 0 ≤ G x₁ x₂ := fun _ ↦ hg₂ _
-  have h₄ : ∀ x₁ y₁ : ℝn d₁, Condition ht₁ ht₂ (F x₁) hF₁ hF₂ (G y₁) hG₁ hG₂ (H (x₁ + y₁)) hH := by
-    intro _ _ _ _
-    simp only [F, G, H, ← add_finProdLinearIsometryEquiv]
-    exact h₃ _ _
-  have h₅ : Condition ht₁ ht₂
-      (fun x ↦ ∫ x₂, F x x₂) sorry (fun _ ↦ MeasureTheory.integral_nonneg hF₂)
-      (fun y ↦ ∫ y₂, G y y₂) sorry (fun _ ↦ MeasureTheory.integral_nonneg hG₂)
-      (fun z ↦ (1 - t) ^ (d₂ * (1 - t)) * t ^ (d₂ * t) * ∫ z₂, H z z₂) sorry := fun x₁ y₁ ↦
-    h₂ hF₁ hF₂ hG₁ hG₂ sorry (h₄ x₁ y₁)
-  have h₆ := h₁ sorry (fun _ ↦ MeasureTheory.integral_nonneg hF₂) sorry (fun _ ↦ MeasureTheory.integral_nonneg hG₂) sorry h₅
-  simp_rw [mul_comm _ (∫ z, _ ∂MeasureTheory.volume)] at h₆
-  simp only [← smul_eq_mul, integral_smul_const] at h₆
-  simp_rw [smul_eq_mul, ← mul_assoc] at h₆
-  rw [mul_assoc (∫ x, _ ∂MeasureTheory.volume) ((1 - t) ^ _) (t ^ _)] at h₆
-  rw [mul_assoc _ (_ * _) _, mul_assoc _ (_ * _) _, mul_comm ((1 - t) ^ _) (t ^ _),
-    mul_comm _ (t ^ _), mul_assoc (t ^ _), ← mul_assoc (t ^ _), ← Real.rpow_add ht₁,
-    ← Real.rpow_add (by linarith : 0 < 1 - t), mul_comm _ (t ^ _ * (1 - t) ^ _),
-    mul_comm (t ^ _) ((1 - t) ^ _)] at h₆
-  simp only [Nat.cast_add]; ring_nf at h₆ ⊢
-  have h₇ :
-      ∫ (x : ℝn d₁) (z₂ : ℝn d₂), h ((finProdContinuousLinearEquiv d₁ d₂) (x, z₂)) = ∫ x, h x :=
+  let G (y₁ : ℝn d₁) : ℝn d₂ → ℝ := fun y₂ ↦ g ((finProdLinearIsometryEquiv d₁ d₂) (y₁, y₂))
+  let H (z₁ : ℝn d₁) : ℝn d₂ → ℝ := fun z₂ ↦ h ((finProdLinearIsometryEquiv d₁ d₂) (z₁, z₂))
+  have h₃ : ∀ᵐ (x₁ : ℝn d₁) ∂MeasureTheory.volume, Condition ht₁ ht₂
+      (fun x₁ ↦ ∫ x₂, F x₁ x₂) sorry (fun _ ↦ MeasureTheory.integral_nonneg (fun _ ↦ hf₂ _))
+      (fun y₁ ↦ ∫ y₂, G y₁ y₂) sorry (fun _ ↦ MeasureTheory.integral_nonneg (fun _ ↦ hg₂ _))
+      (fun z₁ ↦ (1 - t) ^ (d₂ * (1 - t)) * t ^ (d₂ * t) * ∫ z₂, H z₁ z₂) sorry :=
     sorry
-  apply le_trans (le_of_eq _) (h₇ ▸ h₆)
-  simp [F, G, H]
+
   sorry
+  -- have := measurable_slice_left_uncurry F
+  -- simp [F, hf₀] at this
+  -- let sF : Set (ℝn d₁) := {x | MeasureTheory.Integrable (F x)}
+  -- let sG : Set (ℝn d₁) := {x | MeasureTheory.Integrable (G x)}
+  -- let sH : Set (ℝn d₁) := {x | MeasureTheory.Integrable (H x)}
+  -- have hF₁ : ∀ {x₁}, MeasureTheory.Integrable (F x₁) := sorry
+  -- have hG₁ : ∀ {x₁}, MeasureTheory.Integrable (G x₁) := sorry
+  -- have hH : ∀ {x₁}, MeasureTheory.Integrable (H x₁) := sorry
+  -- have hF₂ : ∀ {x₁} x₂, 0 ≤ F x₁ x₂ := fun _ ↦ hf₂ _
+  -- have hG₂ : ∀ {x₁} x₂, 0 ≤ G x₁ x₂ := fun _ ↦ hg₂ _
+  -- have h₄ : ∀ x₁ y₁ : ℝn d₁, Condition ht₁ ht₂ (F x₁) hF₁ hF₂ (G y₁) hG₁ hG₂ (H (x₁ + y₁)) hH := by
+  --   intro _ _ _ _
+  --   simp only [F, G, H, ← add_finProdLinearIsometryEquiv]
+  --   exact h₃ _ _
+  -- have h₅ : Condition ht₁ ht₂
+  --     (fun x ↦ ∫ x₂, F x x₂) sorry (fun _ ↦ MeasureTheory.integral_nonneg hF₂)
+  --     (fun y ↦ ∫ y₂, G y y₂) sorry (fun _ ↦ MeasureTheory.integral_nonneg hG₂)
+  --     (fun z ↦ (1 - t) ^ (d₂ * (1 - t)) * t ^ (d₂ * t) * ∫ z₂, H z z₂) sorry := fun x₁ y₁ ↦
+  --   h₂ hF₁ hF₂ hG₁ hG₂ sorry (h₄ x₁ y₁)
+  -- have h₆ := h₁ sorry (fun _ ↦ MeasureTheory.integral_nonneg hF₂) sorry (fun _ ↦ MeasureTheory.integral_nonneg hG₂) sorry h₅
+  -- simp_rw [mul_comm _ (∫ z, _ ∂MeasureTheory.volume)] at h₆
+  -- simp only [← smul_eq_mul, integral_smul_const] at h₆
+  -- simp_rw [smul_eq_mul, ← mul_assoc] at h₆
+  -- rw [mul_assoc (∫ x, _ ∂MeasureTheory.volume) ((1 - t) ^ _) (t ^ _)] at h₆
+  -- rw [mul_assoc _ (_ * _) _, mul_assoc _ (_ * _) _, mul_comm ((1 - t) ^ _) (t ^ _),
+  --   mul_comm _ (t ^ _), mul_assoc (t ^ _), ← mul_assoc (t ^ _), ← Real.rpow_add ht₁,
+  --   ← Real.rpow_add (by linarith : 0 < 1 - t), mul_comm _ (t ^ _ * (1 - t) ^ _),
+  --   mul_comm (t ^ _) ((1 - t) ^ _)] at h₆
+  -- simp only [Nat.cast_add]; ring_nf at h₆ ⊢
+  -- have h₇ :
+  --     ∫ (x : ℝn d₁) (z₂ : ℝn d₂), h ((finProdContinuousLinearEquiv d₁ d₂) (x, z₂)) = ∫ x, h x :=
+  --   sorry
+  -- apply le_trans (le_of_eq _) (h₇ ▸ h₆)
+  -- simp [F, G, H]
+  -- sorry
 
 
 theorem prekopa_leindler
