@@ -1,5 +1,6 @@
 import BrunnMinkowski.EuclideanSpace
 import Mathlib
+import Mathlib.Tactic
 
 --open NNReal ENNReal MeasureTheory Finset
 --open Real Set MeasureTheory Filter Asymptotics
@@ -443,6 +444,13 @@ theorem two_variable_integral_finProdContinuousLinearEquiv_eq
     sorry
   sorry
 
+noncomputable instance :
+    NormedAddCommGroup ((EuclideanSpace ℝ (Fin n₁)) ×ₑ (EuclideanSpace ℝ (Fin n₂))) where
+
+noncomputable instance :
+    MeasureTheory.MeasureSpace ((EuclideanSpace ℝ (Fin n₁)) ×ₑ (EuclideanSpace ℝ (Fin n₂))) :=
+  measureSpaceOfInnerProductSpace
+
 section
 
 open MeasureTheory
@@ -482,6 +490,10 @@ theorem measurable_slice_right
 --     Measurable fun a ↦ f a b :=
 --   Measurable.of_uncurry_right hf
 
+theorem withLp_volume_eq_prod [MeasureSpace α] [MeasureSpace β] :
+    (MeasureTheory.volume : Measure (α ×ₑ β)) = (MeasureTheory.volume : Measure (α × β)) :=
+  rfl
+
 theorem aestronglyMeasurable_slice_right
     [MeasureSpace α] [MeasureSpace β] [SFinite ‹MeasureSpace α›.volume]
     (f : α ×ₑ β → ℝ) (hf : AEStronglyMeasurable f) :
@@ -491,9 +503,6 @@ theorem aestronglyMeasurable_slice_right
   refine ⟨fun a ↦ hf.mk f (a, b),
     hf.stronglyMeasurable_mk.comp_measurable (Measurable.of_uncurry_right fun ⦃_⦄ ↦ id), ?_⟩
   sorry
-
-theorem integrable_aestronglyMeasurable_slice_left
-    [MeasureSpace α] [MeasureSpace β]
 
 end section
 
@@ -518,14 +527,22 @@ theorem prekopa_leindler_dimension_sum
     prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh₁ := by
   intro h₃
   let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
+  let F' : (ℝn d₁ ×ₑ ℝn d₂) → ℝ := f ∘ (finProdLinearIsometryEquiv d₁ d₂)
   let G (y₁ : ℝn d₁) : ℝn d₂ → ℝ := fun y₂ ↦ g ((finProdLinearIsometryEquiv d₁ d₂) (y₁, y₂))
+  let G' : (ℝn d₁ ×ₑ ℝn d₂) → ℝ := g ∘ (finProdLinearIsometryEquiv d₁ d₂)
   let H (z₁ : ℝn d₁) : ℝn d₂ → ℝ := fun z₂ ↦ h ((finProdLinearIsometryEquiv d₁ d₂) (z₁, z₂))
+  let H' : (ℝn d₁ ×ₑ ℝn d₂) → ℝ := h ∘ (finProdLinearIsometryEquiv d₁ d₂)
+  have hF'₁ : MeasureTheory.Integrable F' MeasureTheory.volume := by
+    simp_rw [← MeasureTheory.integrable_comp (finProdLinearIsometryEquiv d₁ d₂)] at hf₁
+    exact hf₁
+
+  /-
   have h₃ : ∀ᵐ (x₁ : ℝn d₁) ∂MeasureTheory.volume, Condition ht₁ ht₂
       (fun x₁ ↦ ∫ x₂, F x₁ x₂) sorry (fun _ ↦ MeasureTheory.integral_nonneg (fun _ ↦ hf₂ _))
       (fun y₁ ↦ ∫ y₂, G y₁ y₂) sorry (fun _ ↦ MeasureTheory.integral_nonneg (fun _ ↦ hg₂ _))
       (fun z₁ ↦ (1 - t) ^ (d₂ * (1 - t)) * t ^ (d₂ * t) * ∫ z₂, H z₁ z₂) sorry :=
     sorry
-
+  -/
   sorry
   -- have := measurable_slice_left_uncurry F
   -- simp [F, hf₀] at this
