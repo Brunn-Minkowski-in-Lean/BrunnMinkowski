@@ -108,9 +108,99 @@ theorem prekopa_leindler
   := by sorry
 
 
+abbrev PL_dim1_cond (t : ℝ) (f g h : ℝn 1 → ℝ) :=
+  (x y : ℝn 1) →
+    (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)
+
+abbrev PL_dim1_conclusion (t : ℝ) (f g h : ℝn 1 → ℝ) :=
+  (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t
+    ≤ (1 - t) ^ (1 - t) * t ^ t * (∫ x, h x)
+
 -- write claims in the form of lemmas
 -- show that if PL holds for a fixed f and any essentially bounded g,
 -- then it holds for f and every g
+
+lemma prepkopa_leindler_dim1_from_essBdd
+    {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
+    {f g h : ℝn 1 → ℝ}
+    (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f)
+    (hg_nonneg : 0 ≤ g) (hg_integrable : Integrable g)
+    (hh_nonneg : 0 ≤ h) (hh_integrable : Integrable h)
+    (hfgh_pow_le : PL_dim1_cond t f g h)
+    (hgg_fin_true : (gg : ℝn 1 → ℝ) →
+      (hgg_nonneg : 0 ≤ gg) → (hgg_integrable : Integrable gg) →
+      (hgg_essBdd : IsEssBdd gg volume) →
+      (hfggh_pow_le : PL_dim1_cond t f gg h) →
+      PL_dim1_conclusion t f gg h) :
+    PL_dim1_conclusion t f g h := by
+
+  let g_cut (c : ℝ) := min g (fun _ ↦ c)
+
+  have g_cut_nonneg {c : ℝ} (hc_nonneg : 0 ≤ c) : 0 ≤ g_cut c := by
+    intro; exact le_min (hg_nonneg _) hc_nonneg
+
+  have g_cut_le_g {c : ℝ} (hc_nonneg : 0 ≤ c) : g_cut c ≤ g := by
+    intro; exact min_le_left _ _
+
+  have g_cut_integrable {c : ℝ} (hc_nonneg : 0 ≤ c) :
+      Integrable (g_cut c) volume := by
+    refine Integrable.mono hg_integrable ?_ ?_
+    · exact AEStronglyMeasurable.inf hg_integrable.1
+        aestronglyMeasurable_const
+    · apply ae_of_all volume
+      simp only [norm_eq_abs,
+        abs_of_nonneg (hg_nonneg _), abs_of_nonneg (g_cut_nonneg hc_nonneg _)]
+      exact g_cut_le_g hc_nonneg
+
+  have PL_dim1_conclusion_g_cut {c : ℝ} (hc_nonneg : 0 ≤ c) :
+      PL_dim1_conclusion t f (g_cut c) h := by
+
+    refine hgg_fin_true (g_cut c) (g_cut_nonneg hc_nonneg) ?_ ?_ ?_
+    · -- Integrable (g_cut c) volume
+      refine Integrable.mono hg_integrable ?_ ?_
+      · exact AEStronglyMeasurable.inf hg_integrable.1
+          aestronglyMeasurable_const
+      · apply ae_of_all volume
+        simp only [norm_eq_abs,
+          abs_of_nonneg (hg_nonneg _), abs_of_nonneg (g_cut_nonneg hc_nonneg _)]
+        exact g_cut_le_g hc_nonneg
+    · -- IsEssBdd (g_cut c) volume
+      have const_essBdd : IsEssBdd (fun (_ : ℝn 1) ↦ c) volume := by
+        exact isBoundedUnder_const
+      unfold IsEssBdd at *
+      have g_cut_bdd_c : g_cut c ≤ᵐ[volume] fun (_ : ℝn 1) ↦ c := by
+        apply ae_of_all volume
+        simp only [g_cut, Pi.inf_apply, inf_le_right, implies_true]
+      exact IsBoundedUnder.mono_le const_essBdd g_cut_bdd_c
+    . -- PL_dim1_cond t f (g_cut c) h
+      intro x y
+      refine le_trans ?_ (hfgh_pow_le x y)
+      gcongr
+      · exact Real.rpow_nonneg (hf_nonneg x) (1 - t)
+      · exact g_cut_nonneg hc_nonneg y
+      · exact g_cut_le_g hc_nonneg y
+
+  have : ∀ᵐ (x : ℝn 1) ∂volume, Filter.Tendsto (fun (n : ℕ) => g_cut n x) Filter.atTop (nhds (g x)) := by
+    apply ae_of_all volume
+    intro a
+    apply tendsto_atTop_of_eventually_const
+    case i₀ => exact Nat.ceil (g a)
+    intro n hn
+    apply min_eq_left
+    exact le_trans (Nat.le_ceil (g a)) (Nat.cast_le.mpr hn)
+
+  have : Tendsto (fun (n : ℕ) ↦ ∫ (x : ℝn 1), g_cut n x ∂volume) atTop (𝓝 (∫ (x : ℝn 1), g x ∂volume)) := by
+    refine integral_tendsto_of_tendsto_of_monotone ?_ ?_ ?_ ?_
+    · intro; exact g_cut_integrable (Nat.cast_nonneg _)
+    · exact hg_integrable
+    · -- g_cut is pointwise monotone
+      apply ae_of_all volume
+      intro
+
+      sorry
+    · sorry
+
+  sorry
 
 lemma prekopa_leindler_dim1
     {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
@@ -118,16 +208,10 @@ lemma prekopa_leindler_dim1
     (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f)
     (hg_nonneg : 0 ≤ g) (hg_integrable : Integrable g)
     (hh_nonneg : 0 ≤ h) (hh_integrable : Integrable h)
-    (hfgh_pow_le : ∀ x y : ℝn 1,
-      (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) :
-    (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t
-      ≤ (1 - t) ^ (1 - t) * t ^ t * (∫ x, h x) := by
+    (hfgh_pow_le : PL_dim1_cond t f g h) :
+    PL_dim1_conclusion t f g h := by
 
   -- abbreviations
-  let prekopa_leindler_dim1_conclusion :=
-    (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t
-      ≤ (1 - t) ^ (1 - t) * t ^ t * (∫ x, h x)
-
   let f_essBdd := IsEssBdd f volume
   let g_essBdd := IsEssBdd g volume
 

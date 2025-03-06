@@ -89,8 +89,8 @@ lemma nonempty_of_superlevel_set_of_bddBelow {α β : Type*}
 
 lemma nonneg_essSup_of_nonneg {α : Type*} [MeasurableSpace α]
     {μ : Measure α} [hμ_neZero : NeZero μ]
-    {f : α → ℝ} (hf_nonneg : 0 ≤ f)
-    : 0 ≤ essSup f μ := by
+    {f : α → ℝ} (hf_nonneg : 0 ≤ f) :
+    0 ≤ essSup f μ := by
   rw [essSup_eq_sInf]
   apply Real.sInf_nonneg
   intros y hy
@@ -116,8 +116,8 @@ lemma nonneg_essSup_of_nonneg {α : Type*} [MeasurableSpace α]
 lemma pos_essSup_of_nonneg_posmeassupp_essBdd {α : Type*} [MeasurableSpace α]
     {μ : Measure α} [NeZero μ]
     {f : α → ℝ} (hf_nonneg : 0 ≤ f) (hf_supp_meas_nonzero : μ f.support ≠ 0)
-    (hf_essBdd : IsEssBdd f μ)
-    : 0 < essSup f μ := by
+    (hf_essBdd : IsEssBdd f μ) :
+    0 < essSup f μ := by
   have h1 : μ {y : α | essSup f μ < f y} = 0 := meas_essSup_lt
   have h2 : f.support = {y : α | 0 < f y} := by
     unfold Function.support
