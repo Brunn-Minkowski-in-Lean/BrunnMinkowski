@@ -210,22 +210,33 @@ def finProdLinearIsometryEquiv (n₁ n₂ : ℕ) :
           rw [Nat.mod_eq_of_lt this, Nat.add_sub_cancel, cast_val_eq_self]
         intro _ h; simp only [Nat.not_lt_of_le (hs₂ _ h)]; rfl⟩
 
+def finProdLinearIsometryEquiv' (n₁ n₂ : ℕ) :
+    ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ₗᵢ[ℝ]
+      EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
+  sorry
+
 theorem add_finProdLinearIsometryEquiv
     (x₁ x₂ : EuclideanSpace ℝ (Fin n₁)) (x₃ x₄ : EuclideanSpace ℝ (Fin n₂)) :
     (finProdLinearIsometryEquiv n₁ n₂) (x₁, x₃) + (finProdLinearIsometryEquiv n₁ n₂) (x₂, x₄) =
     (finProdLinearIsometryEquiv n₁ n₂) (x₁ + x₂, x₃ + x₄) :=
   ((finProdLinearIsometryEquiv n₁ n₂).map_add _ _).symm
 
-instance : MeasurableSpace ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) :=
-  borel ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂))
+instance : MeasurableSpace (α ×ₑ β) :=
+  borel (α ×ₑ β)
 
-instance : BorelSpace ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) :=
+instance instWithLpBorelSpace : BorelSpace (α ×ₑ β) :=
   ⟨rfl⟩
 
-def finProdMeasurableEquiv (n₁ n₂ : ℕ) :
-    ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ᵐ
-      EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
-  LinearIsometryEquiv.toMeasureEquiv (finProdLinearIsometryEquiv n₁ n₂)
+-- instance : MeasurableSpace ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) :=
+--   borel ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂))
+
+-- instance : BorelSpace ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) :=
+--   ⟨rfl⟩
+
+-- def finProdMeasurableEquiv (n₁ n₂ : ℕ) :
+--     ((EuclideanSpace ℝ (Fin n₁)) ×ₑ EuclideanSpace ℝ (Fin n₂)) ≃ᵐ
+--       EuclideanSpace ℝ (Fin (n₁ + n₂)) :=
+--   LinearIsometryEquiv.toMeasureEquiv (finProdLinearIsometryEquiv n₁ n₂)
 
 -- -- Likely false.
 -- noncomputable def finProdLinearIsometryEquiv (n₁ n₂ : ℕ) :
@@ -352,10 +363,10 @@ theorem condition_nonneg
   refine le_trans ?_ (add_zero x ▸ h₀ x 0); have := hf₂ x; have := hg₂ 0; positivity
 
 def prekopa_leindler_statement
-    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) {d : ℕ}
-    (f : ℝn d → ℝ) (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
-    (g : ℝn d → ℝ) (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
-    (h : ℝn d → ℝ) (hh : MeasureTheory.Integrable h) : Prop :=
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) (d : ℕ) : Prop :=
+  (f : ℝn d → ℝ) → (hf₁ : MeasureTheory.Integrable f) → (hf₂ : ∀ x, 0 ≤ f x) →
+  (g : ℝn d → ℝ) → (hg₁ : MeasureTheory.Integrable g) → (hg₂ : ∀ x, 0 ≤ g x) →
+  (h : ℝn d → ℝ) → (hh : MeasureTheory.Integrable h) →
   Condition ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh →
   (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤ (1 - t) ^ (d * (1 - t)) * t ^ (d * t) * (∫ x, h x)
 
@@ -389,59 +400,62 @@ theorem prekopa_leindler_dim_zero
 --open NNReal ENNReal MeasureTheory Finset
 --open Real Set MeasureTheory Filter Asymptotics
 
-theorem integral_integral_euclideanSpace
-    {n₁ n₂ : ℕ} (f : EuclideanSpace ℝ (Fin n₁) → EuclideanSpace ℝ (Fin n₂) → ℝ)
-    (hf : MeasureTheory.Integrable (Function.uncurry f) MeasureTheory.volume) :
-    ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f x y ∂MeasureTheory.volume ∂MeasureTheory.volume =
-    ∫ (z : EuclideanSpace ℝ (Fin (n₁ + n₂))),
-      (let ⟨z₁, z₂⟩ := (EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm z; f z₁ z₂) ∂MeasureTheory.volume := by
-  rw [MeasureTheory.integral_integral hf]
-  have := @MeasureTheory.integral_map_equiv _ _ _ _ _ MeasureTheory.volume _ _
-    (EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm fun z ↦ f z.1 z.2
-  sorry
+-- theorem integral_integral_euclideanSpace
+--     {n₁ n₂ : ℕ} (f : EuclideanSpace ℝ (Fin n₁) → EuclideanSpace ℝ (Fin n₂) → ℝ)
+--     (hf : MeasureTheory.Integrable (Function.uncurry f) MeasureTheory.volume) :
+--     ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f x y ∂MeasureTheory.volume ∂MeasureTheory.volume =
+--     ∫ (z : EuclideanSpace ℝ (Fin (n₁ + n₂))),
+--       (let ⟨z₁, z₂⟩ := (EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm z; f z₁ z₂) ∂MeasureTheory.volume := by
+--   rw [MeasureTheory.integral_integral hf]
+--   have := @MeasureTheory.integral_map_equiv _ _ _ _ _ MeasureTheory.volume _ _
+--     (EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm fun z ↦ f z.1 z.2
+--   sorry
 
-theorem integral_integral_euclideanSpace'
-    {n₁ n₂ : ℕ} (f : (EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂) → ℝ)
-    (hf : MeasureTheory.Integrable f MeasureTheory.volume) :
-    ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f (x, y) ∂MeasureTheory.volume ∂MeasureTheory.volume =
-    ∫ (z : EuclideanSpace ℝ (Fin (n₁ + n₂))),
-      f ((EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm z) ∂MeasureTheory.volume :=
-  integral_integral_euclideanSpace (Function.curry f) hf
+-- theorem integral_integral_euclideanSpace'
+--     {n₁ n₂ : ℕ} (f : (EuclideanSpace ℝ (Fin n₁)) × EuclideanSpace ℝ (Fin n₂) → ℝ)
+--     (hf : MeasureTheory.Integrable f MeasureTheory.volume) :
+--     ∫ (x : EuclideanSpace ℝ (Fin n₁)), ∫ (y : EuclideanSpace ℝ (Fin n₂)), f (x, y) ∂MeasureTheory.volume ∂MeasureTheory.volume =
+--     ∫ (z : EuclideanSpace ℝ (Fin (n₁ + n₂))),
+--       f ((EuclideanSpace.finProdMeasurableEquiv n₁ n₂).symm z) ∂MeasureTheory.volume :=
+--   integral_integral_euclideanSpace (Function.curry f) hf
 
-example {d₁ d₂ : ℕ} {f : (EuclideanSpace ℝ (Fin (d₁ + d₂))) → ℝ} (hf : MeasureTheory.Integrable f) :
-    ∫ (x : EuclideanSpace ℝ (Fin d₁)), ∫ (y : EuclideanSpace ℝ (Fin d₂)), f (fun z ↦ if h : z < d₁ then x (@Fin.ofNat' d₁ ⟨by omega⟩ z) else y ((@Fin.ofNat' d₂ ⟨by omega⟩ (z.val - d₁)))) =
-    ∫ (z : EuclideanSpace ℝ (Fin (d₁ + d₂))), f z := by
-  sorry
+-- example {d₁ d₂ : ℕ} {f : (EuclideanSpace ℝ (Fin (d₁ + d₂))) → ℝ} (hf : MeasureTheory.Integrable f) :
+--     ∫ (x : EuclideanSpace ℝ (Fin d₁)), ∫ (y : EuclideanSpace ℝ (Fin d₂)), f (fun z ↦ if h : z < d₁ then x (@Fin.ofNat' d₁ ⟨by omega⟩ z) else y ((@Fin.ofNat' d₂ ⟨by omega⟩ (z.val - d₁)))) =
+--     ∫ (z : EuclideanSpace ℝ (Fin (d₁ + d₂))), f z := by
+--   sorry
 
-theorem two_variable_integral_finProdLinearEquiv_eq
-    {d₁ d₂ : ℕ} {f : ℝn (d₁ + d₂) → ℝ} (hf : MeasureTheory.Integrable f) :
-    ∫ (x : ℝn d₁), ∫ (y : ℝn d₂), f ((EuclideanSpace.finProdLinearEquiv d₁ d₂) (x, y)) =
-    ∫ (z : ℝn (d₁ + d₂)), f z := by
-  rw [MeasureTheory.integral_integral]
-  · simp only [Prod.mk.eta]
-    nth_rw 1 [← MeasureTheory.integral_map]
-    · sorry
-    · sorry
-    sorry
-  apply MeasureTheory.Integrable.comp_measurable
-  · sorry
-  sorry
+-- theorem two_variable_integral_finProdLinearEquiv_eq
+--     {d₁ d₂ : ℕ} {f : ℝn (d₁ + d₂) → ℝ} (hf : MeasureTheory.Integrable f) :
+--     ∫ (x : ℝn d₁), ∫ (y : ℝn d₂), f ((EuclideanSpace.finProdLinearEquiv d₁ d₂) (x, y)) =
+--     ∫ (z : ℝn (d₁ + d₂)), f z := by
+--   rw [MeasureTheory.integral_integral]
+--   · simp only [Prod.mk.eta]
+--     nth_rw 1 [← MeasureTheory.integral_map]
+--     · sorry
+--     · sorry
+--     sorry
+--   apply MeasureTheory.Integrable.comp_measurable
+--   · sorry
+--   sorry
 
 -- TODO: Prove THIS.
-theorem two_variable_integral_finProdContinuousLinearEquiv_eq
-    {d₁ d₂ : ℕ} {f : ℝn (d₁ + d₂) → ℝ} (hf : MeasureTheory.Integrable f) :
-    ∫ (x : ℝn d₁) (y : ℝn d₂), f ((EuclideanSpace.finProdContinuousLinearEquiv d₁ d₂) (x, y)) =
-    ∫ (z : ℝn (d₁ + d₂)), f z := by
-  rw [MeasureTheory.integral_integral]
-  · simp only [Prod.mk.eta]
-    rw [← MeasureTheory.Measure.volume_eq_prod]
-    simp [EuclideanSpace.finProdContinuousLinearEquiv, EuclideanSpace.finProdLinearEquiv]
-    
-    sorry
-  apply MeasureTheory.Integrable.comp_measurable
-  · simp only [Prod.mk.eta]
-    rw [← MeasureTheory.Measure.volume_eq_prod]
-    sorry
+-- theorem two_variable_integral_finProdContinuousLinearEquiv_eq
+--     {d₁ d₂ : ℕ} {f : ℝn (d₁ + d₂) → ℝ} (hf : MeasureTheory.Integrable f) :
+--     ∫ (x : ℝn d₁) (y : ℝn d₂), f ((EuclideanSpace.finProdContinuousLinearEquiv d₁ d₂) (x, y)) =
+--     ∫ (z : ℝn (d₁ + d₂)), f z := by
+--   rw [MeasureTheory.integral_integral]
+--   · simp only [Prod.mk.eta]
+--     rw [← MeasureTheory.Measure.volume_eq_prod]
+--     simp [EuclideanSpace.finProdContinuousLinearEquiv, EuclideanSpace.finProdLinearEquiv]
+--
+--     sorry
+--   apply MeasureTheory.Integrable.comp_measurable
+--   · simp only [Prod.mk.eta]
+--     rw [← MeasureTheory.Measure.volume_eq_prod]
+--     sorry
+--   sorry
+
+instance : BorelSpace ((EuclideanSpace ℝ (Fin n₁)) ×ₑ (EuclideanSpace ℝ (Fin n₂))) :=
   sorry
 
 noncomputable instance :
@@ -491,8 +505,8 @@ theorem measurable_slice_right
 --   Measurable.of_uncurry_right hf
 
 theorem withLp_volume_eq_prod [MeasureSpace α] [MeasureSpace β] :
-    (MeasureTheory.volume : Measure (α ×ₑ β)) = (MeasureTheory.volume : Measure (α × β)) :=
-  rfl
+    (MeasureTheory.volume : Measure (α ×ₑ β)) = (MeasureTheory.volume : Measure (α × β)) := by
+  sorry
 
 theorem aestronglyMeasurable_slice_right
     [MeasureSpace α] [MeasureSpace β] [SFinite ‹MeasureSpace α›.volume]
@@ -504,37 +518,34 @@ theorem aestronglyMeasurable_slice_right
     hf.stronglyMeasurable_mk.comp_measurable (Measurable.of_uncurry_right fun ⦃_⦄ ↦ id), ?_⟩
   sorry
 
-end section
+end
 
 -- TODO: Remove `sorry`.
 set_option maxHeartbeats 1000000000 in
 open EuclideanSpace in
 theorem prekopa_leindler_dimension_sum
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
-    {d₁ : ℕ}
-    (h₁ : ∀ {f : ℝn d₁ → ℝ} (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
-            {g : ℝn d₁ → ℝ} (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
-            {h : ℝn d₁ → ℝ} (hh₁ : MeasureTheory.Integrable h),
-      prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh₁)
-    {d₂ : ℕ}
-    (h₂ : ∀ {f : ℝn d₂ → ℝ} (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
-            {g : ℝn d₂ → ℝ} (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
-            {h : ℝn d₂ → ℝ} (hh₁ : MeasureTheory.Integrable h),
-      prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh₁)
-    (f : ℝn (d₁ + d₂) → ℝ) (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
-    (g : ℝn (d₁ + d₂) → ℝ) (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
-    (h : ℝn (d₁ + d₂) → ℝ) (hh₁ : MeasureTheory.Integrable h) :
-    prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh₁ := by
-  intro h₃
+    {d₁ : ℕ} (h₁ : prekopa_leindler_statement ht₁ ht₂ d₁)
+    {d₂ : ℕ} (h₂ : prekopa_leindler_statement ht₁ ht₂ d₂) :
+    prekopa_leindler_statement ht₁ ht₂ (d₁ + d₂) := by
+  intro f hf₁ hf₂ g hg₁ hg₂ h hh₁ h₃
   let F (x₁ : ℝn d₁) : ℝn d₂ → ℝ := fun x₂ ↦ f ((finProdLinearIsometryEquiv d₁ d₂) (x₁, x₂))
   let F' : (ℝn d₁ ×ₑ ℝn d₂) → ℝ := f ∘ (finProdLinearIsometryEquiv d₁ d₂)
   let G (y₁ : ℝn d₁) : ℝn d₂ → ℝ := fun y₂ ↦ g ((finProdLinearIsometryEquiv d₁ d₂) (y₁, y₂))
   let G' : (ℝn d₁ ×ₑ ℝn d₂) → ℝ := g ∘ (finProdLinearIsometryEquiv d₁ d₂)
   let H (z₁ : ℝn d₁) : ℝn d₂ → ℝ := fun z₂ ↦ h ((finProdLinearIsometryEquiv d₁ d₂) (z₁, z₂))
   let H' : (ℝn d₁ ×ₑ ℝn d₂) → ℝ := h ∘ (finProdLinearIsometryEquiv d₁ d₂)
-  have hF'₁ : MeasureTheory.Integrable F' MeasureTheory.volume := by
-    simp_rw [← MeasureTheory.integrable_comp (finProdLinearIsometryEquiv d₁ d₂)] at hf₁
-    exact hf₁
+  
+  -- have hF'₁ : MeasureTheory.Integrable F' (MeasureTheory.volume : MeasureTheory.Measure ((ℝn d₁) ×ₑ (ℝn d₂))) := by
+  --   simp_rw [← MeasureTheory.integrable_comp (finProdLinearIsometryEquiv d₁ d₂)] at hf₁
+  --   exact hf₁
+  -- have hG'₁ : MeasureTheory.Integrable G' MeasureTheory.volume := by
+  --   simp_rw [← MeasureTheory.integrable_comp (finProdLinearIsometryEquiv d₁ d₂)] at hg₁
+  --   exact hg₁
+  -- have hH'₁ : MeasureTheory.Integrable H' MeasureTheory.volume := by
+  --   simp_rw [← MeasureTheory.integrable_comp (finProdLinearIsometryEquiv d₁ d₂)] at hh₁
+  --   exact hh₁
+
 
   /-
   have h₃ : ∀ᵐ (x₁ : ℝn d₁) ∂MeasureTheory.volume, Condition ht₁ ht₂
