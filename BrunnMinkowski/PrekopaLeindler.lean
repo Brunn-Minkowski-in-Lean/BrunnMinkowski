@@ -384,12 +384,9 @@ theorem volume_univ_one_of_euclideanSpace_fin_zero :
   h₁ ▸ volume_univ_one_of_pi_fin_zero
 
 theorem prekopa_leindler_dim_zero
-    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
-    (f : ℝn 0 → ℝ) (hf₁ : MeasureTheory.Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
-    (g : ℝn 0 → ℝ) (hg₁ : MeasureTheory.Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
-    (h : ℝn 0 → ℝ) (hh : MeasureTheory.Integrable h) :
-    prekopa_leindler_statement ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh := by
-  intro h₁
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) :
+    prekopa_leindler_statement ht₁ ht₂ 0 := by
+  intro f hf₁ hf₂ g hg₁ hg₂ h hh₁ h₁
   simp_rw [CharP.cast_eq_zero, zero_mul, Real.rpow_zero, mul_one, one_mul]
   have h₃ : (MeasureTheory.volume (@Set.univ (ℝn 0))).toReal = 1 :=
     (ENNReal.toReal_eq_one_iff _).mpr volume_univ_one_of_euclideanSpace_fin_zero
