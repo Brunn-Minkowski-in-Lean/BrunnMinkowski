@@ -15,14 +15,14 @@ open scoped Real Topology
 
 theorem EuclideanSpace.induction_on_dimension
     {P : (α : Type) →
-      [AddCommGroup α] → [TopologicalSpace α] →  [TopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → Sort}
+      [AddCommGroup α] → [TopologicalSpace α] →  [IsTopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → Sort}
     {base0 : P (EuclideanSpace ℝ (Fin 0))}
     {base1 : P ℝ}
     {induct : {α β : Type} →
-      [AddCommGroup α] → [TopologicalSpace α] →  [TopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] →
-      [AddCommGroup β] → [TopologicalSpace β] →  [TopologicalAddGroup β] → [T2Space β] → [Module ℝ β] → [ContinuousSMul ℝ β] → [FiniteDimensional ℝ β] →
+      [AddCommGroup α] → [TopologicalSpace α] →  [IsTopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] →
+      [AddCommGroup β] → [TopologicalSpace β] →  [IsTopologicalAddGroup β] → [T2Space β] → [Module ℝ β] → [ContinuousSMul ℝ β] → [FiniteDimensional ℝ β] →
       P α → P β → P (α × β)} :
-  (α : Type) → [AddCommGroup α] → [TopologicalSpace α] →  [TopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → P α := by sorry
+  (α : Type) → [AddCommGroup α] → [TopologicalSpace α] →  [IsTopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → P α := by sorry
 
 theorem prekopa_leindler
     {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
