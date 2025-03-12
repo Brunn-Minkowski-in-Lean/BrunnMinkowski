@@ -43,8 +43,8 @@ theorem help (x y : NNReal) (hn : 1 < n) :
   let hm : 1 < m := by sorry
   let f := fun t : ℝ => t^m
 
-  have foo := (strictConvexOn_rpow hm)
-  have h_convex : ConvexOn ℝ (Set.Ioi 0) f := (StrictConvexOn.subset (strictConvexOn_rpow hm) Set.Ioi_subset_Ici_self sorry).convexOn
+  have h_convex : ConvexOn ℝ (Set.Ioi 0) f :=
+    (StrictConvexOn.subset (strictConvexOn_rpow hm) Set.Ioi_subset_Ici_self sorry).convexOn
 
  -- Define the points and weights for Jensen's Inequality
   let a : Fin 2 → ℝ≥0 := ![x, y]
@@ -102,6 +102,19 @@ theorem help (x y : NNReal) (hn : 1 < n) :
       (↑x + ↑y) ^ m ≤ (2 : ℝ) ^ (m - 1) * (↑x ^ m + ↑y ^ m) := h_jensen
       _ ≤ ↑x ^ m + ↑y ^ m := foo (↑x ^ m + ↑y ^ m) (by positivity)
 
+  have x_plus_y_is_positive: 0 ≤ x+y := by exact zero_le (x + y)
+  have x_plus_y_pow_m_is_positive: 0 ≤ (x+y)^m := by exact zero_le ((x + y) ^ m)
+  have m_is_positive: 0 ≤ m := by exact Nat.one_div_cast_nonneg n
+  have m_inv_is_positive: 0 ≤ m⁻¹ := by exact inv_nonneg_of_nonneg m_is_positive
+  have m_is_not_zero: m ≠ 0 := by sorry
+
+  have hello := @Real.rpow_le_rpow ((x + y : ℝ)^m) _ _ x_plus_y_pow_m_is_positive aaaaaa m_inv_is_positive
+  rw [← Real.rpow_mul, ← div_eq_mul_inv, div_self m_is_not_zero, mn] at hello
+  norm_num at hello
+  ring_nf
+  exact_mod_cast hello
+  exact x_plus_y_is_positive
+
 -- μ(A)^λ μ(B)^(1-λ) ≤ μ(λA + (1-λ)B)
 def brunn_minkowski_multiplicative (A B : ConvexBody (ℝn n)):
   A.volume^l.1 • B.volume^(1-l.1)
@@ -115,6 +128,14 @@ def brunn_minkowski_multiplicative (A B : ConvexBody (ℝn n)):
     _ ≤ ((l.1 * A.volume) ^ (n⁻¹ : ℝ) + ((1 - l.1) * B.volume) ^ (n⁻¹ : ℝ))^(n : ℝ) := by
       have bar : 1 < n := sorry
       have foo := help (l * A.volume) ((1 - l) * B.volume) bar
+      have baz : l = ↑l := by sorry
+      norm_num at foo
+      rw [baz] at foo
+
+      --norm_cast
+      exact_mod_cast
+
+
       sorry
 
     _ = ((l.1 • A).volume ^ (n⁻¹ : ℝ) + ((1 - l.1) • B).volume ^ (n⁻¹ : ℝ))^(n : ℝ) := by sorry
