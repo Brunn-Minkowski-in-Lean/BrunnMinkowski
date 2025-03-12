@@ -116,12 +116,9 @@ abbrev PL_dim1_conclusion (t : ℝ) (f g h : ℝn 1 → ℝ) :=
   (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t
     ≤ (1 - t) ^ (1 - t) * t ^ t * (∫ x, h x)
 
--- write claims in the form of lemmas
--- show that if PL holds for a fixed f and any essentially bounded g,
--- then it holds for f and every g
 
 /-
-Prékopa--Leindler holds for all (f,g)
+One-dim Prékopa--Leindler holds for all (f,g)
 where f and g are essentially bounded.
 -/
 lemma prepkopa_leindler_dim1_essBdd
@@ -314,7 +311,7 @@ lemma prepkopa_leindler_dim1_essBdd
 
 /-
 Fix f.
-If Prékopa--Leindler holds for all (f,g) where g is essentially bounded,
+If One-dim Prékopa--Leindler holds for all (f,g) where g is essentially bounded,
 then Prékopa--Leindler holds for all (f,g).
 -/
 lemma prepkopa_leindler_dim1_from_g_essBdd
@@ -405,7 +402,7 @@ lemma prepkopa_leindler_dim1_from_g_essBdd
 
 /-
 Fix g.
-If Prékopa--Leindler holds for all (f,g) where f is essentially bounded,
+If One-dim Prékopa--Leindler holds for all (f,g) where f is essentially bounded,
 then Prékopa--Leindler holds for all (f,g).
 -/
 lemma prepkopa_leindler_dim1_from_f_essBdd
@@ -425,7 +422,6 @@ lemma prepkopa_leindler_dim1_from_f_essBdd
       PL_dim1_cond t f g h ↔ PL_dim1_cond (1 - t) g f h := by
     have (t : ℝ) {f g h : ℝn 1 → ℝ} :
         PL_dim1_cond t f g h → PL_dim1_cond (1 - t) g f h := by
-      unfold PL_dim1_cond
       intro hh x y
       rw [sub_sub_cancel 1 t, mul_comm, add_comm x y]
       exact hh y x
@@ -460,7 +456,7 @@ lemma prepkopa_leindler_dim1_from_f_essBdd
     exact hff_essBdd_true hff_nonneg hff_integrable hff_essBdd hffgh_pow_le
 
 
--- Prékopa--Leindler holds for all (f,g) where f is essentially bounded.
+-- One-dim Prékopa--Leindler holds for all (f,g) where f is essentially bounded.
 lemma prekopa_leindler_dim1_f_essBdd
     {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
     {f g h : ℝn 1 → ℝ}
@@ -485,7 +481,7 @@ lemma prekopa_leindler_dim1_f_essBdd
     hfggh_pow_le
 
 
--- Prékopa--Leindler
+-- One-dim Prékopa--Leindler
 lemma prekopa_leindler_dim1
     {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
     {f g h : ℝn 1 → ℝ}
