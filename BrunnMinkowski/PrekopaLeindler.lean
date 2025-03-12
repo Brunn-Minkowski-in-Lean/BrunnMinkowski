@@ -103,8 +103,8 @@ theorem prekopa_leindler
     (hfgh_pow_le :
       ∀ x y : ℝn d,
       (f x)^(1 - t) * (g y)^t ≤ h (x + y)) :
-  (∫ x, f x)^(1-t) * (∫ y, g y)^t ≤
-  (1 - t)^(d * (1-t)) * t^(d*t) * (∫ x, h x)
+    (∫ x, f x)^(1-t) * (∫ y, g y)^t ≤
+      (1 - t)^(d * (1-t)) * t^(d*t) * (∫ x, h x)
   := by sorry
 
 

@@ -60,65 +60,80 @@ theorem brunn_minkowski (A B : ConvexBody (ℝn n)) (ngz : n ≠ 0) :
     exact convbody_vol_le_vol_add_right A B
 
   have prekopa_leindler_special_case {t : ℝ} (h0t : 0 < t) (ht1 : t < 1) :
-        Avol ^ (1 - t) * Bvol ^ t
-        ≤ ((1 - t) ^ (1 - t) * t ^ t) ^ n * (A + B).volume
-      := by
-      -- Define the indicator functions on A, B, and A + B
-      let ind_A : (ℝn n) → ℝ := (A : Set (ℝn n)).indicator 1
-      let ind_B : (ℝn n) → ℝ := (B : Set (ℝn n)).indicator 1
-      let ind_ABsum : (ℝn n) → ℝ := (A + B : Set (ℝn n)).indicator 1
+      Avol ^ (1 - t) * Bvol ^ t
+      ≤ ((1 - t) ^ (1 - t) * t ^ t) ^ n * (A + B).volume := by
 
-      -- Check the indicator functions satisfy the condition of Prékopa-Leindler
-      have hind_cond (x y : ℝn n) : (ind_A x) ^ (1 - t) * (ind_B y) ^ t
-          ≤ ind_ABsum (x + y) := by
-        by_cases hx_nin_A : x ∉ A
-        · -- Assume x ∉ A
-          have h1_sub_t_lt_0 : 1 - t ≠ 0 := ne_of_gt (sub_pos.mpr ht1)
-          simp only [ind_A, ind_ABsum,
-            Set.indicator_of_not_mem hx_nin_A,
-            Real.zero_rpow h1_sub_t_lt_0, zero_mul, Set.indicator_apply_nonneg,
-            Pi.one_apply, zero_le_one, implies_true]
-        by_cases hy_nin_B : y ∉ B
-        · -- Assume y ∉ B
-          simp only [ind_B ,ind_ABsum,
-            Set.indicator_of_not_mem hy_nin_B,
-            Real.zero_rpow (ne_of_gt h0t), mul_zero,
-            Set.indicator_apply_nonneg, Pi.one_apply, zero_le_one, implies_true]
-        -- Now assume x ∈ A and y ∈ B
-        have hx_in_A : x ∈ A := of_not_not hx_nin_A
-        have hy_in_B : y ∈ B := of_not_not hy_nin_B
-        have hxy_sum_in_AB_sum : x + y ∈ (A + B : Set (ℝn n)) := by
-          rw [Set.mem_add]
-          exact ⟨x, hx_in_A, y, hy_in_B, rfl⟩
+    -- Define the indicator functions on A, B, and A + B
+    let ind_A : (ℝn n) → ℝ := (A : Set (ℝn n)).indicator 1
+    let ind_B : (ℝn n) → ℝ := (B : Set (ℝn n)).indicator 1
+    let ind_ABsum : (ℝn n) → ℝ := (A + B : Set (ℝn n)).indicator 1
 
-        simp only [ind_A, ind_B, ind_ABsum]
-        iterate 3 rw [Set.indicator_of_mem _]
-        rotate_left; exact hxy_sum_in_AB_sum; exact hy_in_B; exact hx_in_A
-        norm_num
+    -- Check the indicator functions satisfy the condition of Prékopa-Leindler
+    have hind_cond (x y : ℝn n) : (ind_A x) ^ (1 - t) * (ind_B y) ^ t
+        ≤ ind_ABsum (x + y) := by
+      by_cases hx_nin_A : x ∉ A
+      · -- Assume x ∉ A
+        have h1_sub_t_lt_0 : 1 - t ≠ 0 := ne_of_gt (sub_pos.mpr ht1)
+        simp only [ind_A, ind_ABsum,
+          Set.indicator_of_not_mem hx_nin_A,
+          Real.zero_rpow h1_sub_t_lt_0, zero_mul, Set.indicator_apply_nonneg,
+          Pi.one_apply, zero_le_one, implies_true]
+      by_cases hy_nin_B : y ∉ B
+      · -- Assume y ∉ B
+        simp only [ind_B ,ind_ABsum,
+          Set.indicator_of_not_mem hy_nin_B,
+          Real.zero_rpow (ne_of_gt h0t), mul_zero,
+          Set.indicator_apply_nonneg, Pi.one_apply, zero_le_one, implies_true]
+      -- Now assume x ∈ A and y ∈ B
+      have hx_in_A : x ∈ A := of_not_not hx_nin_A
+      have hy_in_B : y ∈ B := of_not_not hy_nin_B
+      have hxy_sum_in_AB_sum : x + y ∈ (A + B : Set (ℝn n)) := by
+        rw [Set.mem_add]
+        exact ⟨x, hx_in_A, y, hy_in_B, rfl⟩
 
-      -- Apply t = θ in Prékopa-Leindler
-      have prekopa_leinler_app := prekopa_leindler h0t ht1
-          ind_A ind_B ind_ABsum hind_cond
+      simp only [ind_A, ind_B, ind_ABsum]
+      iterate 3 rw [Set.indicator_of_mem _]
+      rotate_left; exact hxy_sum_in_AB_sum; exact hy_in_B; exact hx_in_A
+      norm_num
 
-      -- ∫ indicator function of C = C.volume
-      have hind_ConvBody_int_eq_vol (C : ConvexBody (ℝn n)) {f : (ℝn n) → ℝ} (hf : f = (C : Set (ℝn n)).indicator 1) :
-          ∫ x, f x = C.volume := by
-        rw [hf, MeasureTheory.integral_indicator_one]
-        simp only [hf, MeasureTheory.integral_indicator_one,
-          ConvexBody.volume, ENNReal.coe_toNNReal_eq_toReal]
-        exact IsCompact.measurableSet C.isCompact
+    -- Apply Prékopa-Leindler
+    have prekopa_leinler_app :
+      (∫ x, ind_A x) ^ (1 - t) * (∫ y, ind_B y) ^ t ≤
+        (1 - t)^(n * (1-t)) * t ^ (n * t) * (∫ x, ind_ABsum x) := by
+      refine prekopa_leindler h0t ht1
+        ind_A ind_B ind_ABsum
+        ?_ ?_ ?_ ?_ ?_ ?_
+        hind_cond
+      · intro a
+        refine Set.indicator_apply_nonneg ?_
+        intro; simp only [Pi.one_apply, zero_le_one]
+      · sorry
+      · sorry
+      · sorry
+      · sorry
+      · sorry
 
-      -- Modify the special case of Prékopa–Leindler
-      unfold ind_A ind_B ind_ABsum at prekopa_leinler_app
-      rw [hind_ConvBody_int_eq_vol A (by rfl),
-        hind_ConvBody_int_eq_vol B (by rfl),
-        hind_ConvBody_int_eq_vol (A + B) (by rfl)] at prekopa_leinler_app
+    -- ∫ indicator function of C = C.volume
+    have hind_ConvBody_int_eq_vol
+        (C : ConvexBody (ℝn n)) {f : (ℝn n) → ℝ}
+        (hf : f = (C : Set (ℝn n)).indicator 1) :
+        ∫ x, f x = C.volume := by
+      rw [hf, MeasureTheory.integral_indicator_one]
+      simp only [hf, MeasureTheory.integral_indicator_one,
+        ConvexBody.volume, ENNReal.coe_toNNReal_eq_toReal]
+      exact IsCompact.measurableSet C.isCompact
 
-      -- Modify the goal
-      rw [mul_pow,
-        ← Real.rpow_mul_natCast (by rw [sub_nonneg]; exact le_of_lt ht1),
-        ← Real.rpow_mul_natCast (by exact le_of_lt h0t)]
-      simpa only [mul_comm] using prekopa_leinler_app
+    -- Modify the special case of Prékopa–Leindler
+    unfold ind_A ind_B ind_ABsum at prekopa_leinler_app
+    rw [hind_ConvBody_int_eq_vol A (by rfl),
+      hind_ConvBody_int_eq_vol B (by rfl),
+      hind_ConvBody_int_eq_vol (A + B) (by rfl)] at prekopa_leinler_app
+
+    -- Modify the goal
+    rw [mul_pow,
+      ← Real.rpow_mul_natCast (by rw [sub_nonneg]; exact le_of_lt ht1),
+      ← Real.rpow_mul_natCast (by exact le_of_lt h0t)]
+    simpa only [mul_comm] using prekopa_leinler_app
 
   -- Prepare θ as an input in t
   set θ : ℝ := Bvol ^ ninv / (Avol ^ ninv + Bvol ^ ninv)
