@@ -120,94 +120,17 @@ abbrev PL_dim1_conclusion (t : ℝ) (f g h : ℝn 1 → ℝ) :=
 -- show that if PL holds for a fixed f and any essentially bounded g,
 -- then it holds for f and every g
 
-lemma prepkopa_leindler_dim1_from_essBdd
+/-
+Prékopa--Leindler holds for all (f,g)
+where f and g are essentially bounded.
+-/
+lemma prepkopa_leindler_dim1_essBdd
     {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
     {f g h : ℝn 1 → ℝ}
     (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f)
     (hg_nonneg : 0 ≤ g) (hg_integrable : Integrable g)
-    (hh_nonneg : 0 ≤ h) (hh_integrable : Integrable h)
-    (hfgh_pow_le : PL_dim1_cond t f g h)
-    (hgg_fin_true : (gg : ℝn 1 → ℝ) →
-      (hgg_nonneg : 0 ≤ gg) → (hgg_integrable : Integrable gg) →
-      (hgg_essBdd : IsEssBdd gg volume) →
-      (hfggh_pow_le : PL_dim1_cond t f gg h) →
-      PL_dim1_conclusion t f gg h) :
-    PL_dim1_conclusion t f g h := by
-
-  let g_cut (c : ℝ) := min g (fun _ ↦ c)
-
-  have g_cut_nonneg {c : ℝ} (hc_nonneg : 0 ≤ c) : 0 ≤ g_cut c := by
-    intro; exact le_min (hg_nonneg _) hc_nonneg
-
-  have g_cut_le_g {c : ℝ} (hc_nonneg : 0 ≤ c) : g_cut c ≤ g := by
-    intro; exact min_le_left _ _
-
-  have g_cut_integrable {c : ℝ} (hc_nonneg : 0 ≤ c) :
-      Integrable (g_cut c) volume := by
-    refine Integrable.mono hg_integrable ?_ ?_
-    · exact AEStronglyMeasurable.inf hg_integrable.1
-        aestronglyMeasurable_const
-    · apply ae_of_all volume
-      simp only [norm_eq_abs,
-        abs_of_nonneg (hg_nonneg _), abs_of_nonneg (g_cut_nonneg hc_nonneg _)]
-      exact g_cut_le_g hc_nonneg
-
-  have PL_dim1_conclusion_g_cut {c : ℝ} (hc_nonneg : 0 ≤ c) :
-      PL_dim1_conclusion t f (g_cut c) h := by
-
-    refine hgg_fin_true (g_cut c) (g_cut_nonneg hc_nonneg) ?_ ?_ ?_
-    · -- Integrable (g_cut c) volume
-      refine Integrable.mono hg_integrable ?_ ?_
-      · exact AEStronglyMeasurable.inf hg_integrable.1
-          aestronglyMeasurable_const
-      · apply ae_of_all volume
-        simp only [norm_eq_abs,
-          abs_of_nonneg (hg_nonneg _), abs_of_nonneg (g_cut_nonneg hc_nonneg _)]
-        exact g_cut_le_g hc_nonneg
-    · -- IsEssBdd (g_cut c) volume
-      have const_essBdd : IsEssBdd (fun (_ : ℝn 1) ↦ c) volume := by
-        exact isBoundedUnder_const
-      unfold IsEssBdd at *
-      have g_cut_bdd_c : g_cut c ≤ᵐ[volume] fun (_ : ℝn 1) ↦ c := by
-        apply ae_of_all volume
-        simp only [g_cut, Pi.inf_apply, inf_le_right, implies_true]
-      exact IsBoundedUnder.mono_le const_essBdd g_cut_bdd_c
-    . -- PL_dim1_cond t f (g_cut c) h
-      intro x y
-      refine le_trans ?_ (hfgh_pow_le x y)
-      gcongr
-      · exact Real.rpow_nonneg (hf_nonneg x) (1 - t)
-      · exact g_cut_nonneg hc_nonneg y
-      · exact g_cut_le_g hc_nonneg y
-
-  have : ∀ᵐ (x : ℝn 1) ∂volume, Filter.Tendsto (fun (n : ℕ) => g_cut n x) Filter.atTop (nhds (g x)) := by
-    apply ae_of_all volume
-    intro a
-    apply tendsto_atTop_of_eventually_const
-    case i₀ => exact Nat.ceil (g a)
-    intro n hn
-    apply min_eq_left
-    exact le_trans (Nat.le_ceil (g a)) (Nat.cast_le.mpr hn)
-
-  have : Tendsto (fun (n : ℕ) ↦ ∫ (x : ℝn 1), g_cut n x ∂volume) atTop (𝓝 (∫ (x : ℝn 1), g x ∂volume)) := by
-    refine integral_tendsto_of_tendsto_of_monotone ?_ ?_ ?_ ?_
-    · intro; exact g_cut_integrable (Nat.cast_nonneg _)
-    · exact hg_integrable
-    · -- g_cut is pointwise monotone
-      apply ae_of_all volume
-      intro
-
-      sorry
-    · sorry
-
-  sorry
-
-lemma prekopa_leindler_dim1
-    {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
-    {f g h : ℝn 1 → ℝ}
-    (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f)
-    (hg_nonneg : 0 ≤ g) (hg_integrable : Integrable g)
-    (hh_nonneg : 0 ≤ h) (hh_integrable : Integrable h)
+    (hh_nonneg : 0 ≤ h)
+    (hf_essBdd : IsEssBdd f volume) (hg_essBdd : IsEssBdd g volume)
     (hfgh_pow_le : PL_dim1_cond t f g h) :
     PL_dim1_conclusion t f g h := by
 
@@ -226,12 +149,10 @@ lemma prekopa_leindler_dim1
 
   have f_essSup_nonneg : 0 ≤ f_essSup := nonneg_essSup_of_nonneg hf_nonneg
   have g_essSup_nonneg : 0 ≤ g_essSup := nonneg_essSup_of_nonneg hg_nonneg
-  have h_essSup_nonneg : 0 ≤ h_essSup := nonneg_essSup_of_nonneg hh_nonneg
 
   have superlevel_sets_subset {f g h : ℝn 1 → ℝ}
       {l : ℝ} (hl_pos : 0 < l)
-      (hfgh_pow_le : ∀ x y : ℝn 1,
-        (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) :
+      (hfgh_pow_le : PL_dim1_cond t f g h) :
       superlevel_set f l + superlevel_set g l ⊆ superlevel_set h l := by
     refine Set.add_subset_iff.mpr ?_
     intro x hx y hy
@@ -246,21 +167,16 @@ lemma prekopa_leindler_dim1
   by_cases hf_ae_zero : f =ᵐ[volume] 0
   · -- Assume f is a.e. zero
     have : (∫ x, f x) = 0 := integral_eq_zero_of_ae hf_ae_zero
-    rw [this, Real.zero_rpow (by positivity), zero_mul]
+    rw [PL_dim1_conclusion, this, Real.zero_rpow (by positivity), zero_mul]
     exact mul_nonneg (by positivity) (integral_nonneg hh_nonneg)
   by_cases hg_ae_zero : g =ᵐ[volume] 0
   · -- Assume g is a.e. zero
     have : (∫ x, g x) = 0 := integral_eq_zero_of_ae hg_ae_zero
-    rw [this, Real.zero_rpow (by positivity), mul_zero]
+    rw [PL_dim1_conclusion, this, Real.zero_rpow (by positivity), mul_zero]
     exact mul_nonneg (by positivity) (integral_nonneg hh_nonneg)
 
-  have hf_not_ae_zero := ne_eq hf_ae_zero
-  have hg_not_ae_zero := ne_eq hg_ae_zero
-
-  -- (∫ x, f x) + (∫ x, g x) ≤ (∫ x, h x) holds if f and g are essentially bounded and not a.e. zero
-  have integral_sum_le_of_essBdd_essSup_nonzero
-      (hf_essBdd : IsEssBdd f) (hg_essBdd : IsEssBdd g)
-      : (∫ x, f x) + (∫ x, g x) ≤ (∫ x, h x) := by
+  have integral_sum_le :
+      (∫ x, f x) + (∫ x, g x) ≤ (∫ x, h x) := by
 
     have f_essSup_pos : 0 < f_essSup := by
       by_contra hf_essSup_zero
@@ -303,6 +219,7 @@ lemma prekopa_leindler_dim1
       rw [Real.div_rpow (hf_nonneg x) f_essSup_nonneg,
         Real.div_rpow (hg_nonneg y) g_essSup_nonneg,
         div_mul_div_comm]
+      simp only
       gcongr
       exact hfgh_pow_le x y
 
@@ -364,10 +281,6 @@ lemma prekopa_leindler_dim1
     -- use nonneg_integrable_integral_eq_integral_superlevel_set_meas
     sorry
 
-  -- (∫ x, f x) + (∫ x, g x) ≤ (∫ x, h x) holds if f and g are not a.e. zero
-  have integral_sum_le : (∫ x, f x) + (∫ x, g x) ≤ (∫ x, h x) := by
-    sorry
-
   have weighted_AM_GM_var (a b : ℝ) (ha_nonneg : 0 ≤ a) (hb_nonneg : 0 ≤ b) :
       a ^ (1 - t) * b ^ t ≤ (1 - t) ^ (1 - t) * t ^ t * (a + b) := by
     suffices a ^ (1 - t) * b ^ t / ((1 - t) ^ (1 - t) * t ^ t)
@@ -396,3 +309,201 @@ lemma prekopa_leindler_dim1
     ( weighted_AM_GM_var (∫ x, f x) (∫ x, g x)
       (integral_nonneg hf_nonneg) (integral_nonneg hg_nonneg) )
   gcongr -- this solves the goal using integral_sum_le
+
+
+
+/-
+Fix f.
+If Prékopa--Leindler holds for all (f,g) where g is essentially bounded,
+then Prékopa--Leindler holds for all (f,g).
+-/
+lemma prepkopa_leindler_dim1_from_g_essBdd
+    {t : ℝ} (h0t : 0 < t) -- (ht1 : t < 1)
+    {f g h : ℝn 1 → ℝ}
+    (hf_nonneg : 0 ≤ f) -- (hf_integrable : Integrable f)
+    (hg_nonneg : 0 ≤ g) (hg_integrable : Integrable g)
+    -- (hh_nonneg : 0 ≤ h) (hh_integrable : Integrable h)
+    (hfgh_pow_le : PL_dim1_cond t f g h)
+    (hgg_essBdd_true : {gg : ℝn 1 → ℝ} →
+      (hgg_nonneg : 0 ≤ gg) → (hgg_integrable : Integrable gg) →
+      (hgg_essBdd : IsEssBdd gg volume) →
+      (hfggh_pow_le : PL_dim1_cond t f gg h) →
+      PL_dim1_conclusion t f gg h) :
+    PL_dim1_conclusion t f g h := by
+
+  let g_cut (c : ℝ) := min g (fun _ ↦ c)
+
+  have g_cut_nonneg {c : ℝ} (hc_nonneg : 0 ≤ c) : 0 ≤ g_cut c := by
+    intro; exact le_min (hg_nonneg _) hc_nonneg
+
+  have g_cut_le_g {c : ℝ} (hc_nonneg : 0 ≤ c) : g_cut c ≤ g := by
+    intro; exact min_le_left _ _
+
+  have g_cut_integrable {c : ℝ} (hc_nonneg : 0 ≤ c) :
+      Integrable (g_cut c) volume := by
+    refine Integrable.mono hg_integrable ?_ ?_
+    · exact AEStronglyMeasurable.inf hg_integrable.1
+        aestronglyMeasurable_const
+    · apply ae_of_all volume
+      simp only [norm_eq_abs,
+        abs_of_nonneg (hg_nonneg _), abs_of_nonneg (g_cut_nonneg hc_nonneg _)]
+      exact g_cut_le_g hc_nonneg
+
+  have PL_dim1_conclusion_g_cut {c : ℝ} (hc_nonneg : 0 ≤ c) :
+      PL_dim1_conclusion t f (g_cut c) h := by
+
+    refine hgg_essBdd_true (g_cut_nonneg hc_nonneg) ?_ ?_ ?_
+    · -- Integrable (g_cut c) volume
+      exact g_cut_integrable hc_nonneg
+    · -- IsEssBdd (g_cut c) volume
+      have const_essBdd : IsEssBdd (fun (_ : ℝn 1) ↦ c) volume := by
+        exact isBoundedUnder_const
+      unfold IsEssBdd at *
+      have g_cut_bdd_c : g_cut c ≤ᵐ[volume] fun (_ : ℝn 1) ↦ c := by
+        apply ae_of_all volume
+        simp only [g_cut, Pi.inf_apply, inf_le_right, implies_true]
+      exact IsBoundedUnder.mono_le const_essBdd g_cut_bdd_c
+    . -- PL_dim1_cond t f (g_cut c) h
+      intro x y
+      refine le_trans ?_ (hfgh_pow_le x y)
+      gcongr
+      · exact Real.rpow_nonneg (hf_nonneg x) (1 - t)
+      · exact g_cut_nonneg hc_nonneg y
+      · exact g_cut_le_g hc_nonneg y
+
+  have : Tendsto (fun (n : ℕ) ↦ ∫ (x : ℝn 1), g_cut n x)
+      atTop (𝓝 (∫ (x : ℝn 1), g x)) := by
+    refine integral_tendsto_of_tendsto_of_monotone ?_ ?_ ?_ ?_
+    · intro; exact g_cut_integrable (Nat.cast_nonneg _)
+    · exact hg_integrable
+    · -- g_cut is pointwise monotone
+      apply ae_of_all volume
+      intro a b c hbc
+      simp only [g_cut, Pi.inf_apply]
+      exact min_le_min (le_refl _) (Nat.cast_le.mpr hbc)
+    · -- g_cut tends to g pointwise
+      apply ae_of_all volume
+      intro a
+      apply tendsto_atTop_of_eventually_const
+      case i₀ => exact Nat.ceil (g a)
+      intro n hn
+      apply min_eq_left
+      exact le_trans (Nat.le_ceil (g a)) (Nat.cast_le.mpr hn)
+
+  have : Tendsto (fun (n : ℕ) ↦ (∫ x, f x) ^ (1 - t) * (∫ y, g_cut n y) ^ t)
+      atTop (𝓝 ((∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t)) := by
+    conv in (occs := *) ((∫ (x : ℝn 1), f x) ^ (1 - t) * _) =>
+      · rw [mul_comm]
+      · rw [mul_comm]
+    refine Tendsto.mul_const ((∫ (x : ℝn 1), f x) ^ (1 - t)) ?_
+    exact Tendsto.rpow_const this (Or.inr (le_of_lt h0t))
+
+  refine le_of_tendsto' this ?_
+  intro c
+  exact PL_dim1_conclusion_g_cut (by norm_num)
+
+
+/-
+Fix g.
+If Prékopa--Leindler holds for all (f,g) where f is essentially bounded,
+then Prékopa--Leindler holds for all (f,g).
+-/
+lemma prepkopa_leindler_dim1_from_f_essBdd
+    {t : ℝ} (ht1 : t < 1)
+    {f g h : ℝn 1 → ℝ}
+    (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f)
+    (hg_nonneg : 0 ≤ g)
+    (hfgh_pow_le : PL_dim1_cond t f g h)
+    (hff_essBdd_true : {ff : ℝn 1 → ℝ} →
+      (hff_nonneg : 0 ≤ ff) → (hff_integrable : Integrable ff) →
+      (hff_essBdd : IsEssBdd ff volume) →
+      (hffgh_pow_le : PL_dim1_cond t ff g h) →
+      PL_dim1_conclusion t ff g h) :
+    PL_dim1_conclusion t f g h := by
+
+  have PL_dim1_cond_swap {f g h : ℝn 1 → ℝ} :
+      PL_dim1_cond t f g h ↔ PL_dim1_cond (1 - t) g f h := by
+    have (t : ℝ) {f g h : ℝn 1 → ℝ} :
+        PL_dim1_cond t f g h → PL_dim1_cond (1 - t) g f h := by
+      unfold PL_dim1_cond
+      intro hh x y
+      rw [sub_sub_cancel 1 t, mul_comm, add_comm x y]
+      exact hh y x
+    constructor
+    · exact this t
+    · nth_rw 2 [← sub_sub_self 1 t]
+      exact this (1 - t)
+
+  have PL_dim1_conclusion_swap {f g h : ℝn 1 → ℝ} :
+      PL_dim1_conclusion t f g h ↔ PL_dim1_conclusion (1 - t) g f h := by
+    have (t : ℝ) {f g h : ℝn 1 → ℝ} :
+        PL_dim1_conclusion t f g h → PL_dim1_conclusion (1 - t) g f h := by
+      unfold PL_dim1_conclusion
+      rw [sub_sub_cancel 1 t, mul_comm, mul_comm (t ^ t)]
+      intro; assumption
+    constructor
+    · exact this t
+    · nth_rw 2 [← sub_sub_self 1 t]
+      exact this (1 - t)
+
+  rw [PL_dim1_conclusion_swap]
+
+  refine prepkopa_leindler_dim1_from_g_essBdd
+    (sub_pos_of_lt ht1)
+    hg_nonneg
+    hf_nonneg hf_integrable
+    ?_ ?_
+  · rw [← PL_dim1_cond_swap]; exact hfgh_pow_le
+  · intro ff hff_nonneg hff_integrable hff_essBdd hffgh_pow_le
+    rw [← PL_dim1_cond_swap] at hffgh_pow_le
+    rw [← PL_dim1_conclusion_swap]
+    exact hff_essBdd_true hff_nonneg hff_integrable hff_essBdd hffgh_pow_le
+
+
+-- Prékopa--Leindler holds for all (f,g) where f is essentially bounded.
+lemma prekopa_leindler_dim1_f_essBdd
+    {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
+    {f g h : ℝn 1 → ℝ}
+    (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f)
+    (hg_nonneg : 0 ≤ g) (hg_integrable : Integrable g)
+    (hh_nonneg : 0 ≤ h)
+    (hf_essBdd : IsEssBdd f volume)
+    (hfgh_pow_le : PL_dim1_cond t f g h) :
+    PL_dim1_conclusion t f g h := by
+
+  refine prepkopa_leindler_dim1_from_g_essBdd h0t
+    hf_nonneg
+    hg_nonneg hg_integrable
+    hfgh_pow_le ?_
+
+  intro gg hgg_nonneg hgg_integrable hgg_essBdd hfggh_pow_le
+  exact prepkopa_leindler_dim1_essBdd h0t ht1
+    hf_nonneg hf_integrable
+    hgg_nonneg hgg_integrable
+    hh_nonneg
+    hf_essBdd hgg_essBdd
+    hfggh_pow_le
+
+
+-- Prékopa--Leindler
+lemma prekopa_leindler_dim1
+    {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
+    {f g h : ℝn 1 → ℝ}
+    (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f)
+    (hg_nonneg : 0 ≤ g) (hg_integrable : Integrable g)
+    (hh_nonneg : 0 ≤ h)
+    (hfgh_pow_le : PL_dim1_cond t f g h) :
+    PL_dim1_conclusion t f g h := by
+
+  refine prepkopa_leindler_dim1_from_f_essBdd ht1
+    hf_nonneg hf_integrable
+    hg_nonneg
+    hfgh_pow_le ?_
+
+  intro ff hff_nonneg hff_integrable hff_essBdd hffgh_pow_le
+  exact prekopa_leindler_dim1_f_essBdd h0t ht1
+    hff_nonneg hff_integrable
+    hg_nonneg hg_integrable
+    hh_nonneg
+    hff_essBdd
+    hffgh_pow_le
