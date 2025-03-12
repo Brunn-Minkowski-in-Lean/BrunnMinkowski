@@ -45,10 +45,27 @@ instance : ContinuousSMul ℝ (α ×ₑ β) :=
 instance : FiniteDimensional ℝ (α ×ₑ β) :=
   WithLp.instModuleFinite 2 _ _
 
-noncomputable instance : MeasurableSpace (α ×ₑ β) :=
-  EuclideanSpace.instMeasurableSpaceReal (toEuclidean (α ×ₑ β))
+instance : MeasurableSpace (α ×ₑ β) :=
+  borel (α ×ₑ β)
+
+instance : BorelSpace (α ×ₑ β) :=
+  ⟨rfl⟩
 
 end EuclideanProd
 
 end EuclideanSpace
+
+section
+
+open MeasureTheory
+
+def PrekopaLeindlerCondition
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
+    {ι : Type*} [Finite ι] {mι : MeasurableSpace ι} [MeasurableSingletonClass ι]
+    (f : EuclideanSpace ℝ ι → ℝ) (hf₁ : Integrable f) (hf₂ : ∀ x, 0 ≤ f x)
+    (g : EuclideanSpace ℝ ι → ℝ) (hg₁ : Integrable g) (hg₂ : ∀ x, 0 ≤ g x)
+    (h : EuclideanSpace ℝ ι → ℝ) (hh₁ : Integrable h) : Prop :=
+  ∀ x y : EuclideanSpace ℝ ι, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)
+
+end section
 
