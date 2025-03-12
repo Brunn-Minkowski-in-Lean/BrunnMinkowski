@@ -243,11 +243,11 @@ lemma prepkopa_leindler_dim1_essBdd
         sorry
 
       have f_suplevelset_nonempty : (superlevel_set f_nor l).Nonempty :=
-        have h1 : ∀ x, 0 ≤ f_nor x := by intro; exact f_nor_nonneg _
+        have h1 (x : ℝn 1) : 0 ≤ f_nor x := f_nor_nonneg x
         have h2 : l < essSup f_nor volume := by rwa [f_nor_essSup_eq_one]
         nonempty_of_superlevel_set_of_bddBelow _ h1 h2
       have g_suplevelset_nonempty : (superlevel_set g_nor l).Nonempty :=
-        have h1 : ∀ x, 0 ≤ g_nor x := by intro; exact g_nor_nonneg _
+        have h1 (x : ℝn 1) : 0 ≤ g_nor x := g_nor_nonneg x
         have h2 : l < essSup g_nor volume := by rwa [g_nor_essSup_eq_one]
         nonempty_of_superlevel_set_of_bddBelow _ h1 h2
 
@@ -264,8 +264,20 @@ lemma prepkopa_leindler_dim1_essBdd
         sorry
 
       have ABC : A + B ⊆ C := by
-        -- preimage_mono
-        sorry -- use superlevel_sets_subset
+        have : ϕ ⁻¹' (superlevel_set f_nor l + superlevel_set g_nor l) = A + B
+            := by
+          unfold A B
+          have : Set.range ϕ = Set.univ := by
+            exact Function.Surjective.range_eq (MeasurableEquiv.surjective ϕ)
+          #check Set.preimage_add
+          -- refine Set.preimage_add ϕ (MeasurableEquiv.injective ϕ)
+          --   ?_
+          --   ?_
+
+          sorry
+
+        rw [← this]
+        exact preimage_mono (nor_superlevel_sets_subset h0l)
 
       calc
         volume (superlevel_set f_nor l) + volume (superlevel_set g_nor l)
