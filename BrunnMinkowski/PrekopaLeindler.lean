@@ -74,6 +74,14 @@ def PrekopaLeindler.Condition
     (h : EuclideanSpace ℝ ι → ℝ) (hh₁ : Integrable h) : Prop :=
   ∀ x y : EuclideanSpace ℝ ι, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)
 
+theorem PrekopaLeindler.statement
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
+    {ι : Type*} [Fintype ι]
+    (hι : ∀ ⦃f : EuclideanSpace ℝ ι → ℝ⦄ hf₁ hf₂ ⦃g⦄ hg₁ hg₂ ⦃h⦄ hh₁,
+      PrekopaLeindler.Condition ht₁ ht₂ f hf₁ hf₂ g hg₁ hg₂ h hh₁ →
+      ∀ ) : True :=
+  sorry
+    
 namespace PrekopaLeindler
 
 variable {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
