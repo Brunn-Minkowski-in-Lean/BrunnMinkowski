@@ -452,17 +452,12 @@ lemma prepkopa_leindler_dim1_essBdd
           rw [mul_div_mul_comm,
             Real.div_rpow ha_nonneg (le_of_lt one_sub_t_pos),
             Real.div_rpow hb_nonneg t_nonneg]
-      _ ≤ (1 - t) * (a / (1 - t)) + t * (b / t) := by
-        refine Real.geom_mean_le_arith_mean2_weighted ?_ ?_ ?_ ?_ ?_
-        · exact le_of_lt one_sub_t_pos
-        · positivity
-        · positivity
-        · positivity
-        · norm_num
+      _ ≤ (1 - t) * (a / (1 - t)) + t * (b / t) :=
+        Real.geom_mean_le_arith_mean2_weighted
+          (le_of_lt one_sub_t_pos)
+          (by positivity) (by positivity) (by positivity) (by norm_num)
       _ = a + b := by
-        iterate 2 rw [mul_div_cancel₀]
-        · exact h0t.ne'
-        · exact one_sub_t_pos.ne'
+        rw [mul_div_cancel₀ _ h0t.ne', mul_div_cancel₀ _ one_sub_t_pos.ne']
 
   have : (∫ x, f_nor x) ^ (1 - t) * (∫ x, g_nor x) ^ t
     ≤ (1 - t) ^ (1 - t) * t ^ t * (∫ x, h_nor x) := by
