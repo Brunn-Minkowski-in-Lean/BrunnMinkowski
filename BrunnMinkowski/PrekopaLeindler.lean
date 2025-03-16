@@ -88,17 +88,7 @@ lemma one_dim_BMInequality_of_nullmeasurable (A B C : Set ℝ)
   exact hAmBmCm_vol
 
 
-lemma nonneg_integrable_integral_eq_integral_superlevel_set_meas
-    {f : ℝn n → ℝ} (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f) :
-    Integrable
-      (indicator (Ioi 0) (fun l ↦ (volume (superlevel_set f l)).toReal))
-    ∧ ∫ x, f x
-      = ∫ y, indicator (Ioi 0)
-          (fun l ↦ (volume (superlevel_set f l)).toReal) y := by
-  sorry
-
-
-
+-- Prékopa--Leindler
 theorem prekopa_leindler
     {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
     {d : ℕ} (f g h : ℝn d → ℝ)
@@ -328,116 +318,70 @@ lemma prepkopa_leindler_dim1_essBdd
             A_nonempty B_nonempty A_nm B_nm ABC
         _ = volume (superlevel_set h_nor l) := φ_preserves_volume
 
-    have fgh_nor_splsets_vol_toReal_ineq
-        {l : ℝ} (h0l : 0 < l) (hl1 : l < 1) :
-        (volume (superlevel_set f_nor l)).toReal
-            + (volume (superlevel_set g_nor l)).toReal
-          ≤ (volume (superlevel_set h_nor l)).toReal := by
 
-      have fin_vol_of_splset_f_nor : volume (superlevel_set f_nor l) ≠ ⊤ := by
-        apply ne_of_lt
-        exact fin_vol_of_superlevelset_of_nonneg_integrable
-          f_nor_nonneg f_nor_integrable h0l
-      have fin_vol_of_splset_g_nor : volume (superlevel_set g_nor l) ≠ ⊤ := by
-        apply ne_of_lt
-        exact fin_vol_of_superlevelset_of_nonneg_integrable
-          g_nor_nonneg g_nor_integrable h0l
-      have fin_vol_of_splset_h_nor : volume (superlevel_set h_nor l) ≠ ⊤ := by
-        apply ne_of_lt
-        exact fin_vol_of_superlevelset_of_nonneg_integrable
-          h_nor_nonneg h_nor_integrable h0l
+    rw [← ofReal_le_ofReal_iff (integral_nonneg h_nor_nonneg)]
+    refine le_trans ENNReal.ofReal_add_le ?_
+    rw [ofReal_integral_eq_lintegral_ofReal' _ f_nor_nonneg f_nor_integrable,
+      ofReal_integral_eq_lintegral_ofReal' _ g_nor_nonneg g_nor_integrable,
+      ofReal_integral_eq_lintegral_ofReal' _ h_nor_nonneg h_nor_integrable,
+      lintegral_eq_lintegral_meas_superlevelset _ f_nor_nonneg f_nor_integrable,
+      lintegral_eq_lintegral_meas_superlevelset _ g_nor_nonneg g_nor_integrable,
+      lintegral_eq_lintegral_meas_superlevelset _ h_nor_nonneg h_nor_integrable]
 
-      rw [← ENNReal.toReal_add fin_vol_of_splset_f_nor fin_vol_of_splset_g_nor]
-      exact ENNReal.toReal_mono fin_vol_of_splset_h_nor
-        (fgh_nor_splsets_vol_ineq h0l hl1)
-
-    rw [(nonneg_integrable_integral_eq_integral_superlevel_set_meas
-        f_nor_nonneg f_nor_integrable).2,
-      (nonneg_integrable_integral_eq_integral_superlevel_set_meas
-        g_nor_nonneg g_nor_integrable).2,
-      (nonneg_integrable_integral_eq_integral_superlevel_set_meas
-        h_nor_nonneg h_nor_integrable).2]
-
-    let fun_vol_splset_f : ℝ → ℝ :=
-      fun l ↦ (volume (superlevel_set f_nor l)).toReal
-    let fun_vol_splset_g : ℝ → ℝ :=
-      fun l ↦ (volume (superlevel_set g_nor l)).toReal
-    let fun_vol_splset_h : ℝ → ℝ :=
-      fun l ↦ (volume (superlevel_set h_nor l)).toReal
-
-    have fun_vol_splset_h_integrable :
-        Integrable (indicator (Ioi 0) fun_vol_splset_h) :=
-      (nonneg_integrable_integral_eq_integral_superlevel_set_meas
-        h_nor_nonneg h_nor_integrable).1
-    have fun_vol_splset_h_nonneg : 0 ≤ fun_vol_splset_h := by
-      unfold fun_vol_splset_h; intro
-      simp only [Pi.zero_apply, toReal_nonneg]
+    -- change Ioi 0 to Ioo 0 1
+    let fun_vol_splset_f : ℝ → ℝ≥0∞ := fun l ↦ volume (superlevel_set f_nor l)
+    let fun_vol_splset_g : ℝ → ℝ≥0∞ := fun l ↦ volume (superlevel_set g_nor l)
+    let fun_vol_splset_h : ℝ → ℝ≥0∞ := fun l ↦ volume (superlevel_set h_nor l)
 
     have fg_integral_interval :
-        ∫ x, indicator (Ioo 0 1) fun_vol_splset_f x
-          = ∫ x, indicator (Ioi 0) fun_vol_splset_f x ∧
-        ∫ x, indicator (Ioo 0 1) fun_vol_splset_g x
-          = ∫ x, indicator (Ioi 0) fun_vol_splset_g x := by
+        ∫⁻ x, indicator (Ioo 0 1) fun_vol_splset_f x
+          = ∫⁻ x, indicator (Ioi 0) fun_vol_splset_f x ∧
+        ∫⁻ x, indicator (Ioo 0 1) fun_vol_splset_g x
+          = ∫⁻ x, indicator (Ioi 0) fun_vol_splset_g x := by
+
+      have f_nor_ae_le_one : ∀ᵐ (a : ℝn 1), f_nor a ≤ 1 := by
+        rw [← f_nor_essSup_eq_one]
+        exact ae_le_essSup
+      have g_nor_ae_le_one : ∀ᵐ (a : ℝn 1), g_nor a ≤ 1 := by
+        rw [← g_nor_essSup_eq_one]
+        exact ae_le_essSup
+
+      unfold fun_vol_splset_f fun_vol_splset_g superlevel_set
       constructor
       all_goals
-        congr; funext
-        rw [← Ioo_union_Ici_eq_Ioi zero_lt_one,
+        congr; funext x
+        simp only [← Ioo_union_Ici_eq_Ioi zero_lt_one,
           indicator_union_of_disjoint Ioo_disjoint_Ici_same]
-        simp only [self_eq_add_right, indicator_apply_eq_zero, Set.mem_Ici]
-        intro hge_one
-        rw [ENNReal.toReal_eq_zero_iff, superlevel_set]
-        left
-        simp only [measure_zero_iff_ae_nmem, mem_setOf_eq, not_lt]
+        symm; refine Eq.trans ?_ (add_zero _)
+        rw [ENNReal.add_right_inj]
+        · simp only [indicator_apply_eq_zero]
+          intro h1x
+          rw [Set.mem_Ici] at h1x
+          simp only [measure_zero_iff_ae_nmem, mem_setOf_eq, not_lt]
+          first
+          | exact Eventually.mono f_nor_ae_le_one (fun _ hfx ↦ hfx.trans h1x)
+          | exact Eventually.mono g_nor_ae_le_one (fun _ hfx ↦ hfx.trans h1x)
+        · rcases @or_not (x ∈ Set.Ioo 0 1) with hx | hx
+          · rw [indicator_of_mem hx]
+            refine ne_of_lt (fin_vol_of_superlevelset_of_nonneg_integrable ?_ ?_ hx.1)
+            · first | exact f_nor_nonneg | exact g_nor_nonneg
+            · first | exact f_nor_integrable | exact g_nor_integrable
+          · exact Eq.trans_ne (indicator_of_not_mem hx _) zero_ne_top
 
-      · have : ∀ᵐ (a : ℝn 1), f_nor a ≤ 1 := by
-          rw [← f_nor_essSup_eq_one]
-          exact ae_le_essSup
-        exact Eventually.mono this (fun _ hx ↦ hx.trans hge_one)
-      · have : ∀ᵐ (a : ℝn 1), g_nor a ≤ 1 := by
-          rw [← g_nor_essSup_eq_one]
-          exact ae_le_essSup
-        exact Eventually.mono this (fun _ hx ↦ hx.trans hge_one)
-
-    have : ∫ x, indicator (Ioo 0 1) fun_vol_splset_h x
-        ≤ ∫ x, indicator (Ioi 0) fun_vol_splset_h x := by
-      rw [integral_indicator measurableSet_Ioo,
-        integral_indicator measurableSet_Ioi]
-      exact setIntegral_mono_set
-        ((integrable_indicator_iff measurableSet_Ioi).mp
-          fun_vol_splset_h_integrable)
-        (ae_of_all _ fun_vol_splset_h_nonneg)
-        (ae_of_all _ (le_iff_subset.mpr Ioo_subset_Ioi_self))
+    have h_integral_interval :
+        ∫⁻ x, indicator (Ioo 0 1) fun_vol_splset_h x
+          ≤ ∫⁻ x, indicator (Ioi 0) fun_vol_splset_h x := by
+      apply lintegral_mono
+      exact indicator_le_indicator_of_subset Ioo_subset_Ioi_self (zero_le _)
 
     rw [← fg_integral_interval.1, ← fg_integral_interval.2]
-    refine le_trans ?_ this
+    refine le_trans ?_ h_integral_interval
 
-    have fg_indicator_integrable :
-        Integrable (indicator (Ioo 0 1) fun_vol_splset_f) ∧
-        Integrable (indicator (Ioo 0 1) fun_vol_splset_g) := by
-      constructor
-      all_goals
-        rw [integrable_indicator_iff measurableSet_Ioo]
-        refine IntegrableOn.mono_set ?_ Ioo_subset_Ioi_self
-        rw [← integrable_indicator_iff measurableSet_Ioi]
-      · exact (nonneg_integrable_integral_eq_integral_superlevel_set_meas
-          f_nor_nonneg f_nor_integrable).1
-      · exact (nonneg_integrable_integral_eq_integral_superlevel_set_meas
-          g_nor_nonneg g_nor_integrable).1
+    refine le_trans (le_lintegral_add _ _) (lintegral_mono ?_)
+    rw [← Set.indicator_add]
+    refine fun _ ↦ indicator_le_indicator' ?_
+    exact fun h0x1 ↦ fgh_nor_splsets_vol_ineq h0x1.1 h0x1.2
 
-    rw [← integral_add fg_indicator_integrable.1 fg_indicator_integrable.2,
-      ← indicator_add]
-
-    refine integral_mono ?_ ?_ ?_
-    · rw [indicator_add]
-      exact Integrable.add fg_indicator_integrable.1 fg_indicator_integrable.2
-    · apply (integrable_indicator_iff measurableSet_Ioo).mpr
-      refine IntegrableOn.mono_set ?_ Ioo_subset_Ioi_self
-      exact (integrable_indicator_iff measurableSet_Ioi).mp
-        fun_vol_splset_h_integrable
-    · intro; refine indicator_le_indicator' ?_
-      intro hx
-      simp only [Set.mem_Ioo] at hx
-      exact fgh_nor_splsets_vol_toReal_ineq hx.1 hx.2
 
   have weighted_AM_GM_var
       (a b : ℝ) (ha_nonneg : 0 ≤ a) (hb_nonneg : 0 ≤ b) :

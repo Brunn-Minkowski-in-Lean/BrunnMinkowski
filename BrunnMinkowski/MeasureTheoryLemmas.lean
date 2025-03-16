@@ -1,6 +1,9 @@
 import Mathlib.MeasureTheory.Function.L1Space
 import Mathlib.MeasureTheory.Group.Measure
+import Mathlib.MeasureTheory.Integral.Bochner
 import Mathlib.MeasureTheory.Integral.Lebesgue
+import Mathlib.MeasureTheory.Integral.Layercake
+import Mathlib.MeasureTheory.Integral.SetIntegral
 -- import Mathlib.Data.Set.Basic
 -- import Mathlib.Algebra.Order.Group.Pointwise.CompleteLattice
 
@@ -55,6 +58,104 @@ lemma nullmeasurable_superlevel_set_of_aemeasurable
     (c : ℝ) :
     NullMeasurableSet (superlevel_set f c) μ :=
   nullMeasurableSet_lt aemeasurable_const hf_aemeasurable
+
+
+lemma fin_vol_of_superlevelset_of_nonneg_integrable
+    {α : Type*} [MeasurableSpace α]
+    {μ : Measure α}
+    {f : α → ℝ} (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f μ)
+    {c : ℝ} (hc_pos : 0 < c) :
+    μ (superlevel_set f c) < ⊤ := by
+
+  let s := superlevel_set f c
+  let f_ennreal : α → ENNReal := fun x ↦ (ENNReal.ofReal (f x))
+  let g : α → ENNReal := indicator s (fun _ ↦ (ENNReal.ofReal c))
+
+  have s_nullmeas : NullMeasurableSet s μ :=
+    nullmeasurable_superlevel_set_of_aemeasurable μ
+      (Integrable.aemeasurable hf_integrable) c
+
+  have g_le_f_ennreal : g ≤ f_ennreal := by
+    intro x; unfold g f_ennreal
+    rcases @or_not (x ∈ s) with ha_mem_s | ha_not_mem_s
+    · rw [indicator_of_mem ha_mem_s]
+      rw [ENNReal.ofReal_le_ofReal_iff (hf_nonneg x)]
+      exact le_of_lt (Membership.mem.out ha_mem_s)
+    · rw [indicator_of_not_mem ha_not_mem_s]
+      exact zero_le _
+
+  refine ENNReal.lt_top_of_mul_ne_top_right ?_
+    (pos_iff_ne_zero.mp (ENNReal.ofReal_pos.mpr hc_pos))
+  apply ne_of_lt
+
+  calc
+    (ENNReal.ofReal c) * μ s
+      = (∫⁻ x, g x ∂μ) := (lintegral_indicator_const₀ s_nullmeas _).symm
+    _ ≤ (∫⁻ x, f_ennreal x ∂μ) := lintegral_mono g_le_f_ennreal
+    _ < ⊤ := by
+      refine (hasFiniteIntegral_iff_ofReal ?_).mp
+        (Integrable.hasFiniteIntegral hf_integrable)
+      apply ae_of_all
+      simp only [Pi.zero_apply]
+      exact hf_nonneg
+
+
+lemma ofReal_integral_eq_lintegral_ofReal'
+    {α : Type*} [MeasurableSpace α]
+    (μ : Measure α := by volume_tac)
+    {f : α → ℝ} (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f μ) :
+    ENNReal.ofReal (∫ x, f x ∂μ) = ∫⁻ x, ENNReal.ofReal (f x) ∂μ :=
+  ofReal_integral_eq_lintegral_ofReal hf_integrable
+    (ae_of_all _ (fun _ ↦ hf_nonneg _))
+
+lemma lintegral_eq_lintegral_meas_superlevelset
+    {α : Type*} [MeasurableSpace α]
+    (μ : Measure α := by volume_tac)
+    {f : α → ℝ} (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f μ) :
+    ∫⁻ x, ENNReal.ofReal (f x) ∂μ
+      = ∫⁻ t, indicator (Ioi 0) (fun y ↦ (μ (superlevel_set f y))) t ∂volume := by
+  rw [lintegral_indicator measurableSet_Ioi]
+  exact lintegral_eq_lintegral_meas_lt μ
+    (ae_of_all _ (fun _ ↦ hf_nonneg _))
+    (Integrable.aemeasurable hf_integrable)
+
+-- lemma integral_eq_integral_meas_superlevelset
+--     {α : Type*} [MeasurableSpace α]
+--     (μ : Measure α := by volume_tac)
+--     {f : α → ℝ} (hf_integrable : Integrable f μ) (hf_nonneg : 0 ≤ f) :
+--     ∫ x, f x ∂μ =
+--       ∫ t, indicator (Ioi 0) (fun y ↦ (μ (superlevel_set f y)).toReal) t := by
+--   rw [integral_indicator measurableSet_Ioi]
+--   refine Integrable.integral_eq_integral_meas_lt hf_integrable ?_
+--   exact ae_of_all _ (fun _ ↦ hf_nonneg _)
+
+-- lemma integrable_of_meas_superlevelset
+--     {α : Type*} [MeasurableSpace α]
+--     (μ : Measure α := by volume_tac)
+--     {f : α → ℝ} (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f μ) :
+--     Integrable (indicator (Ioi 0) (fun y ↦ (μ (superlevel_set f y)).toReal))
+--     := by
+--   constructor
+--   ·
+--     sorry
+--   · rw [hasFiniteIntegral_iff_ofReal
+--       (ae_of_all _ (indicator_nonneg (fun _ _ ↦ ENNReal.toReal_nonneg)))]
+--     suffices ∫⁻ (a : ℝ), (Ioi 0).indicator
+--         (fun x ↦ μ (superlevel_set f x)) a < ⊤ by
+--       refine lt_of_eq_of_lt ?_ this
+--       congr; funext a
+--       rcases @or_not (a ∈ Ioi 0) with h0a | ha0
+--       · simp only [indicator_of_mem h0a, ENNReal.ofReal_toReal_eq_iff, ne_eq]
+--         exact ne_of_lt (fin_vol_of_superlevelset_of_nonneg_integrable
+--           hf_nonneg hf_integrable h0a)
+--       · simp only [indicator_of_not_mem ha0, ENNReal.ofReal_zero]
+
+--     rw [lintegral_indicator measurableSet_Ioi]
+--     unfold superlevel_set
+--     rw [← lintegral_eq_lintegral_meas_lt μ
+--       (ae_of_all _ (fun _ ↦ hf_nonneg _))
+--       (Integrable.aemeasurable hf_integrable)]
+--     exact Integrable.lintegral_lt_top hf_integrable
 
 ---- essSup ----
 abbrev IsEssBdd
@@ -219,94 +320,53 @@ lemma div_essSup_of_essBdd_lowerBdd
           rwa [lt_div_iff₀ hb_pos]
 
 
-lemma fin_vol_of_superlevelset_of_nonneg_integrable
-    {α : Type*} [MeasurableSpace α]
-    {μ : Measure α}
-    {f : α → ℝ} (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f μ)
-    {c : ℝ} (hc_pos : 0 < c) :
-    μ (superlevel_set f c) < ⊤ := by
-
-  let s := superlevel_set f c
-  let f_ennreal : α → ENNReal := fun x ↦ (ENNReal.ofReal (f x))
-  let g : α → ENNReal := indicator s (fun _ ↦ (ENNReal.ofReal c))
-
-  have s_nullmeas : NullMeasurableSet s μ :=
-    nullmeasurable_superlevel_set_of_aemeasurable μ
-      (Integrable.aemeasurable hf_integrable) c
-
-  have g_le_f_ennreal : g ≤ f_ennreal := by
-    intro x; unfold g f_ennreal
-    rcases @or_not (x ∈ s) with ha_mem_s | ha_not_mem_s
-    · rw [indicator_of_mem ha_mem_s]
-      rw [ENNReal.ofReal_le_ofReal_iff (hf_nonneg x)]
-      exact le_of_lt (Membership.mem.out ha_mem_s)
-    · rw [indicator_of_not_mem ha_not_mem_s]
-      exact zero_le _
-
-  refine ENNReal.lt_top_of_mul_ne_top_right ?_
-    (pos_iff_ne_zero.mp (ENNReal.ofReal_pos.mpr hc_pos))
-  apply ne_of_lt
-
-  calc
-    (ENNReal.ofReal c) * μ s
-      = (∫⁻ x, g x ∂μ) := (lintegral_indicator_const₀ s_nullmeas _).symm
-    _ ≤ (∫⁻ x, f_ennreal x ∂μ) := lintegral_mono g_le_f_ennreal
-    _ < ⊤ := by
-      refine (hasFiniteIntegral_iff_ofReal ?_).mp
-        (Integrable.hasFiniteIntegral hf_integrable)
-      apply ae_of_all
-      simp only [Pi.zero_apply]
-      exact hf_nonneg
-
-
--- !! PROBABLY NOT USED?
+-- !!!! NOT USED !!!!
 -- If f is
 -- · nonnegative,
 -- · has support of nonzero measure,
 -- · and is essentially bounded,
 -- then the essential supremum of f is positive.
-lemma pos_essSup_of_nonneg_posmeassupp_essBdd
-    {α : Type*} [MeasurableSpace α]
-    {μ : Measure α} [NeZero μ]
-    {f : α → ℝ} (hf_nonneg : 0 ≤ f) (hf_supp_meas_nonzero : μ f.support ≠ 0)
-    (hf_essBdd : IsEssBdd f μ) :
-    0 < essSup f μ := by
-  have h1 : μ {y : α | essSup f μ < f y} = 0 := meas_essSup_lt
-  have h2 : f.support = {y : α | 0 < f y} := by
-    unfold Function.support
-    refine eq_of_subset_of_subset ?_ ?_
-    all_goals
-      rw [setOf_subset_setOf]
-      intro x hx
-    · exact Ne.lt_of_le hx.symm (hf_nonneg x)
-    · exact ne_of_gt hx
-  have essSup_nonneg : 0 ≤ essSup f μ := nonneg_essSup_of_nonneg hf_nonneg
-  have essSup_nonzero : essSup f μ ≠ 0 := by
-    by_contra hzero
-    suffices μ f.support = 0 by contradiction
-    nth_rw 1 [h2, ← hzero]
-    exact h1
-  exact Ne.lt_of_le essSup_nonzero.symm essSup_nonneg
+-- lemma pos_essSup_of_nonneg_posmeassupp_essBdd
+--     {α : Type*} [MeasurableSpace α]
+--     {μ : Measure α} [NeZero μ]
+--     {f : α → ℝ} (hf_nonneg : 0 ≤ f) (hf_supp_meas_nonzero : μ f.support ≠ 0)
+--     (hf_essBdd : IsEssBdd f μ) :
+--     0 < essSup f μ := by
+--   have h1 : μ {y : α | essSup f μ < f y} = 0 := meas_essSup_lt
+--   have h2 : f.support = {y : α | 0 < f y} := by
+--     unfold Function.support
+--     refine eq_of_subset_of_subset ?_ ?_
+--     all_goals
+--       rw [setOf_subset_setOf]
+--       intro x hx
+--     · exact Ne.lt_of_le hx.symm (hf_nonneg x)
+--     · exact ne_of_gt hx
+--   have essSup_nonneg : 0 ≤ essSup f μ := nonneg_essSup_of_nonneg hf_nonneg
+--   have essSup_nonzero : essSup f μ ≠ 0 := by
+--     by_contra hzero
+--     suffices μ f.support = 0 by contradiction
+--     nth_rw 1 [h2, ← hzero]
+--     exact h1
+--   exact Ne.lt_of_le essSup_nonzero.symm essSup_nonneg
 
 
--- !! PROBABLY NOT USED?
 -- If f has nonzero essential supremum,
 -- then it has support of nonzero measure.
-lemma pos_meas_supp_of_essSup_nonzero
-    {α : Type*} [MeasurableSpace α]
-    {μ : Measure α} [NeZero μ]
-    {f : α → ℝ} (hf_essSup_nonzero : essSup f μ ≠ 0) :
-    0 < μ f.support := by
-  refine Ne.lt_of_le' ?_ (Measure.zero_le _ _)
-  rw [ne_eq, ← univ_inter f.support, ← indicator_ae_eq_zero,
-    indicator_univ]
-  by_contra hf_ae_0
-  have : essSup f μ = 0 := by
-    calc
-      essSup f μ
-      _ = essSup 0 μ := essSup_congr_ae hf_ae_0
-      _ = 0 := essSup_const' 0
-  contradiction
+-- lemma pos_meas_supp_of_essSup_nonzero
+--     {α : Type*} [MeasurableSpace α]
+--     {μ : Measure α} [NeZero μ]
+--     {f : α → ℝ} (hf_essSup_nonzero : essSup f μ ≠ 0) :
+--     0 < μ f.support := by
+--   refine Ne.lt_of_le' ?_ (Measure.zero_le _ _)
+--   rw [ne_eq, ← univ_inter f.support, ← indicator_ae_eq_zero,
+--     indicator_univ]
+--   by_contra hf_ae_0
+--   have : essSup f μ = 0 := by
+--     calc
+--       essSup f μ
+--       _ = essSup 0 μ := essSup_congr_ae hf_ae_0
+--       _ = 0 := essSup_const' 0
+--   contradiction
 
 -- lemma hessSup_bdd_of_div_of_nonneg_essBdd {f : ℝn 1 → ℝ}
 --     (hf_nonneg : 0 ≤ f) (hf_essBdd : IsEssBdd f volume)
