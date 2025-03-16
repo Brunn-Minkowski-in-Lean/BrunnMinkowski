@@ -192,12 +192,9 @@ lemma prepkopa_leindler_dim1_essBdd
   have h_nor_nonneg : 0 ≤ h_nor := by
     intro; exact div_nonneg (hh_nonneg _) (by positivity)
 
-  have f_nor_integrable : Integrable f_nor :=
-    Integrable.div_const hf_integrable _
-  have g_nor_integrable : Integrable g_nor :=
-    Integrable.div_const hg_integrable _
-  have h_nor_integrable : Integrable h_nor :=
-    Integrable.div_const hh_integrable _
+  have f_nor_integrable : Integrable f_nor := Integrable.div_const hf_integrable _
+  have g_nor_integrable : Integrable g_nor := Integrable.div_const hg_integrable _
+  have h_nor_integrable : Integrable h_nor := Integrable.div_const hh_integrable _
 
   have f_nor_essBdd : IsEssBdd f_nor := by
     have (a b : ℝ) : a ≤ b → (a / f_essSup) ≤ (b / f_essSup) :=
@@ -268,22 +265,17 @@ lemma prepkopa_leindler_dim1_essBdd
       have A_nonempty : A.Nonempty := Nonempty.image φ f_suplevelset_nonempty
       have B_nonempty : B.Nonempty := Nonempty.image φ g_suplevelset_nonempty
 
-      have A_nm : NullMeasurableSet A := by
-        unfold A
-        rw [MeasurableEquiv.image_eq_preimage]
-        exact NullMeasurableSet.preimage
-          (nullmeasurable_superlevel_set_of_aemeasurable _
-            (Integrable.aemeasurable f_nor_integrable) l)
-          (MeasurePreserving.quasiMeasurePreserving
-            (MeasurePreserving.symm φ φ_measpres))
-      have B_nm : NullMeasurableSet B := by
-        unfold B
-        rw [MeasurableEquiv.image_eq_preimage]
-        exact NullMeasurableSet.preimage
-          (nullmeasurable_superlevel_set_of_aemeasurable _
-            (Integrable.aemeasurable g_nor_integrable) l)
-          (MeasurePreserving.quasiMeasurePreserving
-            (MeasurePreserving.symm φ φ_measpres))
+      have A_B_nm : NullMeasurableSet A ∧ NullMeasurableSet B := by
+        unfold A B
+        constructor; all_goals
+          rw [MeasurableEquiv.image_eq_preimage]
+          refine NullMeasurableSet.preimage
+            (nullmeasurable_superlevel_set_of_aemeasurable _
+              (Integrable.aemeasurable ?_) l)
+            (MeasurePreserving.quasiMeasurePreserving
+              (MeasurePreserving.symm φ φ_measpres))
+        · exact f_nor_integrable
+        · exact g_nor_integrable
 
       have ABC : A + B ⊆ C := calc
         A + B
@@ -315,7 +307,7 @@ lemma prepkopa_leindler_dim1_essBdd
           = volume A + volume B := by iterate 2 rw [φ_preserves_volume]
         _ ≤ volume C :=
           one_dim_BMInequality_of_nullmeasurable A B C
-            A_nonempty B_nonempty A_nm B_nm ABC
+            A_nonempty B_nonempty A_B_nm.1 A_B_nm.2 ABC
         _ = volume (superlevel_set h_nor l) := φ_preserves_volume
 
 
@@ -347,8 +339,7 @@ lemma prepkopa_leindler_dim1_essBdd
         exact ae_le_essSup
 
       unfold fun_vol_splset_f fun_vol_splset_g superlevel_set
-      constructor
-      all_goals
+      constructor; all_goals
         congr; funext x
         simp only [← Ioo_union_Ici_eq_Ioi zero_lt_one,
           indicator_union_of_disjoint Ioo_disjoint_Ici_same]
@@ -409,6 +400,7 @@ lemma prepkopa_leindler_dim1_essBdd
       (integral_nonneg f_nor_nonneg) (integral_nonneg g_nor_nonneg)
     apply le_trans this
     gcongr
+
 
   unfold f_nor g_nor h_nor at this
   simp only [integral_div] at this
