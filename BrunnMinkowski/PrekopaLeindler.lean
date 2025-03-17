@@ -91,7 +91,7 @@ lemma one_dim_BMInequality_of_nullmeasurable (A B C : Set ℝ)
 -- Prékopa--Leindler
 theorem prekopa_leindler
     {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
-    {d : ℕ} (f g h : ℝn d → ℝ)
+    {d : ℕ} {f g h : ℝn d → ℝ}
     (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f)
     (hf_nonneg : 0 ≤ g) (hg_integrable : Integrable g)
     (hf_nonneg : 0 ≤ h) (hh_integrable : Integrable h)
