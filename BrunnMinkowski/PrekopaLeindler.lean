@@ -1,35 +1,48 @@
-import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.Analysis.InnerProductSpace.PiL2
-import Mathlib.MeasureTheory.Integral.Lebesgue
-import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
-import Mathlib.Analysis.InnerProductSpace.EuclideanDist
-import BrunnMinkowski.EuclideanSpace
+import Mathlib
 
-open NNReal ENNReal MeasureTheory Finset
-open Real Set MeasureTheory Filter Asymptotics
+section
 
-open scoped Real Topology
+open MeasureTheory
 
--- isomorhpism from any f.d. R-v.s. to R^d
-#check toEuclidean
+variable {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
+variable {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
 
-theorem EuclideanSpace.induction_on_dimension
-    {P : (α : Type) →
-      [AddCommGroup α] → [TopologicalSpace α] →  [IsTopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → Sort}
-    {base0 : P (EuclideanSpace ℝ (Fin 0))}
-    {base1 : P ℝ}
-    {induct : {α β : Type} →
-      [AddCommGroup α] → [TopologicalSpace α] →  [IsTopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] →
-      [AddCommGroup β] → [TopologicalSpace β] →  [IsTopologicalAddGroup β] → [T2Space β] → [Module ℝ β] → [ContinuousSMul ℝ β] → [FiniteDimensional ℝ β] →
-      P α → P β → P (α × β)} :
-  (α : Type) → [AddCommGroup α] → [TopologicalSpace α] →  [IsTopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → P α := by sorry
+theorem Nat.induction_on_add
+    {p : ℕ → Prop} (n : ℕ) (hzero : p 0) (hone : p 1)
+    (hadd : ∀ ⦃n⦄, p n → ∀ ⦃m⦄, p m → p (n + m)) :
+    p n := by
+  induction n <;> simp_all only
+
+@[simp]
+theorem volume_univ_eq_of_pi_empty {α : Type*} [IsEmpty α] :
+    haveI : Fintype α := Fintype.ofIsEmpty
+    volume (@Set.univ (α → ℝ)) = 1 := by
+  simp only [volume_pi, Measure.pi_empty_univ]
+
+@[simp]
+theorem EuclideanSpace.volume_univ_eq_one_of_rank_zero {ι : Type*} [IsEmpty ι] :
+    haveI : Fintype ι := Fintype.ofIsEmpty
+    volume (@Set.univ (EuclideanSpace ℝ ι))= 1 :=
+  let e := EuclideanSpace.measurableEquiv ι
+  haveI : Fintype ι := Fintype.ofIsEmpty
+  have h₁ : volume (e ⁻¹' Set.univ) = volume (@Set.univ (ι → ℝ)):=
+    MeasurePreserving.measure_preimage_equiv (EuclideanSpace.volume_preserving_measurableEquiv _) _
+  sorry
+
+    
+  
 
 theorem prekopa_leindler
-    {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
-    {d : ℕ} (f g h : ℝn d → ℝ)
-    (hlb :
-      ∀ x y : ℝn d,
-      (f x)^(1 - t) * (g y)^t ≤ h (x + y)) :
-  (∫ x, f x)^(1-t) * (∫ y, g y)^t ≤
-  (1 - t)^(d * (1-t)) * t^(d*t) * (∫ x, h x)
-  := by sorry
+    {f : EuclideanSpace ℝ ι → ℝ} (hf₁ : Integrable f) (hf₂ : ∀ {x}, 0 ≤ f x)
+    {g : EuclideanSpace ℝ ι → ℝ} (hg₁ : Integrable g) (hg₂ : ∀ {y}, 0 ≤ g y)
+    {h : EuclideanSpace ℝ ι → ℝ} (hh₁ : Integrable h)
+    (h₀ : ∀ {x y}, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) :
+    (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤
+    (1 - t) ^ ((1 - t) * Fintype.card ι) * t ^ (t * Fintype.card ι) * (∫ z, h z) := by
+  induction h : Fintype.card ι using Nat.induction_on_add generalizing ι
+  case hzero =>
+    sorry
+  case hone n ih => sorry
+  case hadd n m ih => sorry
+
+end
