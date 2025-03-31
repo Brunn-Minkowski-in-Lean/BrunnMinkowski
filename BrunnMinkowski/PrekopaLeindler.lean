@@ -253,6 +253,9 @@ theorem condition_of_oplus
   · sorry
   · sorry
   -/
+
+end
+
 end PrekopaLeindler
 
 -- TODO: Add PrekopaLeindler.Statement
