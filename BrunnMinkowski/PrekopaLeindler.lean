@@ -22,21 +22,84 @@ noncomputable instance {α : Type*} [MeasurableSpace α] {p : ENNReal} [Fact (1 
     MeasurableSpace (WithLp p α) :=
   ‹MeasurableSpace α›
 
-noncomputable instance {α β : Type*}
-    [TopologicalSpace α] [MeasurableSpace α] [BorelSpace α]
-    [TopologicalSpace β] [MeasurableSpace β] [BorelSpace β]
+noncomputable instance
+    {α : Type*} [TopologicalSpace α] [MeasurableSpace α] [BorelSpace α]
+    {β : Type*} [TopologicalSpace β] [MeasurableSpace β] [BorelSpace β]
     [SecondCountableTopologyEither α β] {p : ENNReal} [Fact (1 ≤ p)] :
     BorelSpace (WithLp p (α × β)) :=
   inferInstanceAs <| BorelSpace (α × β)
 
---instance : SFinite (volume : Measure (EuclideanSpace ℝ ι)) :=
+noncomputable def EuclideanSpace.Prod.orthonormalBasis
+    (ι : Type*) [Fintype ι] (κ : Type*) [Fintype κ] :
+    OrthonormalBasis (ι ⊕ κ) ℝ (WithLp 2 (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ)) where
+  repr := (PiLp.sumPiLpEquivProdLpPiLp 2 (fun _ ↦ ℝ)).symm
+
+noncomputable def euclideanProd
+    {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
+    (μ : Measure (EuclideanSpace ℝ ι)) (ν : Measure (EuclideanSpace ℝ κ)):
+    Measure (WithLp 2 (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ)) :=
+  μ.bind fun x ↦ ν.map (fun y ↦ ⟨x, y⟩)
+  
+
+noncomputable instance Prod.EuclideanSpace.measureSpace
+    {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ] :
+    MeasureSpace (WithLp 2 (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ)) where
+  volume := euclideanProd volume volume
+
+theorem EuclideanSpace.volume_eq_prod_norm
+    {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ] :
+    (volume : Measure (WithLp 2 (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ))) =
+    euclideanProd
+      (volume : Measure (EuclideanSpace ℝ ι)) (volume : Measure (EuclideanSpace ℝ κ)) :=
+  rfl
+
+theorem EuclideanSpace.continuous_integral_integral
+    {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
+    {μ : Measure (EuclideanSpace ℝ ι)}
+    {ν : Measure (EuclideanSpace ℝ κ)} :
+    Continuous fun (f : Lp ℝ 1 (euclideanProd μ ν)) ↦
+      ∫ (x : EuclideanSpace ℝ ι), ∫ (y : EuclideanSpace ℝ κ), f (x, y) ∂ν ∂μ :=
+  sorry
+
+
+theorem EuclideanSpace.integral_prod
+    {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
+    {μ : Measure (EuclideanSpace ℝ ι)}
+    {ν : Measure (EuclideanSpace ℝ κ)}
+    (f : (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ) → ℝ)
+    (hf : Integrable f (euclideanProd μ ν)) :
+    ∫ (z : WithLp 2 (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ)), f z ∂(euclideanProd μ ν) =
+    ∫ (x : EuclideanSpace ℝ ι), ∫ (y : EuclideanSpace ℝ κ), f (x, y) ∂ν ∂μ := by
+  revert f; apply Integrable.induction
+  · sorry
+  · sorry
+  · exact isClosed_eq continuous_integral EuclideanSpace.continuous_integral_integral
+  · sorry
+
+--open Measure in
+--noncomputable def WithLp.prod
+--    (p : ENNReal) [Fact (1 ≤ p)]
+--    [MeasureSpace α] (μ : Measure α)
+--    [MeasureSpace β] (ν : Measure β) :
+--    Measure (WithLp p (α × β)) :=
+--  bind μ fun x : α ↦ map (Prod.mk x) ν
+
+--theorem WithLp.volume_eq_prod :
+--    (volume : Measure (WithLp 2 ((WithLp 2 α) × (WithLp 2 β)))) =
+--    WithLp.prod 2 (volume : Measure (WithLp 2 α)) (volume : Measure (WithLp 2 β)) :=
 --  sorry
 
-omit [Fact (1 ≤ p)] in
-theorem additional_lemma
-    {α : Type*} {β : Type*} (f : WithLp p α → β) (a : α) :
-    f (a : WithLp p α) = f a :=
-  rfl
+theorem WithLp.integral_prod
+    {α : Type*} [MeasurableSpace α]
+    {β : Type*} [MeasurableSpace β]
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {p : ENNReal} [Fact (1 ≤ p)]
+    {μ : Measure (WithLp p α)} [SFinite μ]
+    {ν : Measure (WithLp p β)} [SFinite ν]
+    (f : WithLp p (WithLp p α × WithLp p β) → E) (hf : Integrable f (μ.prod ν)) :
+    ∫ (z : WithLp p (WithLp p α × WithLp p β)), f z ∂μ.prod ν =
+    ∫ (x : WithLp p α), ∫ (y : WithLp p β), f (x, y) ∂ν ∂μ :=
+  MeasureTheory.integral_prod f hf
 
 set_option maxHeartbeats 1000000000 in
 theorem condition_of_oplus
@@ -68,14 +131,10 @@ theorem condition_of_oplus
       EuclideanSpace ℝ (ι ⊕ κ) ≃ₗᵢ[ℝ] WithLp 2 ((EuclideanSpace ℝ ι) × (EuclideanSpace ℝ κ)) :=
     PiLp.sumPiLpEquivProdLpPiLp _ _
   let eqvₘ := LinearIsometryEquiv.toMeasurableEquiv eqvₗᵢ
-  let F (x₁ : EuclideanSpace ℝ ι) : EuclideanSpace ℝ κ → ℝ := fun x₂ ↦ f (eqvₗᵢ.symm (x₁, x₂))
-  let G (y₁ : EuclideanSpace ℝ ι) : EuclideanSpace ℝ κ → ℝ := fun y₂ ↦ g (eqvₗᵢ.symm (y₁, y₂))
-  let H (z₁ : EuclideanSpace ℝ ι) : EuclideanSpace ℝ κ → ℝ := fun z₂ ↦ h (eqvₗᵢ.symm (z₁, z₂))
-  have hF₁ {x₁} : Integrable (F x₁) := by
-    simp [F]; have := (integrable_comp eqvₗᵢ.symm f).mpr hf₁; exact?
-    
+  let F (x₁ : EuclideanSpace ℝ ι) : EuclideanSpace ℝ κ → ℝ := fun x₂ ↦ (f ∘ eqvₗᵢ.symm) (x₁, x₂)
+  let G (y₁ : EuclideanSpace ℝ ι) : EuclideanSpace ℝ κ → ℝ := fun y₂ ↦ (g ∘ eqvₗᵢ.symm) (y₁, y₂)
+  let H (z₁ : EuclideanSpace ℝ ι) : EuclideanSpace ℝ κ → ℝ := fun z₂ ↦ (h ∘ eqvₗᵢ.symm) (z₁, z₂)
   have hF₂ {x₁} (x₂) : 0 ≤ F x₁ x₂ := hf₂ _
-  have hG₁ {x₁} : Integrable (G x₁) := sorry
   have hG₂ {y₁} (y₂) : 0 ≤ G y₁ y₂ := hg₂ _
   let m : MeasureTheory.MeasurePreserving eqvₗᵢ.symm.toMeasurableEquiv := sorry
   rw [← m.map_eq]
@@ -83,10 +142,17 @@ theorem condition_of_oplus
   have hg₃ := @MeasureTheory.integral_map_equiv _ _ _ _ _ volume _ _ eqvₗᵢ.symm.toMeasurableEquiv g
   have hh₃ := @MeasureTheory.integral_map_equiv _ _ _ _ _ volume _ _ eqvₗᵢ.symm.toMeasurableEquiv h
   rw [hf₃, hg₃, hh₃, LinearIsometryEquiv.coe_toMeasurableEquiv]
+  have hhh (f : WithLp 2 ((EuclideanSpace ℝ ι) × (EuclideanSpace ℝ κ)) → ℝ) (hf : Integrable f) :
+      ∫ (x : WithLp 2 ((EuclideanSpace ℝ ι) × (EuclideanSpace ℝ κ))), f x ∂volume =
+      ∫ (x : WithLp 2 ((EuclideanSpace ℝ ι) × (EuclideanSpace ℝ κ))), f x ∂volume.prod volume := by
+    rw [WithLp.integral_prod]
+    · sorry
+    · sorry
   have h₁ (f : WithLp 2 ((EuclideanSpace ℝ ι) × (EuclideanSpace ℝ κ)) → ℝ) :
       ∫ (x : WithLp 2 ((EuclideanSpace ℝ ι) × (EuclideanSpace ℝ κ))), f x ∂volume =
       ∫ (x : (EuclideanSpace ℝ ι) × (EuclideanSpace ℝ κ)), f x ∂volume.prod volume := by
-    rw [Measure.volume_eq_prod]; rfl
+    rw [← Measure.volume_eq_prod]
+    sorry
   simp_rw [h₁]
   have h₂ {x₁ y₁} :
       (∫ x₂, F x₁ x₂) ^ (1 - t) * (∫ y₂, G y₁ y₂) ^ t ≤
