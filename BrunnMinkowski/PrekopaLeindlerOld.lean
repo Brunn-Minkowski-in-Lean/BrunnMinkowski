@@ -14,23 +14,21 @@ theorem Nat.induction_on_add
   induction n <;> simp_all only
 
 @[simp]
-theorem volume_univ_eq_of_pi_empty {α : Type*} [IsEmpty α] :
-    haveI : Fintype α := Fintype.ofIsEmpty
+theorem volume_univ_eq_of_pi_empty {α : Type*} [Fintype α] [IsEmpty α] :
     volume (@Set.univ (α → ℝ)) = 1 := by
   simp only [volume_pi, Measure.pi_empty_univ]
 
 @[simp]
-theorem EuclideanSpace.volume_univ_eq_one_of_rank_zero {ι : Type*} [IsEmpty ι] :
-    haveI : Fintype ι := Fintype.ofIsEmpty
-    volume (@Set.univ (EuclideanSpace ℝ ι))= 1 :=
-  let e := EuclideanSpace.measurableEquiv ι
-  haveI : Fintype ι := Fintype.ofIsEmpty
-  have h₁ : volume (e ⁻¹' Set.univ) = volume (@Set.univ (ι → ℝ)):=
-    MeasurePreserving.measure_preimage_equiv (EuclideanSpace.volume_preserving_measurableEquiv _) _
-  sorry
+theorem EuclideanSpace.volume_univ_eq_one_of_rank_zero {ι : Type*} [Fintype ι] [IsEmpty ι] :
+    volume (@Set.univ (EuclideanSpace ℝ ι))= 1 := by
+  simp only [volume_euclideanSpace_eq_dirac, measure_univ]
 
-    
-  
+@[simp]
+theorem EuclideanSpace.integral_of_empty_eq_one
+    {ι : Type*} [Fintype ι] [IsEmpty ι] (f : EuclideanSpace ℝ ι → ℝ) :
+    ∫ (x : EuclideanSpace ℝ ι), f x = f 0 := by
+  simp [integral_unique, default, isEmptyElim]
+  congr; funext; rw [PiLp.zero_apply]; tauto
 
 theorem prekopa_leindler
     {f : EuclideanSpace ℝ ι → ℝ} (hf₁ : Integrable f) (hf₂ : ∀ {x}, 0 ≤ f x)
@@ -39,10 +37,13 @@ theorem prekopa_leindler
     (h₀ : ∀ {x y}, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) :
     (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤
     (1 - t) ^ ((1 - t) * Fintype.card ι) * t ^ (t * Fintype.card ι) * (∫ z, h z) := by
-  induction h : Fintype.card ι using Nat.induction_on_add generalizing ι
+  induction h₁ : Fintype.card ι using Nat.induction_on_add generalizing ι
   case hzero =>
-    sorry
-  case hone n ih => sorry
+    rw [Fintype.card_eq_zero_iff] at h₁
+    simp [h₁]
+    nth_rw 3 [← add_zero 0]
+    exact h₀
+  case hone => sorry
   case hadd n m ih => sorry
 
 end
