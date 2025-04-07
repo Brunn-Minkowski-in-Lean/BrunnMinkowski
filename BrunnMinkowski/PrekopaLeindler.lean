@@ -1,8 +1,3 @@
---import Mathlib.Analysis.InnerProductSpace.Basic
---import Mathlib.Analysis.InnerProductSpace.PiL2
---import Mathlib.MeasureTheory.Integral.Lebesgue
---import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
---import Mathlib.Analysis.InnerProductSpace.EuclideanDist
 import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 
 import BrunnMinkowski.MeasureTheoryLemmas
@@ -18,6 +13,17 @@ open Pointwise
 
 -- isomorhpism from any f.d. R-v.s. to R^d
 -- #check toEuclidean
+
+theorem EuclideanSpace.induction_on_dimension
+    {P : (α : Type) →
+      [AddCommGroup α] → [TopologicalSpace α] →  [IsTopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → Sort}
+    {base0 : P (EuclideanSpace ℝ (Fin 0))}
+    {base1 : P ℝ}
+    {induct : {α β : Type} →
+      [AddCommGroup α] → [TopologicalSpace α] →  [IsTopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] →
+      [AddCommGroup β] → [TopologicalSpace β] →  [IsTopologicalAddGroup β] → [T2Space β] → [Module ℝ β] → [ContinuousSMul ℝ β] → [FiniteDimensional ℝ β] →
+      P α → P β → P (α × β)} :
+  (α : Type) → [AddCommGroup α] → [TopologicalSpace α] →  [IsTopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → P α := by sorry
 
 lemma one_dim_BMInequality_of_nullmeasurable (A B C : Set ℝ)
     (hA_nonempty : A.Nonempty) (hB_nonempty : B.Nonempty)

@@ -391,5 +391,3 @@ lemma div_essSup_of_essBdd_lowerBdd
 --             (isCoboundedUnder_le_of_le (ae volume) f_div_nonneg)
 --             (isBoundedUnder_const)
 --       _ = (essSup f volume) / c := essSup_const' ((essSup f volume) / c)
-
--- #min_imports
