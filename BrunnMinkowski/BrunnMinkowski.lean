@@ -1,5 +1,5 @@
 import Mathlib.Analysis.Convex.Body
-import BrunnMinkowski.PrekopaLeindler
+import BrunnMinkowski.PrekopaLeindlerCombine
 
 open Set MeasureTheory ENNReal
 open scoped Pointwise NNReal

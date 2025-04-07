@@ -1,11 +1,12 @@
 import Mathlib
 
+import BrunnMinkowski.PrekopaLeindler
+
 section
 
 open MeasureTheory
 
 variable {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
-variable {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
 
 theorem Nat.induction_on_add
     {p : ℕ → Prop} (n : ℕ) (hzero : p 0) (hone : p 1)
@@ -31,6 +32,17 @@ theorem EuclideanSpace.integral_of_empty_eq_one
   congr; funext; rw [PiLp.zero_apply]; tauto
 
 theorem prekopa_leindler
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) {d : ℕ}
+    {f : EuclideanSpace ℝ (Fin d) → ℝ} (hf₁ : 0 ≤ f) (hf₂ : Integrable f) 
+    {g : EuclideanSpace ℝ (Fin d) → ℝ} (hg₁ : 0 ≤ g) (hg₂ : Integrable g)
+    {h : EuclideanSpace ℝ (Fin d) → ℝ} (hh₁ : 0 ≤ h) (hh₂ : Integrable h)
+    (h₀ : ∀ x y, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) :
+    (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤
+    (1 - t) ^ (d * (1 - t)) * t ^ (d * t) * (∫ z, h z) := by
+  sorry
+
+theorem prekopa_leindler'
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
     {f : EuclideanSpace ℝ ι → ℝ} (hf₁ : Integrable f) (hf₂ : ∀ {x}, 0 ≤ f x)
     {g : EuclideanSpace ℝ ι → ℝ} (hg₁ : Integrable g) (hg₂ : ∀ {y}, 0 ≤ g y)
     {h : EuclideanSpace ℝ ι → ℝ} (hh₁ : Integrable h)
