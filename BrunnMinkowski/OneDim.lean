@@ -55,7 +55,7 @@ theorem measure_translation_of_set (s : Set ℝ) (c : ℝ) : volume (image (fun 
 
 -- It's a shame
 example (A B : Set ℝ) : A + B = B + A := by
-  exact Set.addCommMonoid.proof_1 A B
+  exact AddCommMagma.add_comm A B
 
 lemma volume_le_volume_add_right
     {A B : Set ℝ} (hB : B.Nonempty)
@@ -73,7 +73,7 @@ lemma volume_le_volume_add_right
 lemma volume_le_volume_add_left
     {A B : Set ℝ} (hB : B.Nonempty)
     : volume A ≤ volume (B + A) := by
-  rw [addCommMonoid.proof_1 B]
+  rw [AddCommMagma.add_comm]
   exact volume_le_volume_add_right hB
 
 -- Maybe (or maybe not) factor out the lemmas below

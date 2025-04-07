@@ -1,8 +1,4 @@
-import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.Analysis.InnerProductSpace.PiL2
-import Mathlib.MeasureTheory.Integral.Lebesgue
-import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
-import Mathlib.Analysis.InnerProductSpace.EuclideanDist
+import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 
 import BrunnMinkowski.MeasureTheoryLemmas
 import BrunnMinkowski.EuclideanSpace
@@ -28,7 +24,6 @@ theorem EuclideanSpace.induction_on_dimension
       [AddCommGroup β] → [TopologicalSpace β] →  [IsTopologicalAddGroup β] → [T2Space β] → [Module ℝ β] → [ContinuousSMul ℝ β] → [FiniteDimensional ℝ β] →
       P α → P β → P (α × β)} :
   (α : Type) → [AddCommGroup α] → [TopologicalSpace α] →  [IsTopologicalAddGroup α] → [T2Space α] → [Module ℝ α] → [ContinuousSMul ℝ α] → [FiniteDimensional ℝ α] → P α := by sorry
-
 
 lemma one_dim_BMInequality_of_nullmeasurable (A B C : Set ℝ)
     (hA_nonempty : A.Nonempty) (hB_nonempty : B.Nonempty)
@@ -86,22 +81,6 @@ lemma one_dim_BMInequality_of_nullmeasurable (A B C : Set ℝ)
 
   rw [hAm_vol_eq, hBm_vol_eq, measure_toMeasurable C] at hAmBmCm_vol
   exact hAmBmCm_vol
-
-
--- Prékopa--Leindler
-theorem prekopa_leindler
-    {t : ℝ} (h0t : 0 < t) (ht1 : t < 1)
-    {d : ℕ} {f g h : ℝn d → ℝ}
-    (hf_nonneg : 0 ≤ f) (hf_integrable : Integrable f)
-    (hf_nonneg : 0 ≤ g) (hg_integrable : Integrable g)
-    (hf_nonneg : 0 ≤ h) (hh_integrable : Integrable h)
-    (hfgh_pow_le :
-      ∀ x y : ℝn d,
-      (f x)^(1 - t) * (g y)^t ≤ h (x + y)) :
-    (∫ x, f x)^(1-t) * (∫ y, g y)^t ≤
-      (1 - t)^(d * (1-t)) * t^(d*t) * (∫ x, h x)
-  := by sorry
-
 
 abbrev PL_dim1_cond (t : ℝ) (f g h : ℝn 1 → ℝ) :=
   (x y : ℝn 1) →
@@ -283,8 +262,8 @@ lemma prepkopa_leindler_dim1_essBdd
             unfold A B
             intro x hx
             obtain ⟨y, hy, z, hz, hyzx⟩ := mem_add.mp hx
-            apply mem_image_of_mem φ.symm at hy
-            apply mem_image_of_mem φ.symm at hz
+            apply Set.mem_image_of_mem φ.symm at hy
+            apply Set.mem_image_of_mem φ.symm at hz
             simp only [mem_image, EmbeddingLike.apply_eq_iff_eq,
               exists_eq_right] at hy hz
             obtain ⟨yy, hyy, hφyy⟩ := hy

@@ -1,9 +1,11 @@
-import Mathlib.MeasureTheory.Function.L1Space
-import Mathlib.MeasureTheory.Group.Measure
-import Mathlib.MeasureTheory.Integral.Bochner
-import Mathlib.MeasureTheory.Integral.Lebesgue
+--import Mathlib.MeasureTheory.Function.L1Space
+--import Mathlib.MeasureTheory.Group.Measure
+--import Mathlib.MeasureTheory.Integral.Bochner
+--import Mathlib.MeasureTheory.Integral.Lebesgue
+--import Mathlib.MeasureTheory.Integral.Layercake
+--import Mathlib.MeasureTheory.Integral.SetIntegral
+import Mathlib.Data.Real.StarOrdered
 import Mathlib.MeasureTheory.Integral.Layercake
-import Mathlib.MeasureTheory.Integral.SetIntegral
 -- import Mathlib.Data.Set.Basic
 -- import Mathlib.Algebra.Order.Group.Pointwise.CompleteLattice
 
@@ -389,7 +391,3 @@ lemma div_essSup_of_essBdd_lowerBdd
 --             (isCoboundedUnder_le_of_le (ae volume) f_div_nonneg)
 --             (isBoundedUnder_const)
 --       _ = (essSup f volume) / c := essSup_const' ((essSup f volume) / c)
-
-
-
--- #min_imports
