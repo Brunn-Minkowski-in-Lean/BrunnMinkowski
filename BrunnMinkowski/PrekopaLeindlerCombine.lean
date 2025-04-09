@@ -41,10 +41,48 @@ theorem prekopa_leindler
     (1 - t) ^ (d * (1 - t)) * t ^ (d * t) * (∫ z, h z) := by
   sorry
 
+theorem prekopa_leindler_add
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
+    (hι : {f : EuclideanSpace ℝ ι → ℝ} → Integrable f → 0 ≤ f →
+          {g : EuclideanSpace ℝ ι → ℝ} → Integrable g → 0 ≤ g →
+          {h : EuclideanSpace ℝ ι → ℝ} → Integrable h →
+          (∀ {x y}, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) →
+          (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤
+          (1 - t) ^ ((1 - t) * Fintype.card ι) * t ^ (t * Fintype.card ι) * (∫ z, h z))
+    (hκ : {f : EuclideanSpace ℝ κ → ℝ} → Integrable f → 0 ≤ f →
+          {g : EuclideanSpace ℝ κ → ℝ} → Integrable g → 0 ≤ g →
+          {h : EuclideanSpace ℝ κ → ℝ} → Integrable h →
+          (∀ {x y}, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) →
+          (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤
+          (1 - t) ^ ((1 - t) * Fintype.card κ) * t ^ (t * Fintype.card κ) * (∫ z, h z))
+    {f : EuclideanSpace ℝ (ι ⊕ κ) → ℝ} (hf₁ : Integrable f) (hf₂ : 0 ≤ f)
+    {g : EuclideanSpace ℝ (ι ⊕ κ) → ℝ} (hg₁ : Integrable g) (hg₂ : 0 ≤ g)
+    {h : EuclideanSpace ℝ (ι ⊕ κ) → ℝ} (hh₁ : Integrable h)
+    (h₀ : ∀ {x y}, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) :
+    (∫ x, f x) ^ (1 - t) * (∫ y, f y) ^ t ≤
+    (1 - t) ^ ((1 - t) * (Fintype.card ι + Fintype.card κ)) *
+    t ^ (t * (Fintype.card ι + Fintype.card κ)) * (∫ z, h z) := by
+  sorry
+
+theorem helper_lemma₁ (f : EuclideanSpace ℝ ι → ℝ) :
+    ∫ (x : EuclideanSpace ℝ ι), f x = ∫ (x : ι → ℝ), f x := by
+  have := MeasurePreserving.integral_comp
+    (EuclideanSpace.volume_preserving_measurableEquiv ι).symm
+    (MeasurableEquiv.measurableEmbedding (EuclideanSpace.measurableEquiv ι).symm) f
+  rw [← this]; rfl
+
+theorem helper_lemma₂ (f : EuclideanSpace ℝ ι → ℝ) :
+    Integrable f (volume : Measure (EuclideanSpace ℝ ι)) ↔
+    Integrable f (volume : Measure (ι → ℝ)) := by
+  rw [← MeasurePreserving.integrable_comp_emb
+    (EuclideanSpace.volume_preserving_measurableEquiv ι)
+    (MeasurableEquiv.measurableEmbedding (EuclideanSpace.measurableEquiv ι))]
+  rfl
+
 theorem prekopa_leindler'
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
-    {f : EuclideanSpace ℝ ι → ℝ} (hf₁ : Integrable f) (hf₂ : ∀ {x}, 0 ≤ f x)
-    {g : EuclideanSpace ℝ ι → ℝ} (hg₁ : Integrable g) (hg₂ : ∀ {y}, 0 ≤ g y)
+    {f : EuclideanSpace ℝ ι → ℝ} (hf₁ : Integrable f) (hf₂ : 0 ≤ f)
+    {g : EuclideanSpace ℝ ι → ℝ} (hg₁ : Integrable g) (hg₂ : 0 ≤ g)
     {h : EuclideanSpace ℝ ι → ℝ} (hh₁ : Integrable h)
     (h₀ : ∀ {x y}, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) :
     (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤
@@ -56,6 +94,9 @@ theorem prekopa_leindler'
     nth_rw 3 [← add_zero 0]
     exact h₀
   case hone => sorry
-  case hadd n m ih => sorry
+  case hadd n hn m hm i =>
+    simp_rw [helper_lemma₁ f, helper_lemma₁ g, helper_lemma₁ h]
+    simp_rw [helper_lemma₁, helper_lemma₂, EuclideanSpace, PiLp, WithLp] at *
+    sorry
 
 end
