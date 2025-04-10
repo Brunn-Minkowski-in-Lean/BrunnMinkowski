@@ -43,21 +43,21 @@ theorem prekopa_leindler
 
 theorem prekopa_leindler_add
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
-    (hι : {f : EuclideanSpace ℝ ι → ℝ} → Integrable f → 0 ≤ f →
-          {g : EuclideanSpace ℝ ι → ℝ} → Integrable g → 0 ≤ g →
-          {h : EuclideanSpace ℝ ι → ℝ} → Integrable h →
+    (hι : {f : (ι → ℝ) → ℝ} → Integrable f → 0 ≤ f →
+          {g : (ι → ℝ) → ℝ} → Integrable g → 0 ≤ g →
+          {h : (ι → ℝ) → ℝ} → Integrable h →
           (∀ {x y}, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) →
           (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤
           (1 - t) ^ ((1 - t) * Fintype.card ι) * t ^ (t * Fintype.card ι) * (∫ z, h z))
-    (hκ : {f : EuclideanSpace ℝ κ → ℝ} → Integrable f → 0 ≤ f →
-          {g : EuclideanSpace ℝ κ → ℝ} → Integrable g → 0 ≤ g →
-          {h : EuclideanSpace ℝ κ → ℝ} → Integrable h →
+    (hκ : {f : (κ → ℝ) → ℝ} → Integrable f → 0 ≤ f →
+          {g : (κ → ℝ) → ℝ} → Integrable g → 0 ≤ g →
+          {h : (κ → ℝ) → ℝ} → Integrable h →
           (∀ {x y}, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) →
           (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤
           (1 - t) ^ ((1 - t) * Fintype.card κ) * t ^ (t * Fintype.card κ) * (∫ z, h z))
-    {f : EuclideanSpace ℝ (ι ⊕ κ) → ℝ} (hf₁ : Integrable f) (hf₂ : 0 ≤ f)
-    {g : EuclideanSpace ℝ (ι ⊕ κ) → ℝ} (hg₁ : Integrable g) (hg₂ : 0 ≤ g)
-    {h : EuclideanSpace ℝ (ι ⊕ κ) → ℝ} (hh₁ : Integrable h)
+    {f : ((ι ⊕ κ) → ℝ) → ℝ} (hf₁ : Integrable f) (hf₂ : 0 ≤ f)
+    {g : ((ι ⊕ κ) → ℝ) → ℝ} (hg₁ : Integrable g) (hg₂ : 0 ≤ g)
+    {h : ((ι ⊕ κ) → ℝ) → ℝ} (hh₁ : Integrable h)
     (h₀ : ∀ {x y}, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) :
     (∫ x, f x) ^ (1 - t) * (∫ y, f y) ^ t ≤
     (1 - t) ^ ((1 - t) * (Fintype.card ι + Fintype.card κ)) *
@@ -79,6 +79,21 @@ theorem helper_lemma₂ (f : EuclideanSpace ℝ ι → ℝ) :
     (MeasurableEquiv.measurableEmbedding (EuclideanSpace.measurableEquiv ι))]
   rfl
 
+theorem helper_lemma₃ (e : ι ≃ κ) (f : (κ → ℝ) → ℝ) :
+    ∫ (y : ι → ℝ), f ((MeasurableEquiv.arrowCongr' e (MeasurableEquiv.refl ℝ)) y) =
+    ∫ (x : κ → ℝ), f x := by
+  apply MeasurePreserving.integral_comp _
+    (MeasurableEquiv.measurableEmbedding (MeasurableEquiv.arrowCongr' e (MeasurableEquiv.refl ℝ)))
+  apply measurePreserving_arrowCongr'
+  simp [MeasurableEquiv.refl, MeasurePreserving.id]
+
+theorem helper_lemma₄ (f : ((ι ⊕ κ) → ℝ) → ℝ) :
+    ∫ (x : (ι ⊕ κ) → ℝ), f x =
+    ∫ (y : (ι → ℝ) × (κ → ℝ)), f ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm y) := by
+  symm; apply MeasurePreserving.integral_comp
+  · sorry
+  · sorry
+
 theorem prekopa_leindler'
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
     {f : EuclideanSpace ℝ ι → ℝ} (hf₁ : Integrable f) (hf₂ : 0 ≤ f)
@@ -96,7 +111,21 @@ theorem prekopa_leindler'
   case hone => sorry
   case hadd n hn m hm i =>
     simp_rw [helper_lemma₁ f, helper_lemma₁ g, helper_lemma₁ h]
-    simp_rw [helper_lemma₁, helper_lemma₂, EuclideanSpace, PiLp, WithLp] at *
+    rw [helper_lemma₂] at hf₁ hg₁ hh₁
+    simp only [EuclideanSpace, PiLp, WithLp] at f g h hn hm h₀
+    have h₂ := (h₁ ▸ Fintype.equivFin ι).trans finSumFinEquiv.symm
+    have h₃ := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ h₂
+    rw [← Fintype.card_fin n, ← Fintype.card_fin m]
+    simp_rw [← helper_lemma₃ h₂.symm]
+    let F : (Fin n → ℝ) → ℝ := fun x ↦ ∫ (y : Fin m → ℝ), f
+      ((MeasurableEquiv.arrowCongr' h₂ (MeasurableEquiv.refl ℝ)).symm
+        ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm (x, y)))
+    let G : (Fin n → ℝ) → ℝ := fun x ↦ ∫ (y : Fin m → ℝ), g
+      ((MeasurableEquiv.arrowCongr' h₂ (MeasurableEquiv.refl ℝ)).symm
+        ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm (x, y)))
+    let H : (Fin n → ℝ) → ℝ := fun x ↦ ∫ (y : Fin m → ℝ), h
+      ((MeasurableEquiv.arrowCongr' h₂ (MeasurableEquiv.refl ℝ)).symm
+        ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm (x, y)))
     sorry
 
 end
