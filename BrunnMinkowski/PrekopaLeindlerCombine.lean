@@ -87,7 +87,35 @@ theorem helper_lemma₃ (e : ι ≃ κ) (f : (κ → ℝ) → ℝ) :
   apply measurePreserving_arrowCongr'
   simp [MeasurableEquiv.refl, MeasurePreserving.id]
 
-theorem helper_lemma₄ (f : ((ι ⊕ κ) → ℝ) → ℝ) :
+theorem measurable_sumArrowEquivProdArrow
+    (ι : Type*) [Fintype ι] (κ : Type*) [Fintype κ] :
+    Measurable (Equiv.sumArrowEquivProdArrow ι κ ℝ) := by
+  simp [Equiv.sumArrowEquivProdArrow]
+  apply Measurable.prodMk
+  · sorry
+  · sorry
+
+theorem measurable_sumArrowEquivProdArrow_symm
+    (ι : Type*) [Fintype ι] (κ : Type*) [Fintype κ] :
+    Measurable (Equiv.sumArrowEquivProdArrow ι κ ℝ).symm := by
+  sorry
+
+def measurableEquiv_sumArrowEquivProdArrow
+    (ι : Type*) [Fintype ι] (κ : Type*) [Fintype κ] :
+    MeasurableEquiv ((ι ⊕ κ) → ℝ) ((ι → ℝ) × (κ → ℝ)) :=
+  ⟨Equiv.sumArrowEquivProdArrow ι κ ℝ,
+    measurable_sumArrowEquivProdArrow ι κ,
+    measurable_sumArrowEquivProdArrow_symm ι κ⟩
+
+theorem measurePreserving_sumArrowEquivProdArrow
+    (ι : Type*) [Fintype ι] (κ : Type*) [Fintype κ] :
+    MeasurePreserving (Equiv.sumArrowEquivProdArrow ι κ ℝ) volume volume := by
+  refine ⟨measurable_sumArrowEquivProdArrow _ _ ℝ, ?_⟩
+  sorry
+
+-- theorem helper_lemma₅ :
+
+theorem helper_lemma₆ (f : ((ι ⊕ κ) → ℝ) → ℝ) :
     ∫ (x : (ι ⊕ κ) → ℝ), f x =
     ∫ (y : (ι → ℝ) × (κ → ℝ)), f ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm y) := by
   symm; apply MeasurePreserving.integral_comp
@@ -116,16 +144,26 @@ theorem prekopa_leindler'
     have h₂ := (h₁ ▸ Fintype.equivFin ι).trans finSumFinEquiv.symm
     have h₃ := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ h₂
     rw [← Fintype.card_fin n, ← Fintype.card_fin m]
-    simp_rw [← helper_lemma₃ h₂.symm]
-    let F : (Fin n → ℝ) → ℝ := fun x ↦ ∫ (y : Fin m → ℝ), f
-      ((MeasurableEquiv.arrowCongr' h₂ (MeasurableEquiv.refl ℝ)).symm
-        ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm (x, y)))
-    let G : (Fin n → ℝ) → ℝ := fun x ↦ ∫ (y : Fin m → ℝ), g
-      ((MeasurableEquiv.arrowCongr' h₂ (MeasurableEquiv.refl ℝ)).symm
-        ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm (x, y)))
-    let H : (Fin n → ℝ) → ℝ := fun x ↦ ∫ (y : Fin m → ℝ), h
-      ((MeasurableEquiv.arrowCongr' h₂ (MeasurableEquiv.refl ℝ)).symm
-        ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm (x, y)))
-    sorry
-
+    simp_rw [← helper_lemma₃ h₂.symm, helper_lemma₆, Measure.volume_eq_prod]
+    rw [integral_prod, integral_prod, integral_prod]
+    · let F : (Fin n → ℝ) → ℝ := fun x ↦ ∫ (y : Fin m → ℝ), f
+        ((MeasurableEquiv.arrowCongr' h₂ (MeasurableEquiv.refl ℝ)).symm
+          ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm (x, y)))
+      let G : (Fin n → ℝ) → ℝ := fun x ↦ ∫ (y : Fin m → ℝ), g
+        ((MeasurableEquiv.arrowCongr' h₂ (MeasurableEquiv.refl ℝ)).symm
+          ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm (x, y)))
+      let H : (Fin n → ℝ) → ℝ := fun x ↦ ∫ (y : Fin m → ℝ), h
+        ((MeasurableEquiv.arrowCongr' h₂ (MeasurableEquiv.refl ℝ)).symm
+          ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm (x, y)))
+      sorry
+    all_goals (refine (integrable_prod_iff ?_).mpr ⟨?_, ?_⟩)
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
 end
