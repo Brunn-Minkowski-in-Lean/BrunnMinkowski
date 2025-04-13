@@ -80,49 +80,69 @@ theorem helper_lemma₂ (f : EuclideanSpace ℝ ι → ℝ) :
   rfl
 
 theorem helper_lemma₃ (e : ι ≃ κ) (f : (κ → ℝ) → ℝ) :
-    ∫ (y : ι → ℝ), f ((MeasurableEquiv.arrowCongr' e (MeasurableEquiv.refl ℝ)) y) =
+    ∫ (y : ι → ℝ), f ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e) y) =
     ∫ (x : κ → ℝ), f x := by
   apply MeasurePreserving.integral_comp _
-    (MeasurableEquiv.measurableEmbedding (MeasurableEquiv.arrowCongr' e (MeasurableEquiv.refl ℝ)))
-  apply measurePreserving_arrowCongr'
-  simp [MeasurableEquiv.refl, MeasurePreserving.id]
+    (MeasurableEquiv.measurableEmbedding (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e))
+  apply volume_measurePreserving_piCongrLeft
 
-theorem measurable_sumArrowEquivProdArrow
-    (ι : Type*) [Fintype ι] (κ : Type*) [Fintype κ] :
-    Measurable (Equiv.sumArrowEquivProdArrow ι κ ℝ) := by
-  simp [Equiv.sumArrowEquivProdArrow]
-  apply Measurable.prodMk
-  · sorry
-  · sorry
-
-theorem measurable_sumArrowEquivProdArrow_symm
-    (ι : Type*) [Fintype ι] (κ : Type*) [Fintype κ] :
-    Measurable (Equiv.sumArrowEquivProdArrow ι κ ℝ).symm := by
-  sorry
-
-def measurableEquiv_sumArrowEquivProdArrow
-    (ι : Type*) [Fintype ι] (κ : Type*) [Fintype κ] :
-    MeasurableEquiv ((ι ⊕ κ) → ℝ) ((ι → ℝ) × (κ → ℝ)) :=
-  ⟨Equiv.sumArrowEquivProdArrow ι κ ℝ,
-    measurable_sumArrowEquivProdArrow ι κ,
-    measurable_sumArrowEquivProdArrow_symm ι κ⟩
-
-theorem measurePreserving_sumArrowEquivProdArrow
-    (ι : Type*) [Fintype ι] (κ : Type*) [Fintype κ] :
-    MeasurePreserving (Equiv.sumArrowEquivProdArrow ι κ ℝ) volume volume := by
-  refine ⟨measurable_sumArrowEquivProdArrow _ _ ℝ, ?_⟩
-  sorry
-
--- theorem helper_lemma₅ :
-
-theorem helper_lemma₆ (f : ((ι ⊕ κ) → ℝ) → ℝ) :
+theorem helper_lemma₄ (f : ((ι ⊕ κ) → ℝ) → ℝ) :
     ∫ (x : (ι ⊕ κ) → ℝ), f x =
-    ∫ (y : (ι → ℝ) × (κ → ℝ)), f ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm y) := by
+    ∫ (y : (ι → ℝ) × (κ → ℝ)), f ((MeasurableEquiv.sumPiEquivProdPi fun _ : ι ⊕ κ ↦ ℝ).symm y) := by
   symm; apply MeasurePreserving.integral_comp
-  · sorry
-  · sorry
+  · exact volume_measurePreserving_sumPiEquivProdPi_symm _
+  · exact MeasurableEquiv.measurableEmbedding _
 
+theorem helper_lemma₅ (f : (ι ⊕ κ → ℝ) → ℝ) :
+    Integrable f ↔
+    Integrable (f ∘ (MeasurableEquiv.sumPiEquivProdPi fun _ : ι ⊕ κ ↦ ℝ).symm) := by
+  rw [← MeasurableEmbedding.integrable_map_iff
+    (MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm.measurableEmbedding,
+    (volume_measurePreserving_sumPiEquivProdPi_symm fun _ : ι ⊕ κ ↦ ℝ).map_eq]
+
+theorem helper_lemma₆ (h : ι ≃ κ) (f : (ι → ℝ) → ℝ) :
+    Integrable f ↔
+    Integrable (f ∘ (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) h).symm) := by
+  rw [← MeasurableEmbedding.integrable_map_iff
+    (MeasurableEquiv.measurableEmbedding (MeasurableEquiv.piCongrLeft (fun x ↦ ℝ) h).symm)]
+  have := (volume_measurePreserving_piCongrLeft (fun _ ↦ ℝ) h).symm
+  rw [this.map_eq]
+
+universe u in
+def helper_def₁ {ι : Type u} {n m : ℕ} (h : ι ≃ Fin n ⊕ Fin m) :
+    ι ≃ (ULift.{u} (Fin n)) ⊕ (ULift.{u} (Fin m)) where
+  toFun i := match h i with | .inl x => .inl ⟨x⟩ | .inr x => .inr ⟨x⟩
+  invFun x := match x with | .inl x => h.symm (.inl x.down) | .inr x => h.symm (.inr x.down)
+  left_inv i := by
+    match v : h i with
+    | .inl x => simp_rw [v, ← v, Equiv.symm_apply_apply]
+    | .inr x => simp_rw [v, ← v, Equiv.symm_apply_apply]
+  right_inv x := by match x with | .inl x => simp | .inr x => simp
+
+universe u in
+theorem helper_lemma₇
+    {ι : Type u} [Fintype ι] {κ₁ : Type u} [Fintype κ₁] {κ₂ : Type u} [Fintype κ₂]
+    (h : ι ≃ κ₁ ⊕ κ₂) {f : EuclideanSpace ℝ ι → ℝ} (hf : Integrable f (volume : Measure (ι → ℝ))) :
+    Integrable fun x ↦ ∫ (y : κ₂ → ℝ), f
+      ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) h).symm
+        ((MeasurableEquiv.sumPiEquivProdPi _).symm (x, y))) := by
+  simp_rw [← @Function.comp_apply _ _ _ f, ← @Function.comp_apply _ _ _ (f ∘ _),
+    ← @Function.comp_apply _ _ _ _ (Prod.mk _)]
+  apply Integrable.integral_prod_left ((helper_lemma₅ _).mp _)
+  rwa [← helper_lemma₆]
+
+universe u in
+theorem helper_lemma₈
+    {ι : Type u} {κ₁ : Type u} {κ₂ : Type u} [Fintype κ₂] (h : ι ≃ κ₁ ⊕ κ₂)
+    {f : EuclideanSpace ℝ ι → ℝ} (hf : 0 ≤ f) :
+    0 ≤ fun x ↦ ∫ (y : κ₂ → ℝ), f
+      ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) h).symm
+        ((MeasurableEquiv.sumPiEquivProdPi _).symm (x, y))) := by
+  intro; simp; apply integral_nonneg; tauto
+
+universe u in
 theorem prekopa_leindler'
+    {ι : Type u} [Fintype ι]
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
     {f : EuclideanSpace ℝ ι → ℝ} (hf₁ : Integrable f) (hf₂ : 0 ≤ f)
     {g : EuclideanSpace ℝ ι → ℝ} (hg₁ : Integrable g) (hg₂ : 0 ≤ g)
@@ -142,19 +162,32 @@ theorem prekopa_leindler'
     rw [helper_lemma₂] at hf₁ hg₁ hh₁
     simp only [EuclideanSpace, PiLp, WithLp] at f g h hn hm h₀
     have h₂ := (h₁ ▸ Fintype.equivFin ι).trans finSumFinEquiv.symm
-    have h₃ := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ h₂
+    have h₃ := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ (helper_def₁ h₂)
     rw [← Fintype.card_fin n, ← Fintype.card_fin m]
-    simp_rw [← helper_lemma₃ h₂.symm, helper_lemma₆, Measure.volume_eq_prod]
+    simp_rw [← helper_lemma₃ h₂.symm, helper_lemma₄, Measure.volume_eq_prod]
     rw [integral_prod, integral_prod, integral_prod]
-    · let F : (Fin n → ℝ) → ℝ := fun x ↦ ∫ (y : Fin m → ℝ), f
-        ((MeasurableEquiv.arrowCongr' h₂ (MeasurableEquiv.refl ℝ)).symm
-          ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm (x, y)))
-      let G : (Fin n → ℝ) → ℝ := fun x ↦ ∫ (y : Fin m → ℝ), g
-        ((MeasurableEquiv.arrowCongr' h₂ (MeasurableEquiv.refl ℝ)).symm
-          ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm (x, y)))
-      let H : (Fin n → ℝ) → ℝ := fun x ↦ ∫ (y : Fin m → ℝ), h
-        ((MeasurableEquiv.arrowCongr' h₂ (MeasurableEquiv.refl ℝ)).symm
-          ((Equiv.sumArrowEquivProdArrow _ _ ℝ).symm (x, y)))
+    · let F : (ULift.{u} (Fin n) → ℝ) → ℝ := fun x ↦ ∫ (y : ULift.{u} (Fin m) → ℝ), f
+        ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) (helper_def₁ h₂)).symm
+          ((MeasurableEquiv.sumPiEquivProdPi _).symm (x, y)))
+      have hF₁ : Integrable F := helper_lemma₇ (helper_def₁ h₂) hf₁
+      have hF₂ : 0 ≤ F := helper_lemma₈ (helper_def₁ h₂) hf₂
+      let G : (ULift.{u} (Fin n) → ℝ) → ℝ := fun x ↦ ∫ (y : ULift.{u} (Fin m) → ℝ), g
+        ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) (helper_def₁ h₂)).symm
+          ((MeasurableEquiv.sumPiEquivProdPi _).symm (x, y)))
+      have hG₁ : Integrable G := helper_lemma₇ (helper_def₁ h₂) hg₁
+      have hG₂ : 0 ≤ G := helper_lemma₈ (helper_def₁ h₂) hg₂
+      let H : (ULift.{u} (Fin n) → ℝ) → ℝ := fun x ↦ (1 - t) ^ ((1 - t) * m) * t ^ (t * m) * ∫ (y : ULift.{u} (Fin m) → ℝ), h
+        ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) (helper_def₁ h₂)).symm
+          ((MeasurableEquiv.sumPiEquivProdPi _).symm (x, y)))
+      have hH₁ : Integrable H := helper_lemma₇ (helper_def₁ h₂) hh₁
+      have h₄ : ∀ {x y}, (F x) ^ (1 - t) * (G y) ^ t ≤
+          (1 - t) ^ ((1 - t) * m) * t ^ (t * m) * H (x + y) := by
+        simp [F, G, H]
+        intro x y
+        sorry
+      have h₅ := hn ((helper_lemma₂ _).mpr hF₁) hF₂ ((helper_lemma₂ _).mpr hG₁) hG₂
+        ((helper_lemma₂ _).mpr hH₁) h₄ (by simp)
+      simp [F, G, H] at h₅
       sorry
     all_goals (refine (integrable_prod_iff ?_).mpr ⟨?_, ?_⟩)
     · sorry
