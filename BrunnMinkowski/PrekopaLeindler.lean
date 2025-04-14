@@ -16,11 +16,13 @@ variable {β : Type*} [TopologicalSpace β] [MeasurableSpace β]
 --def MeasurableSpace.withLp_prod
 --    (m₁ : MeasurableSpace α) (m₂ : MeasurableSpace β) :
 --    MeasurableSpace (WithLp p (α × β)) :=
---  m₁.comap 
+--  m₁.comap
 
 noncomputable instance {α : Type*} [MeasurableSpace α] {p : ENNReal} [Fact (1 ≤ p)] :
     MeasurableSpace (WithLp p α) :=
   ‹MeasurableSpace α›
+
+def measure_of_withLp2_measure {α : Type*} [MeasurableSpace α] {p : ENNReal} [Fact (1 ≤ p)] (μ: Measure (WithLp p α)):Measure α :=μ
 
 noncomputable instance
     {α : Type*} [TopologicalSpace α] [MeasurableSpace α] [BorelSpace α]
@@ -52,26 +54,39 @@ theorem EuclideanSpace.volume_eq_prod_norm
       (volume : Measure (EuclideanSpace ℝ ι)) (volume : Measure (EuclideanSpace ℝ κ)) :=
   rfl
 
-def Measurable.euclideanProdMk
+theorem Measurable.euclideanProdMk
     {α : Type*} [MeasurableSpace α] {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
     {f : α → EuclideanSpace ℝ ι} {g : α → EuclideanSpace ℝ κ}
     (hf : Measurable f) (hg : Measurable g) :
     Measurable fun a : α ↦ ((f a, g a) : WithLp 2 (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ)) :=
-  sorry
+  Measurable.prod hf hg
+
 
 theorem measurable_euclideanProdMk_left
     {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
     {mι : MeasurableSpace (EuclideanSpace ℝ ι)} {mκ : MeasurableSpace (EuclideanSpace ℝ κ)} :
     Measurable fun x : EuclideanSpace ℝ ι ↦
       (fun y : EuclideanSpace ℝ κ ↦ ((x, y) : WithLp 2 (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ))) :=
-  measurable_const.euclideanProdMk measurable_const
+  sorry
+
+theorem euclideanProd_measure_eq_prod_measure {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
+    (μ : Measure (EuclideanSpace ℝ ι)) (ν : Measure (EuclideanSpace ℝ κ)):
+    euclideanProd μ ν = μ.prod ν := by
+  rw [euclideanProd]
+  rw [MeasureTheory.Measure.prod]
+
 
 theorem lintegral_euclideanProd_of_measurable
     {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
     {μ : Measure (EuclideanSpace ℝ ι)} {ν : Measure (EuclideanSpace ℝ κ)} [SFinite ν]
     (f : (WithLp 2 (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ)) → ENNReal) :
-    Measurable f → ∫⁻ z, f z ∂(euclideanProd μ ν) = ∫⁻ x, ∫⁻ y, f (x, y) ∂ν ∂μ :=
-  sorry
+    Measurable f → ∫⁻ z, f z ∂(euclideanProd μ ν) = ∫⁻ x, ∫⁻ y, f (x, y) ∂ν ∂μ := by
+  rw [euclideanProd_measure_eq_prod_measure]
+  intros mf
+  simp [WithLp] at f
+  simp [WithLp]
+  rw [MeasureTheory.lintegral_prod_of_measurable]
+  exact mf
 
 theorem hasFiniteIntegral_euclideanProd_iff
     {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
@@ -81,8 +96,9 @@ theorem hasFiniteIntegral_euclideanProd_iff
     HasFiniteIntegral f (euclideanProd μ ν) ↔
     (∀ᵐ x ∂μ, HasFiniteIntegral (fun y ↦ f (x, y)) ν) ∧
     HasFiniteIntegral (fun x ↦ ∫ y, ‖f (x, y)‖ ∂ν) μ := by
-  simp only [hasFiniteIntegral_iff_enorm]
-  sorry
+  rw [euclideanProd_measure_eq_prod_measure]
+  rw [hasFiniteIntegral_prod_iff]
+  exact h1f
 
 theorem hasFiniteIntegral_euclideanProd_iff'
     {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
@@ -91,34 +107,45 @@ theorem hasFiniteIntegral_euclideanProd_iff'
     (h1f : AEStronglyMeasurable f (euclideanProd μ ν)) :
     HasFiniteIntegral f (euclideanProd μ ν) ↔
     (∀ᵐ x ∂μ, HasFiniteIntegral (fun y ↦ f (x, y)) ν) ∧
-    HasFiniteIntegral (fun x ↦ ∫ y, ‖f (x, y)‖ ∂ν) μ :=
-  sorry
+    HasFiniteIntegral (fun x ↦ ∫ y, ‖f (x, y)‖ ∂ν) μ := by
+  rw [euclideanProd_measure_eq_prod_measure]
+  rw [hasFiniteIntegral_prod_iff']
+  rw [Eq.symm (euclideanProd_measure_eq_prod_measure _ _)]
+  exact h1f
 
-theorem integrable_prod_iff
+theorem integrable_euclideanProd_iff
     {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
     {μ : Measure (EuclideanSpace ℝ ι)} {ν : Measure (EuclideanSpace ℝ κ)} [SFinite ν]
     ⦃f : (WithLp 2 (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ)) → ℝ⦄
     (h1f : AEStronglyMeasurable f (euclideanProd μ ν)) :
     Integrable f (euclideanProd μ ν) ↔
     (∀ᵐ x ∂μ, Integrable (fun y ↦ f (x, y)) ν) ∧ Integrable (fun x ↦ ∫ y, ‖f (x, y)‖ ∂ν) μ := by
-  simp [Integrable, h1f]
-  sorry
+  rw [euclideanProd_measure_eq_prod_measure]
+  rw [integrable_prod_iff]
+  rw [Eq.symm (euclideanProd_measure_eq_prod_measure _ _)]
+  exact h1f
 
 theorem Integrable.integral_norm_euclideanProd_left
     {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
     {μ : Measure (EuclideanSpace ℝ ι)} {ν : Measure (EuclideanSpace ℝ κ)} [SFinite ν]
     ⦃f : (WithLp 2 (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ)) → ℝ⦄
     (hf : Integrable f (euclideanProd μ ν)) :
-    Integrable (fun x ↦ ∫ y, ‖f (x, y)‖ ∂ν) μ :=
-  sorry
+    Integrable (fun x ↦ ∫ y, ‖f (x, y)‖ ∂ν) μ := by
+  simp [WithLp] at f
+  apply MeasureTheory.Integrable.integral_norm_prod_left
+  rw [Eq.symm (euclideanProd_measure_eq_prod_measure _ _)]
+  exact hf
 
 theorem Integrable.integral_euclideanProd_left
     {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
     {μ : Measure (EuclideanSpace ℝ ι)} {ν : Measure (EuclideanSpace ℝ κ)}
-    ⦃f : (WithLp 2 (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ)) → ℝ⦄
+    ⦃f : (WithLp 2 (EuclideanSpace ℝ ι × EuclideanSpace ℝ κ)) → ℝ⦄ [SFinite ν ]
     (hf : Integrable f (euclideanProd μ ν)) :
     Integrable (fun x ↦ ∫ y, f (x, y) ∂ν) μ := by
-  sorry
+  simp [WithLp] at f
+  apply MeasureTheory.Integrable.integral_prod_left
+  rw [Eq.symm (euclideanProd_measure_eq_prod_measure _ _)]
+  exact hf
 
 theorem EuclideanSpace.continuous_integral_integral
     {ι : Type*} [Fintype ι] {κ : Type*} [Fintype κ]
