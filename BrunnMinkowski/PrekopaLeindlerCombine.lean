@@ -140,6 +140,10 @@ theorem helper_lemma₈
         ((MeasurableEquiv.sumPiEquivProdPi _).symm (x, y))) := by
   intro; simp; apply integral_nonneg; tauto
 
+theorem le_of_eq_of_le_of_eq {α : Type*} [LE α] {a b c d : α}
+    (hab : a = b) (hbc : b ≤ c) (hcd : c = d) : a ≤ d :=
+  hab ▸ hcd ▸ hbc
+
 universe u in
 theorem prekopa_leindler'
     {ι : Type u} [Fintype ι]
@@ -161,34 +165,49 @@ theorem prekopa_leindler'
     simp_rw [helper_lemma₁ f, helper_lemma₁ g, helper_lemma₁ h]
     rw [helper_lemma₂] at hf₁ hg₁ hh₁
     simp only [EuclideanSpace, PiLp, WithLp] at f g h hn hm h₀
-    have h₂ := (h₁ ▸ Fintype.equivFin ι).trans finSumFinEquiv.symm
-    have h₃ := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ (helper_def₁ h₂)
+    have h₂ := helper_def₁ ((h₁ ▸ Fintype.equivFin ι).trans finSumFinEquiv.symm)
     rw [← Fintype.card_fin n, ← Fintype.card_fin m]
     simp_rw [← helper_lemma₃ h₂.symm, helper_lemma₄, Measure.volume_eq_prod]
     rw [integral_prod, integral_prod, integral_prod]
     · let F : (ULift.{u} (Fin n) → ℝ) → ℝ := fun x ↦ ∫ (y : ULift.{u} (Fin m) → ℝ), f
-        ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) (helper_def₁ h₂)).symm
+        ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) h₂).symm
           ((MeasurableEquiv.sumPiEquivProdPi _).symm (x, y)))
-      have hF₁ : Integrable F := helper_lemma₇ (helper_def₁ h₂) hf₁
-      have hF₂ : 0 ≤ F := helper_lemma₈ (helper_def₁ h₂) hf₂
+      have hF₁ : Integrable F := helper_lemma₇ h₂ hf₁
+      have hF₂ : 0 ≤ F := helper_lemma₈ h₂ hf₂
       let G : (ULift.{u} (Fin n) → ℝ) → ℝ := fun x ↦ ∫ (y : ULift.{u} (Fin m) → ℝ), g
-        ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) (helper_def₁ h₂)).symm
+        ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) h₂).symm
           ((MeasurableEquiv.sumPiEquivProdPi _).symm (x, y)))
-      have hG₁ : Integrable G := helper_lemma₇ (helper_def₁ h₂) hg₁
-      have hG₂ : 0 ≤ G := helper_lemma₈ (helper_def₁ h₂) hg₂
-      let H : (ULift.{u} (Fin n) → ℝ) → ℝ := fun x ↦ (1 - t) ^ ((1 - t) * m) * t ^ (t * m) * ∫ (y : ULift.{u} (Fin m) → ℝ), h
-        ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) (helper_def₁ h₂)).symm
-          ((MeasurableEquiv.sumPiEquivProdPi _).symm (x, y)))
-      have hH₁ : Integrable H := helper_lemma₇ (helper_def₁ h₂) hh₁
-      have h₄ : ∀ {x y}, (F x) ^ (1 - t) * (G y) ^ t ≤
-          (1 - t) ^ ((1 - t) * m) * t ^ (t * m) * H (x + y) := by
-        simp [F, G, H]
-        intro x y
-        sorry
-      have h₅ := hn ((helper_lemma₂ _).mpr hF₁) hF₂ ((helper_lemma₂ _).mpr hG₁) hG₂
-        ((helper_lemma₂ _).mpr hH₁) h₄ (by simp)
-      simp [F, G, H] at h₅
-      sorry
+      have hG₁ : Integrable G := helper_lemma₇ h₂ hg₁
+      have hG₂ : 0 ≤ G := helper_lemma₈ h₂ hg₂
+      let H : (ULift.{u} (Fin n) → ℝ) → ℝ := fun x ↦
+        (1 - t) ^ ((1 - t) * m) *
+        t ^ (t * m) *
+        ∫ (y : ULift.{u} (Fin m) → ℝ), h
+          ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) h₂).symm
+            ((MeasurableEquiv.sumPiEquivProdPi _).symm (x, y)))
+      have hH₁ : Integrable H := Integrable.const_mul (helper_lemma₇ h₂ hh₁) _
+      have h₃ := hn ((helper_lemma₂ _).mpr hF₁) hF₂ ((helper_lemma₂ _).mpr hG₁) hG₂
+        ((helper_lemma₂ _).mpr hH₁) (by sorry) (by simp)
+      -- have h₃ : ∀ {x y}, (F x) ^ (1 - t) * (G y) ^ t ≤ H (x + y) := by  
+      --   sorry
+        -- simp [F, G, H]
+        -- intro x y
+        -- simp_rw [← @Function.comp_apply _ _ _ f, ← @Function.comp_apply _ _ _ g,
+        --   ← @Function.comp_apply _ _ _ h, ← @Function.comp_apply _ _ _ (_ ∘ _),
+        --   @Function.comp_apply _ _ _ _ (Prod.mk _)]
+        -- simp_rw [← @Prod.swap_prod_mk _ _ _ x, ← @Prod.swap_prod_mk _ _ _ y,
+        --   ← @Prod.swap_prod_mk _ _ _ (x + y)]
+        -- simp_rw [← @Function.comp_apply _ _ _ Prod.swap, ← @Function.comp_apply _ _ _ _ (_ ∘ _)]
+        -- sorry
+      -- have h₄ := hn ((helper_lemma₂ _).mpr hF₁) hF₂ ((helper_lemma₂ _).mpr hG₁) hG₂
+      --   ((helper_lemma₂ _).mpr hH₁) h₃ (by simp)
+      rw [integral_integral, integral_integral, integral_integral] at *
+      · sorry
+      · sorry
+      · sorry
+      · sorry
+      · sorry
+      · sorry
     all_goals (refine (integrable_prod_iff ?_).mpr ⟨?_, ?_⟩)
     · sorry
     · sorry
@@ -199,4 +218,5 @@ theorem prekopa_leindler'
     · sorry
     · sorry
     · sorry
+
 end
