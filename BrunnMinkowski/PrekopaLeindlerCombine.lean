@@ -187,7 +187,7 @@ theorem prekopa_leindler'
             ((MeasurableEquiv.sumPiEquivProdPi _).symm (x, y)))
       have hH₁ : Integrable H := Integrable.const_mul (helper_lemma₇ h₂ hh₁) _
       have h₃ := hn ((helper_lemma₂ _).mpr hF₁) hF₂ ((helper_lemma₂ _).mpr hG₁) hG₂
-        ((helper_lemma₂ _).mpr hH₁) (by sorry) (by simp)
+        ((helper_lemma₂ _).mpr hH₁) ?_ (by simp)
       -- have h₃ : ∀ {x y}, (F x) ^ (1 - t) * (G y) ^ t ≤ H (x + y) := by  
       --   sorry
         -- simp [F, G, H]
@@ -202,6 +202,7 @@ theorem prekopa_leindler'
       -- have h₄ := hn ((helper_lemma₂ _).mpr hF₁) hF₂ ((helper_lemma₂ _).mpr hG₁) hG₂
       --   ((helper_lemma₂ _).mpr hH₁) h₃ (by simp)
       rw [integral_integral, integral_integral, integral_integral] at *
+      · sorry
       · sorry
       · sorry
       · sorry
