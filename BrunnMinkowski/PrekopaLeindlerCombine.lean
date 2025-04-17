@@ -112,7 +112,7 @@ theorem helper_lemma₆ (h : ι ≃ κ) (f : (ι → ℝ) → ℝ) :
   have := (volume_measurePreserving_piCongrLeft (fun _ ↦ ℝ) h).symm
   rw [this.map_eq]
 
-  theorem helper_lemma₆' (h : ι ≃ κ) (f : (ι → ℝ) → ℝ) :
+theorem helper_lemma₆' (h : ι ≃ κ) (f : (ι → ℝ) → ℝ) :
     Integrable f ↔
     Integrable (f ∘ (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) h.symm)) := by
   rw [← MeasurableEmbedding.integrable_map_iff
@@ -395,6 +395,5 @@ theorem prekopa_leindler'
       let p₄:= Integrable.integral_prod_left p₃;
       simp [Function.comp] at p₄
       exact p₄
-
 
 end
