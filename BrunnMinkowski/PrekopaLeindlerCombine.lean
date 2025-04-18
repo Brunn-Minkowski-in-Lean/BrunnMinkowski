@@ -143,7 +143,6 @@ theorem helper_lemma₇
   apply Integrable.integral_prod_left ((helper_lemma₅ _).mp _)
   rwa [← helper_lemma₆]
 
-
 universe u in
 theorem helper_lemma₈
     {ι : Type u} {κ₁ : Type u} {κ₂ : Type u} [Fintype κ₂] (h : ι ≃ κ₁ ⊕ κ₂)
@@ -225,7 +224,7 @@ theorem piCongrLeft_linearIsometryEquiv_measurableEquiv_coe
     (E : Type*) [SemilatticeSup E] [SeminormedAddCommGroup E] [Module 𝕜 E] [MeasurableSpace E]
     (e : ι ≃ ι') :
     (LinearIsometryEquiv.piCongrLeft 𝕜 E e : (ι → E) → ι' → E) =
-    ((MeasurableEquiv.piCongrLeft (fun _ ↦ E) e) : (ι → E) → ι' → E) := by
+    (MeasurableEquiv.piCongrLeft (fun _ ↦ E) e : (ι → E) → ι' → E) := by
   simp [LinearIsometryEquiv.piCongrLeft, MeasurableEquiv.piCongrLeft, LinearEquiv.piCongrLeft',
     Equiv.piCongrLeft]
 
@@ -237,22 +236,60 @@ theorem LinearIsometryEquiv.coe_toEquiv
     Equiv.piCongrLeft (fun _ ↦ E) e := by
   simp [LinearIsometryEquiv.piCongrLeft, LinearEquiv.piCongrLeft', Equiv.piCongrLeft]
 
-theorem LinearIsometryEquiv.sumPiEquivProdPi
-    (𝕜 : Type*) [Semiring 𝕜] (S T : Type*) (A : S ⊕ T → Type*)
-    [(st : S ⊕ T) → AddCommMonoid (A st)] [(st : S ⊕ T) → Module 𝕜 (A st)] :
-    ((st : S ⊕ T) → A st) ≃ₗᵢ[𝕜] ((s : S) → A (Sum.inl s)) × ((t : T) → A (Sum.inr t)) :=
-  sorry
+-- theorem LinearIsometryEquiv.sumPiEquivProdPi
+--     (𝕜 : Type*) [Semiring 𝕜] (S T : Type*) (A : S ⊕ T → Type*)
+--     [(st : S ⊕ T) → AddCommMonoid (A st)] [(st : S ⊕ T) → Module 𝕜 (A st)] :
+--     ((st : S ⊕ T) → A st) ≃ₗᵢ[𝕜] ((s : S) → A (Sum.inl s)) × ((t : T) → A (Sum.inr t)) :=
+--   sorry
+
+--theorem Integrable.sumPiEquivProdPi
+
+theorem Real.sigmaFinite :
+    SigmaFinite (volume : Measure ℝ) := by
+  exact sigmaFinite_of_locallyFinite
 
 theorem helper_lemma₉
     {f : (ι → ℝ) → ℝ} {n m : ℕ} (h₁ : Integrable f volume)
+    (h₂ : ι ≃ ULift.{u} (Fin n) ⊕ ULift.{u} (Fin m)) :
+    Integrable
+      (f ∘ ⇑(MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) h₂.symm) ∘
+        ⇑(MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm)
+      (volume.prod volume) := by
+  rw [← Function.comp_assoc]
+  apply Integrable.comp_measurable _
+    (MeasurableEquiv.measurable (MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm)
+  apply Integrable.comp_measurable _
+    (MeasurableEquiv.measurable (MeasurableEquiv.piCongrLeft (fun x ↦ ℝ) h₂.symm))
+  have := (measurePreserving_sumPiEquivProdPi fun (_ : ULift.{u} (Fin n) ⊕ ULift.{u} (Fin m)) ↦
+    (volume : Measure ℝ)).symm
+  have := this.map_eq
+  simp_rw [← volume_pi] at this; rw [this]
+  rw [(volume_measurePreserving_piCongrLeft (fun _ : ι ↦ ℝ) h₂.symm).map_eq]
+  exact h₁
+
+theorem helper_lemma₁₀
+    {f : (ι → ℝ) → ℝ} {n m : ℕ} (h₁ : Integrable f volume)
     (h₂ :ι ≃ ULift.{u, 0} (Fin n) ⊕ ULift.{u, 0} (Fin m)) :
     Integrable
-      (f ∘ ⇑(MeasurableEquiv.piCongrLeft (fun x ↦ ℝ) h₂.symm) ∘
-        ⇑(MeasurableEquiv.sumPiEquivProdPi fun x ↦ ℝ).symm ∘ Prod.swap)
+      (f ∘ ⇑(MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) h₂.symm) ∘
+        ⇑(MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm ∘ Prod.swap)
       (volume.prod volume) := by
-  rw [← piCongrLeft_linearIsometryEquiv_measurableEquiv_coe ℝ]
+  simp_rw [← Function.comp_assoc f, ← Function.comp_assoc]
+  apply Integrable.swap
+  exact helper_lemma₉ h₁ h₂
+
+theorem helper_lemma₁₁ (f : ((EuclideanSpace ℝ ι) × (EuclideanSpace ℝ κ)) → ℝ) :
+    Integrable f (volume : Measure ((EuclideanSpace ℝ ι) × (EuclideanSpace ℝ κ))) ↔
+    Integrable f (volume : Measure ((ι → ℝ) × (κ → ℝ))) := by
+  simp_rw [Measure.volume_eq_prod]
   sorry
 
+/- TODO: in mathlib. -/
+theorem helper_lemma₁₂ {α : Type*} [Mul α] (a : α) {β : Type*} (f : β → α) :
+    (fun b ↦ a * f b) = (Function.const β a) * f :=
+  rfl
+
+set_option maxHeartbeats 0 in
 universe u in
 theorem prekopa_leindler'
     {ι : Type u} [Fintype ι]
@@ -297,20 +334,6 @@ theorem prekopa_leindler'
       have hH₁ : Integrable H := Integrable.const_mul (helper_lemma₇ h₂ hh₁) _
       have h₃ := hn ((helper_lemma₂ _).mpr hF₁) hF₂ ((helper_lemma₂ _).mpr hG₁) hG₂
         ((helper_lemma₂ _).mpr hH₁) ?_ (by simp)
-      -- have h₃ : ∀ {x y}, (F x) ^ (1 - t) * (G y) ^ t ≤ H (x + y) := by
-      --   sorry
-        -- simp [F, G, H]
-        -- intro x y
-        -- simp_rw [← @Function.comp_apply _ _ _ f, ← @Function.comp_apply _ _ _ g,
-        --   ← @Function.comp_apply _ _ _ h, ← @Function.comp_apply _ _ _ (_ ∘ _),
-        --   @Function.comp_apply _ _ _ _ (Prod.mk _)]
-        -- simp_rw [← @Prod.swap_prod_mk _ _ _ x, ← @Prod.swap_prod_mk _ _ _ y,
-        --   ← @Prod.swap_prod_mk _ _ _ (x + y)]
-        -- simp_rw [← @Function.comp_apply _ _ _ Prod.swap, ← @Function.comp_apply _ _ _ _ (_ ∘ _)]
-        -- sorry
-      -- have h₄ := hn ((helper_lemma₂ _).mpr hF₁) hF₂ ((helper_lemma₂ _).mpr hG₁) hG₂
-      --   ((helper_lemma₂ _).mpr hH₁) h₃ (by simp)
-      
       · simp only [Prod.mk.eta, Fintype.card_fin, Nat.cast_add] at h₃ ⊢
         have h₄ {x : ℝ} (hx : 0 < x) {n m : ℕ} : x ^ (x * (n + m)) = x ^ (x * n) * x ^ (x * m) := by
           rw [mul_add x, Real.rpow_add hx]
@@ -324,75 +347,88 @@ theorem prekopa_leindler'
           ← @integral_integral_swap _ _ _ _ _ _ _ _ _ _ _ (fun _ _ ↦ g _)]
         simp_rw [← helper_lemma₁]
         apply hm _ _ _ _ _ _ (by simp)
-        · -- rw [Measure.volume_eq_prod]
-          -- apply Integrable.integral_prod_right
-          sorry
+        · simp_rw [← @Function.comp_apply _ _ _ (MeasurableEquiv.piCongrLeft _ _),
+            ← @Function.comp_apply _ _ _ f, ← Function.comp_assoc]
+          apply Integrable.integral_prod_right
+          rw [← Measure.volume_eq_prod, helper_lemma₁₁, Function.comp_assoc]
+          exact helper_lemma₉ hf₁ h₂
         · intro; apply integral_nonneg; intro; apply hf₂
-        · sorry
+        · simp_rw [← @Function.comp_apply _ _ _ (MeasurableEquiv.piCongrLeft _ _),
+            ← @Function.comp_apply _ _ _ g, ← Function.comp_assoc]
+          apply Integrable.integral_prod_right
+          rw [← Measure.volume_eq_prod, helper_lemma₁₁, Function.comp_assoc]
+          exact helper_lemma₉ hg₁ h₂
         · intro; apply integral_nonneg; intro; apply hg₂
-        · sorry
+        · simp_rw [integral_mul_left]; apply Integrable.const_mul'
+          simp_rw [← @Function.comp_apply _ _ _ (MeasurableEquiv.piCongrLeft _ _),
+            ← @Function.comp_apply _ _ _ h, ← Function.comp_assoc]
+          apply Integrable.integral_prod_right
+          rw [← Measure.volume_eq_prod, helper_lemma₁₁, Function.comp_assoc]
+          exact helper_lemma₉ hh₁ h₂
         · sorry
         · simp_rw [← @Function.comp_apply _ _ _ g, ← @Function.comp_apply _ _ _ (g ∘ _)]
           rw [uncurry_prod_swap]
-          sorry
-        · sorry
-        · sorry
+          exact helper_lemma₁₀ hg₁ h₂
+        · simp_rw [← @Function.comp_apply _ _ _ f, ← @Function.comp_apply _ _ _ (f ∘ _)]
+          rw [uncurry_prod_swap]
+          exact helper_lemma₁₀ hf₁ h₂
+        · simp_rw [← @Function.comp_apply _ _ _ h, ← @Function.comp_apply _ _ _ (h ∘ _),
+            ← @Function.comp_apply _ _ _ (((1 - t) ^ ((1 - t) * n) * (t ^ (t * n))) * ·)]
+          rw [uncurry_prod_swap]
+          exact Integrable.const_mul' (helper_lemma₁₀ hh₁ h₂) _
       · sorry
     all_goals (refine (integrable_prod_iff ?_).mpr ⟨?_, ?_⟩)
-    · let p₁:= (helper_lemma₆' h₂ h).mp hh₁;
-      let p₂:= (helper_lemma₅ _ ).mp p₁;
-      simp [Function.comp] at p₂
-      simp [Integrable] at p₂
+    · let p₁ := (helper_lemma₆' h₂ h).mp hh₁;
+      let p₂ := (helper_lemma₅ _ ).mp p₁;
+      simp [Function.comp, Integrable] at p₂
       exact (And.left p₂)
 
-    · let p₁:= (helper_lemma₆' h₂ h).mp hh₁;
-      let p₂:= (helper_lemma₅ _ ).mp p₁;
-      let p₃:= (MeasureTheory.Integrable.prod_right_ae p₂);
+    · let p₁ := (helper_lemma₆' h₂ h).mp hh₁;
+      let p₂ := (helper_lemma₅ _ ).mp p₁;
+      let p₃ := (MeasureTheory.Integrable.prod_right_ae p₂);
       simp [Function.comp] at p₃
       exact p₃
 
-    · let p₁:= (helper_lemma₆' h₂ h).mp hh₁;
-      let p₂:= (helper_lemma₅ _ ).mp p₁;
-      let p₃:= MeasureTheory.Integrable.norm p₂;
-      let p₄:= Integrable.integral_prod_left p₃;
+    · let p₁ := (helper_lemma₆' h₂ h).mp hh₁;
+      let p₂ := (helper_lemma₅ _ ).mp p₁;
+      let p₃ := MeasureTheory.Integrable.norm p₂;
+      let p₄ := Integrable.integral_prod_left p₃;
       simp [Function.comp] at p₄
       exact p₄
 
-    · let p₁:= (helper_lemma₆' h₂ g).mp hg₁;
-      let p₂:= (helper_lemma₅ _ ).mp p₁;
-      simp [Function.comp] at p₂
-      simp [Integrable] at p₂
+    · let p₁ := (helper_lemma₆' h₂ g).mp hg₁;
+      let p₂ := (helper_lemma₅ _ ).mp p₁;
+      simp [Function.comp, Integrable] at p₂
       exact (And.left p₂)
 
-    · let p₁:= (helper_lemma₆' h₂ g).mp hg₁;
-      let p₂:= (helper_lemma₅ _ ).mp p₁;
-      let p₃:= (MeasureTheory.Integrable.prod_right_ae p₂);
+    · let p₁ := (helper_lemma₆' h₂ g).mp hg₁;
+      let p₂ := (helper_lemma₅ _ ).mp p₁;
+      let p₃ := (MeasureTheory.Integrable.prod_right_ae p₂);
       simp [Function.comp] at p₃
       exact p₃
 
-    · let p₁:= (helper_lemma₆' h₂ g).mp hg₁;
-      let p₂:= (helper_lemma₅ _ ).mp p₁;
-      let p₃:= MeasureTheory.Integrable.norm p₂;
-      let p₄:= Integrable.integral_prod_left p₃;
+    · let p₁ := (helper_lemma₆' h₂ g).mp hg₁;
+      let p₂ := (helper_lemma₅ _ ).mp p₁;
+      let p₃ := MeasureTheory.Integrable.norm p₂;
+      let p₄ := Integrable.integral_prod_left p₃;
       simp [Function.comp] at p₄
       exact p₄
 
-    · let p₁:= (helper_lemma₆' h₂ f).mp hf₁;
-      let p₂:= (helper_lemma₅ _ ).mp p₁;
-      simp [Function.comp] at p₂
-      simp [Integrable] at p₂
+    · let p₁ := (helper_lemma₆' h₂ f).mp hf₁;
+      let p₂ := (helper_lemma₅ _ ).mp p₁;
+      simp [Function.comp, Integrable] at p₂
       exact (And.left p₂)
 
-    · let p₁:= (helper_lemma₆' h₂ f).mp hf₁;
-      let p₂:= (helper_lemma₅ _ ).mp p₁;
-      let p₃:= (MeasureTheory.Integrable.prod_right_ae p₂);
+    · let p₁ := (helper_lemma₆' h₂ f).mp hf₁;
+      let p₂ := (helper_lemma₅ _ ).mp p₁;
+      let p₃ := (MeasureTheory.Integrable.prod_right_ae p₂);
       simp [Function.comp] at p₃
       exact p₃
 
-    · let p₁:= (helper_lemma₆' h₂ f).mp hf₁;
-      let p₂:= (helper_lemma₅ _ ).mp p₁;
-      let p₃:= MeasureTheory.Integrable.norm p₂;
-      let p₄:= Integrable.integral_prod_left p₃;
+    · let p₁ := (helper_lemma₆' h₂ f).mp hf₁;
+      let p₂ := (helper_lemma₅ _ ).mp p₁;
+      let p₃ := MeasureTheory.Integrable.norm p₂;
+      let p₄ := Integrable.integral_prod_left p₃;
       simp [Function.comp] at p₄
       exact p₄
 
