@@ -260,7 +260,7 @@ theorem helper_lemma₉
     (MeasurableEquiv.measurable (MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm)
   apply Integrable.comp_measurable _
     (MeasurableEquiv.measurable (MeasurableEquiv.piCongrLeft (fun x ↦ ℝ) h₂.symm))
-  have := (measurePreserving_sumPiEquivProdPi fun (_ : ULift.{u} (Fin n) ⊕ ULift.{u} (Fin m)) ↦
+  have := (measurePreserving_sumPiEquivProdPi fun _ : ULift.{u} (Fin n) ⊕ ULift.{u} (Fin m) ↦
     (volume : Measure ℝ)).symm
   have := this.map_eq
   simp_rw [← volume_pi] at this; rw [this]
@@ -281,8 +281,13 @@ theorem helper_lemma₁₀
 theorem helper_lemma₁₁ (f : ((EuclideanSpace ℝ ι) × (EuclideanSpace ℝ κ)) → ℝ) :
     Integrable f (volume : Measure ((EuclideanSpace ℝ ι) × (EuclideanSpace ℝ κ))) ↔
     Integrable f (volume : Measure ((ι → ℝ) × (κ → ℝ))) := by
-  simp_rw [Measure.volume_eq_prod]
-  sorry
+  -- simp_rw [Measure.volume_eq_prod]
+  have := MeasurePreserving.prod
+    (EuclideanSpace.volume_preserving_measurableEquiv ι)
+    (EuclideanSpace.volume_preserving_measurableEquiv κ)
+  simp_rw [← Measure.volume_eq_prod] at this
+  rw [← MeasurePreserving.integrable_comp_emb this]; rfl
+  exact Measurable.measurableEmbedding (fun ⦃_⦄ ↦ id) fun ⦃_ _⦄ ↦ id
 
 /- TODO: in mathlib. -/
 theorem helper_lemma₁₂ {α : Type*} [Mul α] (a : α) {β : Type*} (f : β → α) :
@@ -365,7 +370,31 @@ theorem prekopa_leindler'
           apply Integrable.integral_prod_right
           rw [← Measure.volume_eq_prod, helper_lemma₁₁, Function.comp_assoc]
           exact helper_lemma₉ hh₁ h₂
-        · sorry
+        · intro x y
+          rw [integral_mul_left]
+          apply hn
+          · have (y : (ULift.{u, 0} (Fin n) → ℝ)) : (y, x) = (x, y).swap := rfl
+            simp_rw [this, ← @Function.comp_apply _ _ _ f, ← @Function.comp_apply _ _ _ (f ∘ _),
+              ← @Function.comp_apply _ _ _ _ Prod.swap, ← @Function.comp_apply _ _ _ _ (Prod.mk x)]
+            apply Integrable.comp_measurable (Integrable.comp_measurable _ measurable_swap)
+              measurable_prodMk_left
+            apply Integrable.comp_measurable _
+              (MeasurableEquiv.measurable (MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm)
+            apply Integrable.comp_measurable _
+              (MeasurableEquiv.measurable (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) h₂.symm))
+            rw [← Measure.dirac_prod, Measure.prod_swap]
+            have : MeasurePreserving
+              (MeasurableEquiv.sumPiEquivProdPi fun _ : (ULift.{u} (Fin n)) ⊕ (ULift.{u} (Fin m)) ↦ ℝ).symm
+                ((volume : Measure (EuclideanSpace ℝ (ULift.{u} (Fin n)))).prod (Measure.dirac x))
+                sorry :=
+              measurePreserving_sumPiEquivProdPi_symm _
+            sorry
+          · sorry
+          · sorry
+          · sorry
+          · sorry
+          · sorry
+          · sorry
         · simp_rw [← @Function.comp_apply _ _ _ g, ← @Function.comp_apply _ _ _ (g ∘ _)]
           rw [uncurry_prod_swap]
           exact helper_lemma₁₀ hg₁ h₂
