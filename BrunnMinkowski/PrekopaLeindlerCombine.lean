@@ -83,6 +83,12 @@ theorem helper_lemma₁' (f : (ι → ℝ) → ℝ) :
     ∫ (x : EuclideanSpace ℝ ι), f x = ∫ (x : ι → ℝ), f x :=
   helper_lemma₁ f
 
+theorem helper_lemma₁'' (f : EuclideanSpace ℝ ι → ENNReal) :
+    ∫⁻ x, f x = ∫⁻ (x : ι → ℝ), f x ∂(volume : Measure (ι → ℝ)) := by
+  apply MeasurePreserving.lintegral_comp_emb
+  · rw [← (EuclideanSpace.volume_preserving_measurableEquiv ι).map_eq]; tauto
+  · exact Measurable.measurableEmbedding (fun ⦃_⦄ ↦ id) fun ⦃_ _⦄ ↦ id
+
 theorem helper_lemma₂ (f : EuclideanSpace ℝ ι → ℝ) :
     Integrable f (volume : Measure (EuclideanSpace ℝ ι)) ↔
     Integrable f (volume : Measure (ι → ℝ)) := by
@@ -432,27 +438,27 @@ theorem prekopa_leindler'
         ← ENNReal.ofReal_mul (Real.rpow_nonneg (hf₃ _) (1 - t))]
       exact ENNReal.ofReal_le_ofReal h₀)
   repeat rw [integral_eq_lintegral_of_nonneg_ae]
-  · simp_rw [ENNReal.toReal_rpow, ← ENNReal.toReal_mul]
-    rw [← ENNReal.toReal_ofReal_mul, ENNReal.toReal_le_toReal]
-    any_goals (exact
-      mul_nonneg_iff.mpr (.inl
-        ⟨Real.rpow_nonneg (by linarith) _, Real.rpow_nonneg (by linarith) _⟩))
-    any_goals apply ENNReal.mul_ne_top
-    any_goals exact ENNReal.ofReal_ne_top
-    any_goals apply ENNReal.rpow_ne_top_of_nonneg (by linarith)
-    any_goals rw [← lt_top_iff_ne_top]
-    any_goals refine Integrable.lintegral_lt_top ⟨?_, by assumption⟩
-    any_goals rw [aestronglyMeasurable_iff_aemeasurable]
-    any_goals apply Measurable.aemeasurable (by assumption)
-    sorry
-  · refine Filter.eventuallyLE_iff_all_subsets.mpr (fun x ↦ ?_)
-    filter_upwards; intro _ _; exact hh₃ _
-  · rw [aestronglyMeasurable_iff_aemeasurable]; exact hh₂.aemeasurable
-  · refine Filter.eventuallyLE_iff_all_subsets.mpr (fun x ↦ ?_)
-    filter_upwards; intro _ _; exact hg₃ _
-  · rw [aestronglyMeasurable_iff_aemeasurable]; exact hg₂.aemeasurable
-  · refine Filter.eventuallyLE_iff_all_subsets.mpr (fun x ↦ ?_)
-    filter_upwards; intro _ _; exact hf₃ _
-  · rw [aestronglyMeasurable_iff_aemeasurable]; exact hf₂.aemeasurable
+  any_goals refine Filter.eventuallyLE_iff_all_subsets.mpr (fun x ↦ ?_)
+  any_goals filter_upwards; intro _ _; tauto
+  any_goals rw [aestronglyMeasurable_iff_aemeasurable]
+  any_goals apply Measurable.aemeasurable (by assumption)
+  simp_rw [ENNReal.toReal_rpow, ← ENNReal.toReal_mul]
+  rw [← ENNReal.toReal_ofReal_mul, ENNReal.toReal_le_toReal]
+  any_goals (exact
+    mul_nonneg_iff.mpr (.inl
+      ⟨Real.rpow_nonneg (by linarith) _, Real.rpow_nonneg (by linarith) _⟩))
+  any_goals apply ENNReal.mul_ne_top
+  any_goals exact ENNReal.ofReal_ne_top
+  any_goals apply ENNReal.rpow_ne_top_of_nonneg (by linarith)
+  any_goals rw [← lt_top_iff_ne_top]
+  any_goals refine Integrable.lintegral_lt_top ⟨?_, by assumption⟩
+  any_goals rw [aestronglyMeasurable_iff_aemeasurable]
+  any_goals apply Measurable.aemeasurable (by assumption)
+  simp_rw [helper_lemma₁'']
+  rw [ENNReal.ofReal_mul, ENNReal.ofReal_rpow, ENNReal.ofReal_rpow]; assumption
+  any_goals linarith
+  · positivity
+  · exact mul_nonneg_iff.mpr (.inl ⟨by linarith, Nat.cast_nonneg _⟩)
+  · exact Real.rpow_nonneg (by linarith) _
 
 end
