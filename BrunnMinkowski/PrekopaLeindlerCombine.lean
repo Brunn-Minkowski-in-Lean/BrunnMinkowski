@@ -98,12 +98,25 @@ theorem helper_lemma₃ (e : ι ≃ κ) (f : (κ → ℝ) → ℝ) :
     (MeasurableEquiv.measurableEmbedding (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e))
   apply volume_measurePreserving_piCongrLeft
 
+theorem helper_lemma₃' (e : ι ≃ κ) (f : (κ → ℝ) → ENNReal) :
+    ∫⁻ (y : ι → ℝ), f ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e) y) =
+    ∫⁻ (x : κ → ℝ), f x :=
+  MeasurePreserving.lintegral_comp_emb
+    (volume_measurePreserving_piCongrLeft (fun _ ↦ ℝ) e)
+    (MeasurableEquiv.measurableEmbedding (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e)) _
+
 theorem helper_lemma₄ (f : ((ι ⊕ κ) → ℝ) → ℝ) :
     ∫ (x : (ι ⊕ κ) → ℝ), f x =
     ∫ (y : (ι → ℝ) × (κ → ℝ)), f ((MeasurableEquiv.sumPiEquivProdPi fun _ : ι ⊕ κ ↦ ℝ).symm y) := by
   symm; apply MeasurePreserving.integral_comp
   · exact volume_measurePreserving_sumPiEquivProdPi_symm _
   · exact MeasurableEquiv.measurableEmbedding _
+
+theorem helper_lemma₄' (f : ((ι ⊕ κ) → ℝ) → ENNReal) :
+    ∫⁻ (x : ι ⊕ κ → ℝ), f x =
+    ∫⁻ (y : (ι → ℝ) × (κ → ℝ)), f ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm y) :=
+  (MeasurePreserving.lintegral_comp_emb (volume_measurePreserving_sumPiEquivProdPi_symm fun _ ↦ ℝ)
+    (MeasurableEquiv.measurableEmbedding (MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm) _).symm
 
 theorem helper_lemma₅ (f : (ι ⊕ κ → ℝ) → ℝ) :
     Integrable f ↔
@@ -318,35 +331,129 @@ theorem helper_lemma₁₅ {α : Type*} [MeasurableSpace α] (f : EuclideanSpace
     Measurable f ↔ (@Measurable (ι → ℝ) α _ _ f) := by
   rfl
 
-set_option maxHeartbeats 0 in
+omit [Fintype ι] in
+theorem helper_lemma₁₆
+    {κ₁ : Type*} [Fintype κ₁] {κ₂ : Type*} [Fintype κ₂] (e : ι ≃ κ₁ ⊕ κ₂)
+    {f : (ι → ℝ) → ENNReal} (hf : Measurable f) :
+    AEMeasurable (fun y ↦ f ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
+      ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm y))) (volume.prod volume) := by
+  apply hf.aemeasurable.comp_measurable
+  apply (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm).measurable.comp
+  exact (MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm.measurable
+
+omit [Fintype ι] in
+theorem helper_lemma₁₇
+    {n m : ℕ} (e : ι ≃ ULift.{u, 0} (Fin n) ⊕ ULift.{u, 0} (Fin m))
+    {f : (ι → ℝ) → ENNReal} (hf : Measurable f) :
+    Measurable fun y : ULift.{u} (Fin m) → ℝ ↦ ∫⁻ (x : ULift.{u} (Fin n) → ℝ),
+      f ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
+        ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x, y))) := by
+  apply Measurable.lintegral_prod_left
+  apply hf.comp; simp_rw [Prod.mk.eta]
+  apply (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm).measurable.comp
+  exact (MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm.measurable
+
+omit [Fintype ι] in
+theorem helper_lemma₁₈
+    {n m : ℕ} (e : ι ≃ ULift.{u, 0} (Fin n) ⊕ ULift.{u, 0} (Fin m))
+    {f : (ι → ℝ) → ENNReal} (hf : Measurable f) (y : ULift.{u, 0} (Fin m) → ℝ) :
+    Measurable fun x ↦ f ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
+      ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x, y))) := by
+  apply hf.comp
+  apply (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm).measurable.comp
+  apply (MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm.measurable.comp
+  exact measurable_prodMk_right
+
+/- Note: `Measurable f` for `f : (ι → ℝ) → ENNReal` implies `StronglyMeasurable f`. -/
 universe u in
 theorem prekopa_leindler''
     {ι : Type u} [Fintype ι]
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
-    {f : (ι → ℝ) → ℝ} (hf₁ : AEStronglyMeasurable f) (hf₂ : Measurable f) (hf₃ : 0 ≤ f)
-    {g : (ι → ℝ) → ℝ} (hg₁ : AEStronglyMeasurable g) (hg₂ : Measurable g) (hg₃ : 0 ≤ g)
-    {h : (ι → ℝ) → ℝ} (hh₁ : AEStronglyMeasurable h) (hh₂ : Measurable h) (hh₃ : 0 ≤ h)
+    {f : (ι → ℝ) → ENNReal} (hf₁ : Measurable f)
+    {g : (ι → ℝ) → ENNReal} (hg₁ : Measurable g)
+    {h : (ι → ℝ) → ENNReal} (hh₁ : Measurable h)
     (h₀ : ∀ᵐ (x) (y), (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) :
-    (∫⁻ x, ENNReal.ofReal (f x)) ^ (1 - t) * (∫⁻ y, ENNReal.ofReal (g y)) ^ t ≤
+    (∫⁻ x, f x) ^ (1 - t) * (∫⁻ y, g y) ^ t ≤
     (ENNReal.ofReal (1 - t)) ^ ((1 - t) * Fintype.card ι) *
-    (ENNReal.ofReal t) ^ (t * Fintype.card ι) *
-    (∫⁻ z, ENNReal.ofReal (h z)) := by
+    (ENNReal.ofReal t) ^ (t * Fintype.card ι) * (∫⁻ z, h z) := by
   induction h₁ : Fintype.card ι using Nat.induction_on_add generalizing ι
   case hzero =>
-    rw [Fintype.card_eq_zero_iff] at h₁
-    simp [h₁]
-    simp_rw [ae_iff_of_countable] at h₀
+    rw [Fintype.card_eq_zero_iff] at h₁; simp_rw [ae_iff_of_countable] at h₀; simp [Unique.uniq]
     have : {(0 : ι → ℝ)} = Set.univ := by ext; simp [Unique.uniq]
-    simp [Unique.uniq]
-    rw [← ENNReal.ofReal_rpow (hf₃ _) (by linarith), ← ENNReal.ofReal_rpow (hg₃ _) (by linarith),
-      ← ENNReal.ofReal_mul (Real.rpow_nonneg (hf₃ _) _), ENNReal.ofReal_le_ofReal_iff (hh₃ _)]
-    simp [this] at h₀
-    apply le_trans (h₀ _ _) (le_of_eq _)
-    congr; simp only [Unique.uniq]
+    simp [this] at h₀; apply le_trans (h₀ _ _) (le_of_eq _); congr; simp only [Unique.uniq]
   case hone =>
     sorry
   case hadd n hn m hm i =>
+    let e := helper_def₁ ((h₁ ▸ Fintype.equivFin ι).trans finSumFinEquiv.symm)
+    simp_rw [← helper_lemma₃' e.symm, helper_lemma₄', Measure.volume_eq_prod] at h₀ ⊢
+    rw [lintegral_prod_symm, lintegral_prod_symm, lintegral_prod_symm]
+    any_goals exact helper_lemma₁₆ _ (by assumption)
+    simp_rw [Nat.cast_add, mul_add]
+    rw [ENNReal.rpow_add (t * _) (t * _) (by simp [ht₁]) (by simp),
+      ENNReal.rpow_add ((1 - t) * _) ((1 - t) * _) (by simp [ht₂]) (by simp),
+      mul_comm ((ENNReal.ofReal t) ^ _), ← mul_assoc (_ * _),
+      mul_assoc ((ENNReal.ofReal (1 - t)) ^ _), mul_comm ((ENNReal.ofReal (1 - t)) ^ _) (_ * _),
+      mul_assoc (((ENNReal.ofReal (1 - t)) ^ _) * _),
+      mul_assoc _ (((ENNReal.ofReal (1 - t)) ^ _) * _),
+      ← MeasureTheory.lintegral_const_mul]
+    any_goals exact (Measurable.lintegral_prod_right (hh₁.comp
+      ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm).measurable.comp
+        ((MeasurableEquiv.measurable (MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm).comp
+          (measurable_swap_iff.mp fun ⦃_⦄ ↦ id)))))
+    refine hm ?_ ?_ ?_ ?_ (Fintype.card_ulift.{0, u} (Fin m) ▸ (Fintype.card_fin m))
+    any_goals apply Measurable.const_mul
+    any_goals exact helper_lemma₁₇ e (by assumption)
+    filter_upwards; intro y₁; filter_upwards; intro y₂
+    apply hn _ _ _ _ (Fintype.card_ulift.{0, u} (Fin n) ▸ (Fintype.card_fin n))
+    any_goals exact helper_lemma₁₈ e (by assumption) _
     sorry
+
+theorem prekopa_leindler'
+    {ι : Type*} [Fintype ι]
+    {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1)
+    {f : EuclideanSpace ℝ ι → ℝ} (hf₁ : HasFiniteIntegral f) (hf₂ : Measurable f) (hf₃ : 0 ≤ f)
+    {g : EuclideanSpace ℝ ι → ℝ} (hg₁ : HasFiniteIntegral g) (hg₂ : Measurable g) (hg₃ : 0 ≤ g)
+    {h : EuclideanSpace ℝ ι → ℝ} (hh₁ : HasFiniteIntegral h) (hh₂ : Measurable h)
+    (h₀ : ∀ {x y}, (f x) ^ (1 - t) * (g y) ^ t ≤ h (x + y)) :
+    (∫ x, f x) ^ (1 - t) * (∫ y, g y) ^ t ≤
+    (1 - t) ^ ((1 - t) * Fintype.card ι) * t ^ (t * Fintype.card ι) * (∫ z, h z) := by
+  have hf' : Measurable fun x ↦ENNReal.ofReal (f x) := Measurable.ennreal_ofReal hf₂
+  have hg' : Measurable fun x ↦ENNReal.ofReal (g x) := Measurable.ennreal_ofReal hg₂
+  have hh' : Measurable fun x ↦ENNReal.ofReal (h x) := Measurable.ennreal_ofReal hh₂
+  have hh₃ : 0 ≤ h := by
+    intro x; rw [Pi.zero_apply, ← zero_add x]
+    refine le_trans (mul_nonneg_iff.mpr (.inl ?_)) h₀
+    constructor <;> apply Real.rpow_nonneg <;> tauto
+  have hpl := prekopa_leindler'' ht₁ ht₂
+    (Measurable.ennreal_ofReal hf₂) (Measurable.ennreal_ofReal hg₂) (Measurable.ennreal_ofReal hh₂)
+    (by
+      filter_upwards; intro; filter_upwards; intro
+      rw [← ENNReal.ofReal_rpow (hf₃ _) (by linarith), ← ENNReal.ofReal_rpow (hg₃ _) (by linarith),
+        ← ENNReal.ofReal_mul (Real.rpow_nonneg (hf₃ _) (1 - t))]
+      exact ENNReal.ofReal_le_ofReal h₀)
+  repeat rw [integral_eq_lintegral_of_nonneg_ae]
+  · simp_rw [ENNReal.toReal_rpow, ← ENNReal.toReal_mul]
+    rw [← ENNReal.toReal_ofReal_mul, ENNReal.toReal_le_toReal]
+    any_goals (exact
+      mul_nonneg_iff.mpr (.inl
+        ⟨Real.rpow_nonneg (by linarith) _, Real.rpow_nonneg (by linarith) _⟩))
+    any_goals apply ENNReal.mul_ne_top
+    any_goals exact ENNReal.ofReal_ne_top
+    any_goals apply ENNReal.rpow_ne_top_of_nonneg (by linarith)
+    any_goals rw [← lt_top_iff_ne_top]
+    any_goals refine Integrable.lintegral_lt_top ⟨?_, by assumption⟩
+    any_goals rw [aestronglyMeasurable_iff_aemeasurable]
+    any_goals apply Measurable.aemeasurable (by assumption)
+    sorry
+  · refine Filter.eventuallyLE_iff_all_subsets.mpr (fun x ↦ ?_)
+    filter_upwards; intro _ _; exact hh₃ _
+  · rw [aestronglyMeasurable_iff_aemeasurable]; exact hh₂.aemeasurable
+  · refine Filter.eventuallyLE_iff_all_subsets.mpr (fun x ↦ ?_)
+    filter_upwards; intro _ _; exact hg₃ _
+  · rw [aestronglyMeasurable_iff_aemeasurable]; exact hg₂.aemeasurable
+  · refine Filter.eventuallyLE_iff_all_subsets.mpr (fun x ↦ ?_)
+    filter_upwards; intro _ _; exact hf₃ _
+  · rw [aestronglyMeasurable_iff_aemeasurable]; exact hf₂.aemeasurable
 
 -- set_option maxHeartbeats 0 in
 -- universe u in
