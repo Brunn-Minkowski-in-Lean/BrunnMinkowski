@@ -255,7 +255,7 @@ theorem piCongrLeft_linearIsometryEquiv_measurableEquiv_coe
   simp [LinearIsometryEquiv.piCongrLeft, MeasurableEquiv.piCongrLeft, LinearEquiv.piCongrLeft',
     Equiv.piCongrLeft]
 
-theorem LinearIsometryEquiv.coe_toEquiv
+theorem LinearIsometryEquiv.coe_piCongrLeft
     (𝕜 : Type*) [Semiring 𝕜] {ι : Type*} [Fintype ι] {ι' : Type*} [Fintype ι']
     (E : Type*) [SemilatticeSup E] [SeminormedAddCommGroup E] [Module 𝕜 E]
     (e : ι ≃ ι') :
@@ -370,7 +370,20 @@ theorem helper_lemma₁₈
   apply (MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm.measurable.comp
   exact measurable_prodMk_right
 
+omit [Fintype ι] in
+theorem helper_lemma₁₈'
+    {n m : ℕ} (e : ι ≃ ULift.{u, 0} (Fin n) ⊕ ULift.{u, 0} (Fin m)) (y : ULift.{u, 0} (Fin m) → ℝ) :
+    Measurable fun x ↦ (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
+      ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x, y)) := by
+  apply (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm).measurable.comp
+  apply (MeasurableEquiv.sumPiEquivProdPi fun x ↦ ℝ).symm.measurable.comp
+  exact measurable_prodMk_right
+
+-- theorem helper_lemma₁₉
+--     {α : Type*} (h₁ : ∀ᵐ (x : α → ℝ) (y : α → ℝ), )
+
 /- Note: `Measurable f` for `f : (ι → ℝ) → ENNReal` implies `StronglyMeasurable f`. -/
+set_option maxHeartbeats 0 in
 universe u in
 theorem prekopa_leindler''
     {ι : Type u} [Fintype ι]
@@ -409,10 +422,32 @@ theorem prekopa_leindler''
     refine hm ?_ ?_ ?_ ?_ (Fintype.card_ulift.{0, u} (Fin m) ▸ (Fintype.card_fin m))
     any_goals apply Measurable.const_mul
     any_goals exact helper_lemma₁₇ e (by assumption)
-    filter_upwards; intro y₁; filter_upwards; intro y₂
-    apply hn _ _ _ _ (Fintype.card_ulift.{0, u} (Fin n) ▸ (Fintype.card_fin n))
+    filter_upwards with y₁; filter_upwards with y₂
+    refine hn ?_ ?_ ?_ ?_ (Fintype.card_ulift.{0, u} (Fin n) ▸ (Fintype.card_fin n))
     any_goals exact helper_lemma₁₈ e (by assumption) _
+    have h₂ (x₁ x₂ : ULift.{u} (Fin n) → ℝ) :
+        (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
+          ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x₁ + x₂, y₁ + y₂)) =
+        (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
+          ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x₁, y₁)) +
+        (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
+          ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x₂, y₂)) := by
+      simp_rw [MeasurableEquiv.coe_piCongrLeft, ← LinearIsometryEquiv.coe_piCongrLeft ℝ,
+        ← LinearIsometryEquiv.map_add]; congr
+      simp_rw [MeasurableEquiv.coe_sumPiEquivProdPi_symm]
+      exact (Equiv.sumPiEquivProdPi fun _ ↦ ℝ).symm_apply_eq.mpr rfl
+    simp_rw [h₂]
     sorry
+    -- simp_rw [h₂]; simp_rw [Filter.eventually_iff_exists_mem] at h₀ ⊢
+    -- rcases h₀ with ⟨s₁, hs₁, hs₂⟩
+    -- let f₁ x y (s : Set (ι → ℝ)) := (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
+    --   ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x, y)) ∈ s
+    -- use fun x ↦ f₁ x y₁ s₁; constructor
+    -- · sorry
+    -- intro x₁ hx₁; rcases hs₂ _ hx₁ with ⟨s₂, hs₂, hs₃⟩
+    -- use fun x ↦ f₁ x y₂ s₂; constructor
+    -- · sorry
+    -- intro x₂ hx₂; exact hs₃ _ hx₂
 
 theorem prekopa_leindler'
     {ι : Type*} [Fintype ι]
@@ -433,13 +468,13 @@ theorem prekopa_leindler'
   have hpl := prekopa_leindler'' ht₁ ht₂
     (Measurable.ennreal_ofReal hf₂) (Measurable.ennreal_ofReal hg₂) (Measurable.ennreal_ofReal hh₂)
     (by
-      filter_upwards; intro; filter_upwards; intro
+      filter_upwards with _; filter_upwards with _
       rw [← ENNReal.ofReal_rpow (hf₃ _) (by linarith), ← ENNReal.ofReal_rpow (hg₃ _) (by linarith),
         ← ENNReal.ofReal_mul (Real.rpow_nonneg (hf₃ _) (1 - t))]
       exact ENNReal.ofReal_le_ofReal h₀)
   repeat rw [integral_eq_lintegral_of_nonneg_ae]
   any_goals refine Filter.eventuallyLE_iff_all_subsets.mpr (fun x ↦ ?_)
-  any_goals filter_upwards; intro _ _; tauto
+  any_goals filter_upwards with _ _; tauto
   any_goals rw [aestronglyMeasurable_iff_aemeasurable]
   any_goals apply Measurable.aemeasurable (by assumption)
   simp_rw [ENNReal.toReal_rpow, ← ENNReal.toReal_mul]
