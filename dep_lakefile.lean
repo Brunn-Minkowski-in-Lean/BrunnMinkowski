@@ -7,9 +7,12 @@ package «BrunnMinkowski» where
     ⟨`pp.unicode.fun, true⟩ -- pretty-prints `fun a ↦ b`
   ]
   -- add any additional package configuration options here
-
+/-
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"
+-/
+
+require "leanprover-community" / "mathlib" @ git "v4.19.0-rc2"
 
 @[default_target]
 lean_lib «BrunnMinkowski» where
@@ -20,3 +23,5 @@ require checkdecls from git "https://github.com/PatrickMassot/checkdecls.git"
 meta if get_config? env = some "dev" then
 require «doc-gen4» from git
   "https://github.com/leanprover/doc-gen4" @ "main"
+  
+  
