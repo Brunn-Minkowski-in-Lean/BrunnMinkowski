@@ -379,8 +379,22 @@ theorem helper_lemma₁₈'
   apply (MeasurableEquiv.sumPiEquivProdPi fun x ↦ ℝ).symm.measurable.comp
   exact measurable_prodMk_right
 
--- theorem helper_lemma₁₉
---     {α : Type*} (h₁ : ∀ᵐ (x : α → ℝ) (y : α → ℝ), )
+theorem helper_lemma₁₉
+    {α : Type*} [MeasurableSpace α] {p : (α → ℝ) → (α → ℝ) → Prop} (h₁ : ∀ᵐ (x : α → ℝ) (y : α → ℝ), p x y)
+    {β : Type*} (e : α ≃ β) :
+    ∀ᵐ (x : β → ℝ) (y : β → ℝ), p
+      ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm) x)
+      ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm) y) := by
+  sorry
+
+theorem helper_lemma₂₀
+    {α : Type*} [Fintype α] {p : (α → ℝ) → (α → ℝ) → Prop} (h₁ : ∀ᵐ (x : α → ℝ) (y : α → ℝ), p x y)
+    {β : Type*} [Fintype β] (e : α ≃ β) :
+    ∀ᵐ (x : β → ℝ) (y : β → ℝ), p
+      ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm) x)
+      ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm) y) := by
+  sorry
+
 
 /- Note: `Measurable f` for `f : (ι → ℝ) → ENNReal` implies `StronglyMeasurable f`. -/
 set_option maxHeartbeats 0 in
@@ -437,6 +451,7 @@ theorem prekopa_leindler''
       simp_rw [MeasurableEquiv.coe_sumPiEquivProdPi_symm]
       exact (Equiv.sumPiEquivProdPi fun _ ↦ ℝ).symm_apply_eq.mpr rfl
     simp_rw [h₂]
+    -- apply helper_lemma₁₉ h₀
     sorry
     -- simp_rw [h₂]; simp_rw [Filter.eventually_iff_exists_mem] at h₀ ⊢
     -- rcases h₀ with ⟨s₁, hs₁, hs₂⟩
