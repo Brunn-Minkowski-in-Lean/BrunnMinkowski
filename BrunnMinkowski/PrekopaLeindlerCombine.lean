@@ -24,6 +24,11 @@ theorem EuclideanSpace.volume_univ_eq_one_of_rank_zero {ι : Type*} [Fintype ι]
     volume (@Set.univ (EuclideanSpace ℝ ι)) = 1 := by
   simp only [volume_euclideanSpace_eq_dirac, measure_univ]
 
+@[simp]
+theorem EuclideanSpace.volume_real_univ_eq_one_of_rank_zero {ι : Type*} [Fintype ι] [IsEmpty ι] :
+    volume.real (@Set.univ (EuclideanSpace ℝ ι)) = 1 := by
+  simp only [measureReal_def, volume_univ_eq_one_of_rank_zero, ENNReal.toReal_one]
+
 instance EuclideanSpace.instUnique {𝕜 ι : Type*} [Fintype ι] [IsEmpty ι] :
     Unique (EuclideanSpace 𝕜 ι) :=
   Pi.uniqueOfIsEmpty _
@@ -33,7 +38,7 @@ theorem EuclideanSpace.integral_of_empty_eq_one
     {ι : Type*} [Fintype ι] [IsEmpty ι] (f : EuclideanSpace ℝ ι → ℝ) :
     ∫ (x : EuclideanSpace ℝ ι), f x = f 0 := by
   simp [integral_unique, default, isEmptyElim]
-  congr; funext; rw [PiLp.zero_apply]; tauto
+  congr; funext; simp only [PiLp.zero_apply]; tauto
 
 theorem _root_.ENNReal.ofReal_rpow {p : ℝ} (hp : 0 ≤ p) {r : ℝ} (hr : 0 ≤ r):
     ENNReal.ofReal (p ^ r) = ENNReal.ofReal p ^ r :=
@@ -379,22 +384,10 @@ theorem helper_lemma₁₈'
   apply (MeasurableEquiv.sumPiEquivProdPi fun x ↦ ℝ).symm.measurable.comp
   exact measurable_prodMk_right
 
-theorem helper_lemma₁₉
-    {α : Type*} [MeasurableSpace α] {p : (α → ℝ) → (α → ℝ) → Prop} (h₁ : ∀ᵐ (x : α → ℝ) (y : α → ℝ), p x y)
-    {β : Type*} (e : α ≃ β) :
-    ∀ᵐ (x : β → ℝ) (y : β → ℝ), p
-      ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm) x)
-      ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm) y) := by
-  sorry
-
-theorem helper_lemma₂₀
-    {α : Type*} [Fintype α] {p : (α → ℝ) → (α → ℝ) → Prop} (h₁ : ∀ᵐ (x : α → ℝ) (y : α → ℝ), p x y)
-    {β : Type*} [Fintype β] (e : α ≃ β) :
-    ∀ᵐ (x : β → ℝ) (y : β → ℝ), p
-      ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm) x)
-      ((MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm) y) := by
-  sorry
-
+theorem helper_lemma₁₉ (ι : Type*) [Fintype ι] (κ : Type*) [Fintype κ]:
+    Measure.QuasiMeasurePreserving (MeasurableEquiv.sumPiEquivProdPi fun (_ : ι ⊕ κ) ↦ ℝ) :=
+  ⟨(MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).measurable,
+    Measure.absolutelyContinuous_of_eq (volume_measurePreserving_sumPiEquivProdPi fun _ ↦ ℝ).map_eq⟩
 
 /- Note: `Measurable f` for `f : (ι → ℝ) → ENNReal` implies `StronglyMeasurable f`. -/
 set_option maxHeartbeats 0 in
@@ -436,33 +429,34 @@ theorem prekopa_leindler''
     refine hm ?_ ?_ ?_ ?_ (Fintype.card_ulift.{0, u} (Fin m) ▸ (Fintype.card_fin m))
     any_goals apply Measurable.const_mul
     any_goals exact helper_lemma₁₇ e (by assumption)
-    filter_upwards with y₁; filter_upwards with y₂
-    refine hn ?_ ?_ ?_ ?_ (Fintype.card_ulift.{0, u} (Fin n) ▸ (Fintype.card_fin n))
-    any_goals exact helper_lemma₁₈ e (by assumption) _
-    have h₂ (x₁ x₂ : ULift.{u} (Fin n) → ℝ) :
-        (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
-          ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x₁ + x₂, y₁ + y₂)) =
-        (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
-          ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x₁, y₁)) +
-        (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
-          ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x₂, y₂)) := by
-      simp_rw [MeasurableEquiv.coe_piCongrLeft, ← LinearIsometryEquiv.coe_piCongrLeft ℝ,
-        ← LinearIsometryEquiv.map_add]; congr
-      simp_rw [MeasurableEquiv.coe_sumPiEquivProdPi_symm]
-      exact (Equiv.sumPiEquivProdPi fun _ ↦ ℝ).symm_apply_eq.mpr rfl
-    simp_rw [h₂]
-    -- apply helper_lemma₁₉ h₀
+    -- filter_upwards with y₁; filter_upwards with y₂
+    -- refine hn ?_ ?_ ?_ ?_ (Fintype.card_ulift.{0, u} (Fin n) ▸ (Fintype.card_fin n))
+    -- any_goals exact helper_lemma₁₈ e (by assumption) _
+    -- have h₂ (x₁ x₂ : ULift.{u} (Fin n) → ℝ) :
+    --     (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
+    --       ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x₁ + x₂, y₁ + y₂)) =
+    --     (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
+    --       ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x₁, y₁)) +
+    --     (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
+    --       ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x₂, y₂)) := by
+    --   simp_rw [MeasurableEquiv.coe_piCongrLeft, ← LinearIsometryEquiv.coe_piCongrLeft ℝ,
+    --     ← LinearIsometryEquiv.map_add]; congr
+    --   simp_rw [MeasurableEquiv.coe_sumPiEquivProdPi_symm]
+    --   exact (Equiv.sumPiEquivProdPi fun _ ↦ ℝ).symm_apply_eq.mpr rfl
+    -- simp_rw [h₂]
+    -- -- apply helper_lemma₁₉ h₀
+    -- sorry
+    -- -- simp_rw [h₂]; simp_rw [Filter.eventually_iff_exists_mem] at h₀ ⊢
+    -- -- rcases h₀ with ⟨s₁, hs₁, hs₂⟩
+    -- -- let f₁ x y (s : Set (ι → ℝ)) := (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
+    -- --   ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x, y)) ∈ s
+    -- -- use fun x ↦ f₁ x y₁ s₁; constructor
+    -- -- · sorry
+    -- -- intro x₁ hx₁; rcases hs₂ _ hx₁ with ⟨s₂, hs₂, hs₃⟩
+    -- -- use fun x ↦ f₁ x y₂ s₂; constructor
+    -- -- · sorry
+    -- -- intro x₂ hx₂; exact hs₃ _ hx₂
     sorry
-    -- simp_rw [h₂]; simp_rw [Filter.eventually_iff_exists_mem] at h₀ ⊢
-    -- rcases h₀ with ⟨s₁, hs₁, hs₂⟩
-    -- let f₁ x y (s : Set (ι → ℝ)) := (MeasurableEquiv.piCongrLeft (fun _ ↦ ℝ) e.symm)
-    --   ((MeasurableEquiv.sumPiEquivProdPi fun _ ↦ ℝ).symm (x, y)) ∈ s
-    -- use fun x ↦ f₁ x y₁ s₁; constructor
-    -- · sorry
-    -- intro x₁ hx₁; rcases hs₂ _ hx₁ with ⟨s₂, hs₂, hs₃⟩
-    -- use fun x ↦ f₁ x y₂ s₂; constructor
-    -- · sorry
-    -- intro x₂ hx₂; exact hs₃ _ hx₂
 
 theorem prekopa_leindler'
     {ι : Type*} [Fintype ι]
