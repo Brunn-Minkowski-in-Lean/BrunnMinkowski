@@ -12,8 +12,6 @@ import Mathlib.Algebra.Group.Pointwise.Set.Basic
 
 variable (A B : Set ℝ) (hA : MeasurableSet A) (hB : MeasurableSet B)
 
--- translation invariance of measure --
-
 open Set Pointwise Filter MeasureTheory MeasureTheory.Measure TopologicalSpace
 
 lemma volume_le_volume_add_right
