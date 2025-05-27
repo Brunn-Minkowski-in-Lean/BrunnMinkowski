@@ -17,15 +17,10 @@ open Set Pointwise Filter MeasureTheory MeasureTheory.Measure TopologicalSpace
 lemma volume_le_volume_add_right
     {A B : Set ℝ} (hB : B.Nonempty)
     : volume A ≤ volume (A + B) := by
-  obtain ⟨b, hb⟩ := hB -- hB is a pair of b and proof of b in B
+  obtain ⟨b, hb⟩ := hB
   calc
-    volume A = volume (A + {b}) := by
-      rw [add_singleton, image_add_right,
-      measure_preimage_add_right]
-    _ ≤ volume (A + B) := by
-      apply measure_mono
-      apply add_subset_add_left
-      exact singleton_subset_iff.mpr hb
+    volume A = volume (A + {b}) := by rw [add_singleton, image_add_right, measure_preimage_add_right]
+    _ ≤ volume (A + B) := measure_mono (add_subset_add_left (singleton_subset_iff.mpr hb))
 
 lemma volume_le_volume_add_left
     {A B : Set ℝ} (hB : B.Nonempty)
@@ -37,42 +32,27 @@ lemma measure_diff_singleton_lt {α : Type} [MeasurableSpace α] (μ : Measure �
 
 lemma ENNReal_div_two_ne_zero (ε : ENNReal) (hε : 0 < ε) : (ε/2) ≠ 0 := by
   by_contra he
-  have he : ε = 0 := by
-    rw [ENNReal.div_eq_zero_iff] at he
-    cases' he with zero_ε two_eq_top
-    · exact zero_ε
-    · contradiction
-    -- simp_all only [and_imp, not_and, ENNReal.ofNat_ne_top, or_false]
-  rw [he, lt_self_iff_false] at hε
+  rw [ENNReal.div_eq_zero_iff] at he
+  cases' he with zero_ε two_eq_top
+  rw [zero_ε, lt_self_iff_false] at hε
   exact hε
+  exact ENNReal.two_ne_top two_eq_top
 
 lemma volume_ne_top_of_subset (finA : volume A ≠ ⊤) (h : Aε ⊆ A) : volume Aε ≠ ⊤ := by
   by_contra inftyAε
-  have feather : volume Aε ≤ volume A := by exact measure_mono h
+  have feather : volume Aε ≤ volume A := measure_mono h
   rw [inftyAε, top_le_iff] at feather
-  contradiction
+  exact finA feather
 
 lemma volume_lt_subset_add_diff (mAε : MeasurableSet Aε) (finAε : volume Aε ≠ ⊤) (h : Aε ⊆ A) (diff : volume (A \ Aε) < ε / 2) : volume A < volume Aε + ε/2 := by
-  have feather1 : volume A = volume Aε + volume (A\Aε) := by
-    have feather2 : volume (A ∩ Aε) + volume (A \ Aε) = volume A := by apply measure_inter_add_diff A mAε
-    have feather3 : volume (A ∩ Aε) = volume Aε := by rw [inter_eq_right.mpr h]
-    calc volume A = volume (A ∩ Aε) + volume (A \ Aε) := by rw [←feather2]
-      _ = volume Aε + volume (A \ Aε) := by rw [feather3]
-  calc volume A = volume Aε + volume (A \ Aε) := by apply feather1
-  _ < volume Aε + ε/2 := by exact ENNReal.add_lt_add_left finAε diff
+  have feather : volume A = volume Aε + volume (A \ Aε) := by rw [←measure_inter_add_diff A mAε, inter_eq_right.mpr h]
+  rw [feather]
+  exact ENNReal.add_lt_add_left finAε diff
 
 lemma subset_add_subset_subset (h : A + B ⊆ C) (hInclA : Aε ⊆ A) (hInclB : Bε ⊆ B) : Aε + Bε ⊆ C := by
-  have feather : Aε + Bε ⊆ A + B := by
-    intros x hx
-    have hx' : ∃ a ∈ Aε, ∃ b ∈ Bε, a + b = x := by exact mem_add.mpr hx
-    obtain ⟨a, ha, b, hb, hx'⟩ := hx'
-    have ha : a ∈ A := by exact hInclA ha
-    have hb : b ∈ B := by exact hInclB hb
-    have h : a + b ∈ A + B := by apply add_mem_add ha hb
-    rw [← hx']
-    exact h
-  calc Aε + Bε ⊆ A + B := by apply feather
-    _ ⊆ C := by apply h
+  intro x
+  rintro ⟨a, haε, b, hbε, rfl⟩
+  exact h (add_mem_add (hInclA haε) (hInclB hbε))
 
 lemma add_with_halves_eq_one (a : ENNReal) (b : ENNReal) (ε : ENNReal) : a + ε/2 + (b + ε/2) = a + b + ε := by
   simp only [add_left_comm, add_halves, ←add_assoc]
@@ -95,16 +75,11 @@ lemma sSup_of_cpt_vadd_subset (h: A + B ⊆ C) (hA : A.Nonempty) (cA : IsCompact
   simp only [singleton_subset_iff]
   exact cA.sSup_mem hA
 
-lemma a_le_supA (cA : IsCompact A) (ha : a ∈ A) : a ≤ sSup A := by
-  have bdd_A : BddAbove A := by exact IsCompact.bddAbove cA
-  exact le_csSup bdd_A ha
+lemma a_le_supA (cA : IsCompact A) (ha : a ∈ A) : a ≤ sSup A := le_csSup (IsCompact.bddAbove cA) ha
 
-lemma infA_le_a (cA : IsCompact A) (ha : a ∈ A) : sInf A ≤ a := by
-  have bdd_A : BddBelow A := by exact IsCompact.bddBelow cA
-  exact csInf_le bdd_A ha
+lemma infA_le_a (cA : IsCompact A) (ha : a ∈ A) : sInf A ≤ a := csInf_le (IsCompact.bddBelow cA) ha
 
-lemma volume_union_add_inter_eq_add (h : MeasurableSet B): volume (A ∪ B) + volume (A ∩ B) = volume A + volume B := by
-  exact measure_union_add_inter A h
+lemma volume_union_add_inter_eq_add (h : MeasurableSet B): volume (A ∪ B) + volume (A ∩ B) = volume A + volume B := measure_union_add_inter A h
 
 lemma inter_sInf_sSup_eq_singleton (hA : A.Nonempty) (hB : B.Nonempty) (cA : IsCompact A) (cB : IsCompact B)
   (hAt : At = sInf B +ᵥ A) (hBt : Bt = sSup A +ᵥ B) : At ∩ Bt = {sSup A + sInf B} := by
