@@ -333,3 +333,7 @@ theorem brunn_minkowski_convex_bodies
     (ConvexBody.nonempty B)
     (IsCompact.measurableSet (B.isCompact))
     (IsCompact.measurableSet (IsCompact.add A.isCompact B.isCompact))
+
+
+#print axioms brunn_minkowski_measurable
+#print axioms brunn_minkowski_convex_bodies
