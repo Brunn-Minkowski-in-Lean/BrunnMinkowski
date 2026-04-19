@@ -152,15 +152,10 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     apply le_of_forall_pos_lt_add'
     intros ε hε
     have hε' : (ε/2) ≠ 0 := by
-      by_contra he
-      have he : ε = 0 := by
-        rw [ENNReal.div_eq_zero_iff] at he
-        cases' he with zero_ε two_eq_top
-        · exact zero_ε
-        · contradiction
-        -- simp_all only [and_imp, not_and, ENNReal.ofNat_ne_top, or_false]
-      rw [he, lt_self_iff_false] at hε
-      exact hε
+      intro he
+      rcases ENNReal.div_eq_zero_iff.mp he with h | h
+      · exact absurd h (ne_of_gt hε)
+      · exact absurd h (by norm_num)
     obtain ⟨Aε, inclusion_cptA, nonempty_cptA, h_cptA, diff_cptA⟩ :=
       MeasurableSet.exists_isCompact_Nonempty_diff_lt hA mA finA hε'
     obtain ⟨Bε, inclusion_cptB, nonempty_cptB, h_cptB, diff_cptB⟩ :=
@@ -219,10 +214,10 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
     calc volume A + volume B < volume Aε + ε/2 + (volume Bε + ε/2) := by
             exact ENNReal.add_lt_add diff_cptA' diff_cptB'
     _ = volume Aε + volume Bε + ε := by
-      simp only [add_left_comm, add_halves, ←add_assoc]
+      simp only [add_left_comm, ←add_assoc]
       rw [add_assoc]
       simp_all [add_assoc]
-    _ ≤  volume C + ε := by exact add_le_add_right wma_cpt ε
+    _ ≤  volume C + ε := by gcongr
 
   -- Prove the theorem assuming cpt A, B
   obtain ⟨cA, cB⟩ := cAB
@@ -262,11 +257,9 @@ lemma one_dim_BMInequality (A B C : Set ℝ)
       · intro hx
         obtain ⟨xAt, xBt⟩ := hx
         apply mem_vadd_set.mp at xAt
-        cases' xAt with a ha
-        obtain ⟨ha, hax⟩ := ha
+        obtain ⟨a, ha, hax⟩ := xAt
         apply mem_vadd_set.mp at xBt
-        cases' xBt with b hb
-        obtain ⟨hb, hbx⟩ := hb
+        obtain ⟨b, hb, hbx⟩ := xBt
         have upper_x : x ≤ sInf B + sSup A := by
           rw [← hax]
           -- simp [(le_csSup (IsCompact.bddAbove cA) ha)]

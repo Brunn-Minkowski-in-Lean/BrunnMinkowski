@@ -110,13 +110,13 @@ theorem brunn_minkowski_fin_meas
       by_cases hx_nmem_A : x ∉ A
       · -- Assume x ∉ A
         simp only [ind_A, ind_AB,
-          indicator_of_not_mem hx_nmem_A,
+          indicator_of_notMem hx_nmem_A,
           Real.zero_rpow (ne_of_gt hone_sub_t_pos), zero_mul,
           indicator_apply_nonneg, Pi.one_apply, zero_le_one, implies_true]
       by_cases hy_nmem_B : y ∉ B
       · -- Assume y ∉ B
         simp only [ind_B, ind_AB,
-          indicator_of_not_mem hy_nmem_B,
+          indicator_of_notMem hy_nmem_B,
           Real.zero_rpow (ne_of_gt h0t), mul_zero,
           indicator_apply_nonneg, Pi.one_apply, zero_le_one, implies_true]
 
@@ -138,23 +138,24 @@ theorem brunn_minkowski_fin_meas
         exact indicator_nonneg (fun _ _ ↦ (by norm_num))
       · -- Integrable ind_A
         refine IntegrableOn.integrable_indicator ?_ hA_meas
-        exact integrableOn_const.mpr (Or.inr hAvol_fin.lt_top)
+        exact integrableOn_const hAvol_fin
       · -- 0 ≤ ind_B
         exact indicator_nonneg (fun _ _ ↦ (by norm_num))
       · -- Integrable ind_B
         refine IntegrableOn.integrable_indicator ?_ hB_meas
-        exact integrableOn_const.mpr (Or.inr hBvol_fin.lt_top)
+        exact integrableOn_const hBvol_fin
       · -- 0 ≤ ind_AB
         exact indicator_nonneg (fun _ _ ↦ (by norm_num))
       · -- Integrable ind_AB
         refine IntegrableOn.integrable_indicator ?_ hAB_meas
-        exact integrableOn_const.mpr (Or.inr hABvol_fin.lt_top)
+        exact integrableOn_const hABvol_fin
 
     -- Modify the special case of Prékopa–Leindler
     unfold ind_A ind_B ind_AB at prekopa_leinler_app
     rw [integral_indicator_one hA_meas,
       integral_indicator_one hB_meas,
       integral_indicator_one hAB_meas] at prekopa_leinler_app
+    simp only [MeasureTheory.Measure.real] at prekopa_leinler_app
 
     apply ofReal_le_ofReal at prekopa_leinler_app
     conv at prekopa_leinler_app =>
@@ -251,7 +252,7 @@ theorem brunn_minkowski_fin_meas
 
   apply Eq.trans_le (mul_one _) at prekopa_leindler_special_case_θ
 
-  rw [ENNReal.mul_comm_div, mul_le_mul_left ?h1 ?h2]
+  rw [ENNReal.mul_comm_div, ENNReal.mul_le_mul_iff_right ?h1 ?h2]
     at prekopa_leindler_special_case_θ
   case h1 =>
     refine ne_of_gt (mul_pos (ne_of_gt ?_) (ne_of_gt ?_))

@@ -148,13 +148,13 @@ lemma prepkopa_leindler_dim1_essBdd
 
   have f_essSup_pos : 0 < f_essSup := by
     by_contra hf_essSup_zero
-    apply eq_of_ge_of_not_gt f_essSup_nonneg at hf_essSup_zero
+    have hf_essSup_zero := le_antisymm (not_lt.mp hf_essSup_zero) f_essSup_nonneg
     have := ae_zero_of_nonneg_essSup_zero_essBdd
       hf_nonneg hf_essBdd hf_essSup_zero
     contradiction
   have g_essSup_pos : 0 < g_essSup := by
     by_contra hg_essSup_zero
-    apply eq_of_ge_of_not_gt g_essSup_nonneg at hg_essSup_zero
+    have hg_essSup_zero := le_antisymm (not_lt.mp hg_essSup_zero) g_essSup_nonneg
     have := ae_zero_of_nonneg_essSup_zero_essBdd
       hg_nonneg hg_essBdd hg_essSup_zero
     contradiction
@@ -214,7 +214,7 @@ lemma prepkopa_leindler_dim1_essBdd
         volume (superlevel_set f_nor l) + volume (superlevel_set g_nor l)
           ≤ volume (superlevel_set h_nor l) := by
 
-      let φ₁ : ℝn 1 ≃ᵐ (Fin 1 → ℝ) := EuclideanSpace.measurableEquiv (Fin 1)
+      let φ₁ : ℝn 1 ≃ᵐ (Fin 1 → ℝ) := (MeasurableEquiv.toLp 2 (Fin 1 → ℝ)).symm
       let φ₂ : (Fin 1 → ℝ) ≃ᵐ ℝ := MeasurableEquiv.funUnique (Fin 1) ℝ
       let φ : ℝn 1 ≃ᵐ ℝ := φ₁.trans φ₂
 
@@ -224,7 +224,7 @@ lemma prepkopa_leindler_dim1_essBdd
 
       have φ_measpres : MeasurePreserving φ volume volume :=
         MeasurePreserving.trans
-          (EuclideanSpace.volume_preserving_measurableEquiv (Fin 1))
+          (PiLp.volume_preserving_ofLp (Fin 1))
           (volume_preserving_funUnique (Fin 1) ℝ)
 
       have φ_preserves_volume {D : Set (ℝn 1)} :
@@ -247,7 +247,7 @@ lemma prepkopa_leindler_dim1_essBdd
       have A_B_nm : NullMeasurableSet A ∧ NullMeasurableSet B := by
         unfold A B
         constructor; all_goals
-          rw [MeasurableEquiv.image_eq_preimage]
+          rw [MeasurableEquiv.image_eq_preimage_symm]
           refine NullMeasurableSet.preimage
             (nullmeasurable_superlevel_set_of_aemeasurable _
               (Integrable.aemeasurable ?_) l)
@@ -262,24 +262,17 @@ lemma prepkopa_leindler_dim1_essBdd
             unfold A B
             intro x hx
             obtain ⟨y, hy, z, hz, hyzx⟩ := mem_add.mp hx
-            apply Set.mem_image_of_mem φ.symm at hy
-            apply Set.mem_image_of_mem φ.symm at hz
-            simp only [mem_image, EmbeddingLike.apply_eq_iff_eq,
-              exists_eq_right] at hy hz
-            obtain ⟨yy, hyy, hφyy⟩ := hy
-            obtain ⟨zz, hzz, hφzz⟩ := hz
-            rw [← hyzx, ← hφyy, ← hφzz]
+            obtain ⟨yy, hyy, rfl⟩ := (Set.mem_image _ _ _).mp hy
+            obtain ⟨zz, hzz, rfl⟩ := (Set.mem_image _ _ _).mp hz
+            rw [← hyzx]
             have : φ yy + φ zz = φ (yy + zz) := by
               unfold φ φ₁ φ₂
-              simp only [MeasurableEquiv.trans_apply,
+              simp [MeasurableEquiv.trans_apply,
                 MeasurableEquiv.funUnique_apply,
-                EuclideanSpace.coe_measurableEquiv,
-                WithLp.equiv_pi_apply, PiLp.add_apply]
+                MeasurableEquiv.toLp]
             rw [this]
-            simp only [mem_image, EmbeddingLike.apply_eq_iff_eq,
-              exists_eq_right]
-            exact add_mem_add hyy hzz
-        _ ⊆ C := image_subset φ (nor_superlevel_sets_subset h0l)
+            exact Set.mem_image_of_mem φ (add_mem_add hyy hzz)
+        _ ⊆ C := Set.image_mono (nor_superlevel_sets_subset h0l)
 
       calc
         volume (superlevel_set f_nor l) + volume (superlevel_set g_nor l)
@@ -327,7 +320,7 @@ lemma prepkopa_leindler_dim1_essBdd
         · simp only [indicator_apply_eq_zero]
           intro h1x
           rw [Set.mem_Ici] at h1x
-          simp only [measure_zero_iff_ae_nmem, mem_setOf_eq, not_lt]
+          simp only [measure_eq_zero_iff_ae_notMem, mem_setOf_eq, not_lt]
           first
           | exact Eventually.mono f_nor_ae_le_one (fun _ hfx ↦ hfx.trans h1x)
           | exact Eventually.mono g_nor_ae_le_one (fun _ hfx ↦ hfx.trans h1x)
@@ -336,7 +329,7 @@ lemma prepkopa_leindler_dim1_essBdd
             refine ne_of_lt (fin_vol_of_superlevelset_of_nonneg_integrable ?_ ?_ hx.1)
             · first | exact f_nor_nonneg | exact g_nor_nonneg
             · first | exact f_nor_integrable | exact g_nor_integrable
-          · exact Eq.trans_ne (indicator_of_not_mem hx _) zero_ne_top
+          · exact Eq.trans_ne (indicator_of_notMem hx _) zero_ne_top
 
     have h_integral_interval :
         ∫⁻ x, indicator (Ioo 0 1) fun_vol_splset_h x
@@ -386,7 +379,7 @@ lemma prepkopa_leindler_dim1_essBdd
   rw [Real.div_rpow (integral_nonneg hf_nonneg) (by positivity),
     Real.div_rpow (integral_nonneg hg_nonneg) (by positivity)] at this
   field_simp at this
-  exact (div_le_div_iff_of_pos_right (by positivity)).mp this
+  exact this
 
 
 

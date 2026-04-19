@@ -6,6 +6,7 @@
 --import Mathlib.MeasureTheory.Integral.SetIntegral
 import Mathlib.Data.Real.StarOrdered
 import Mathlib.MeasureTheory.Integral.Layercake
+import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 -- import Mathlib.Data.Set.Basic
 -- import Mathlib.Algebra.Order.Group.Pointwise.CompleteLattice
 
@@ -18,16 +19,16 @@ lemma le_of_forall_le_of_lt
     {a b : ℝ} (h : ∀ c, c < a → c ≤ b) :
     a ≤ b := by
     by_contra hba
-    apply lt_of_not_le at hba
+    apply not_le.mp at hba
     obtain ⟨c, hac, hcb⟩ := exists_between hba
-    exact not_lt_of_le (h c hcb) hac
+    exact absurd hac (not_lt.mpr (h c hcb))
 
 lemma Ioo_disjoint_Ici_same
     {α : Type*} [LinearOrder α]
     {a b : α} :
     Disjoint (Ioo a b) (Ici b) := by
   rw [disjoint_left]
-  exact fun _ hx hy ↦ hx.2.not_le hy
+  exact fun _ hx hy ↦ not_le.mpr hx.2 hy
 
 lemma meas_le_meas_add_right
     {α : Type u_1} [MeasurableSpace α] [AddGroup α] [MeasurableAdd α]
@@ -83,7 +84,7 @@ lemma fin_vol_of_superlevelset_of_nonneg_integrable
     · rw [indicator_of_mem ha_mem_s]
       rw [ENNReal.ofReal_le_ofReal_iff (hf_nonneg x)]
       exact le_of_lt (Membership.mem.out ha_mem_s)
-    · rw [indicator_of_not_mem ha_not_mem_s]
+    · rw [indicator_of_notMem ha_not_mem_s]
       exact zero_le _
 
   refine ENNReal.lt_top_of_mul_ne_top_right ?_
@@ -186,7 +187,7 @@ lemma pos_meas_of_superlevel_set_of_bddBelow
       intro
       exact lt_of_lt_of_le hy (ha _)
     rwa [this, measure_univ_eq_zero, ← ne_eq, ← neZero_iff]
-  have : b ∉ {y | μ {x | y < f x} = 0} := not_mem_of_lt_csInf hb this
+  have : b ∉ {y | μ {x | y < f x} = 0} := notMem_of_lt_csInf hb this
   rw [mem_setOf_eq] at this
   exact Ne.lt_of_le' this (Measure.zero_le μ _)
 
@@ -271,7 +272,7 @@ lemma div_essSup_of_essBdd_lowerBdd
             y < a / b := hy
             _ ≤ f x / b := by gcongr; exact ha_le_f x
         rwa [this, measure_univ_eq_zero, ← ne_eq, ← neZero_iff]
-      have hc := not_mem_of_lt_csInf hc this
+      have hc := notMem_of_lt_csInf hc this
       rw [mem_setOf_eq] at hc
       by_contra hdcb
       rw [not_le] at hdcb
@@ -306,7 +307,7 @@ lemma div_essSup_of_essBdd_lowerBdd
             y < a := hy
             _ ≤ f x := ha_le_f x
         rwa [this, measure_univ_eq_zero, ← ne_eq, ← neZero_iff]
-      have hc := not_mem_of_lt_csInf hc this
+      have hc := notMem_of_lt_csInf hc this
       rw [mem_setOf_eq] at hc
       by_contra hdc
       rw [not_le] at hdc

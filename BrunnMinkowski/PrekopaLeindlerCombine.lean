@@ -28,8 +28,12 @@ theorem EuclideanSpace.volume_univ_eq_one_of_rank_zero {ι : Type*} [Fintype ι]
 theorem EuclideanSpace.integral_of_empty_eq_one
     {ι : Type*} [Fintype ι] [IsEmpty ι] (f : EuclideanSpace ℝ ι → ℝ) :
     ∫ (x : EuclideanSpace ℝ ι), f x = f 0 := by
-  simp [integral_unique, default, isEmptyElim]
-  congr; funext; rw [PiLp.zero_apply]; tauto
+  simp [integral_unique]
+  have h1 : volume (@Set.univ (EuclideanSpace ℝ ι)) = 1 := by
+    simp [volume_euclideanSpace_eq_dirac]
+  simp [Measure.real, h1]
+  congr 1
+  ext i; exact IsEmpty.elim inferInstance i
 
 theorem prekopa_leindler
     {t : ℝ} (ht₁ : 0 < t) (ht₂ : t < 1) {d : ℕ}
@@ -52,7 +56,7 @@ theorem prekopa_leindler'
   induction h₁ : Fintype.card ι using Nat.induction_on_add generalizing ι
   case hzero =>
     rw [Fintype.card_eq_zero_iff] at h₁
-    simp [h₁]
+    simp
     nth_rw 3 [← add_zero 0]
     exact h₀
   case hone => sorry
